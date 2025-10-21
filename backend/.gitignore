@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+# --- Sensitive config ---
+# Environment files
+.env
+.env.*
+# Spring Boot config files with secrets
+application.yml
+application.properties

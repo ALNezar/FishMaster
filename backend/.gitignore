@@ -37,4 +37,5 @@ build/
 .env.*
 # Spring Boot config files with secrets
 application.yml
+application.yaml
 application.properties

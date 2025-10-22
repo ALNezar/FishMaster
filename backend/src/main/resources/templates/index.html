@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org/">
+<head>
+    <meta charset="UTF-8">
+    <title>FishMaster</title>
+    <style>
+        body {
+            font-family: Tahoma, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .title {
+            background: #02c4ff;
+            text-align: center;
+            width: 106%;
+            padding: 20px 0;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<h1 th:text="|Welcome Back, ${name}|"></h1>
+<h1 class="title">FishMaster</h1>
+<h1>🦈🐡🐠🐟</h1>
+
+<a href="http://localhost:8080/hello" target="_blank">Hello page</a>
+
+</body>
+</html>

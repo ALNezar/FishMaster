@@ -21,11 +21,13 @@
 ---
 
 ### 💧 Overview
-FishMaster monitors <strong>temperature</strong>, <strong>pH</strong>, and <strong>ammonia/turbidity</strong>, and controls an
-<strong>automatic feeder</strong> with a built-in <strong>display screen</strong>.
+FishMaster is a smart aquarium system that helps monitor and control your fish tank automatically. The system works in two ways: a local embedded system and a web-based system. The embedded system uses an ESP32 microcontroller with sensors to check important water conditions like pH levels and temperature. All the readings are shown on an LCD screen attached to the aquarium, and it can automatically feed your fish on schedule. This local system works completely on its own without needing internet, making it reliable even when the network goes down.
 
-Even if Wi-Fi or the server goes down, the ESP32 keeps running, showing live readings and keeping feeding schedules active.  
-When the connection returns, data syncs to the cloud and appears on the <strong>React dashboard</strong> for remote monitoring.
+The web system adds more features by connecting to the internet. The ESP32 sends sensor data to a server backend, and users can check their aquarium from anywhere using a mobile or web app. The web interface shows detailed graphs and historical data to track how the aquarium is doing over time. If the internet connection fails or has security issues, the system automatically falls back to the embedded mode with the LCD screen, so the fish are always taken care of.
+
+
+This dual-system design makes FishMaster both convenient for remote monitoring and dependable for everyday aquarium care.
+
 
 ---
 

@@ -1,8 +1,9 @@
 <div align="center">
 
-  <img src="https://github.com/user-attachments/assets/48d73cbd-8878-49fd-a7e6-4adea17c9ac6" alt="FishMaster Logo" width="260"/>
+<img width="7686" height="2729" alt="Fish logo" src="https://github.com/user-attachments/assets/4a4d854f-14e6-48f2-ba60-82d6c91dfe55" />
 
-  <h1>🐟 FISHMASTER</h1>
+
+  <h1>FISHMASTER</h1>
   <h3>Smart Aquarium Monitoring & Control System using ESP32</h3>
 
   <p>

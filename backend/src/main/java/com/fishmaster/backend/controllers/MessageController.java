@@ -1,6 +1,6 @@
 package com.fishmaster.backend.controllers;
 
-import com.fishmaster.backend.entites.Message;
+import com.fishmaster.backend.model.Message;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -11,4 +11,5 @@ public class MessageController {
         return new Message("Hello Fish!");
 
     }
+
 }

@@ -1,4 +1,4 @@
-package com.fishmaster.backend.entites;
+package com.fishmaster.backend.model;
 
 
 import lombok.AllArgsConstructor;

@@ -4,7 +4,7 @@ create table "user"
         primary key,
     name         varchar(100) not null,
     email        varchar(255) not null
-        unique,
+                               unique,
     password     varchar(255) not null,
     phone_number varchar(20),
     timezone     varchar(50) default 'Asia/Kuala_Lumpur'::character varying,

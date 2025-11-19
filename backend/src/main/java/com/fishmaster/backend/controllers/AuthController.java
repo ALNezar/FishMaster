@@ -11,65 +11,42 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping("/auth")
 @RestController
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final JwtService jwtService;
     private final AuthenticationService authenticationService;
+    private final JwtService jwtService;
 
     @PostMapping("/signup")
-    public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) {
-
-        // Create user in DB
-        User registeredUser = authenticationService.signup(registerUserDto);
-
-        // Return the user object
-        return ResponseEntity.ok(registeredUser);
+    public ResponseEntity<User> signup(@RequestBody RegisterUserDto dto) {
+        User user = authenticationService.signup(dto);
+        return ResponseEntity.ok(user);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto) {
-
-        // Check credentials
-        User authenticatedUser = authenticationService.authenticate(loginUserDto);
-
-        // Generate token
-        String jwtToken = jwtService.generateToken(authenticatedUser);
-
-        // Prepare response
-        LoginResponse loginResponse = new LoginResponse(
-                jwtToken,
-                jwtService.getExpirationTime()
-        );
-
-        return ResponseEntity.ok(loginResponse);
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginUserDto dto) {
+        User user = authenticationService.authenticate(dto);
+        String token = jwtService.generateToken(user);
+        return ResponseEntity.ok(new LoginResponse(token, jwtService.getExpirationTime()));
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<?> verifyUser(@RequestBody VerifyUserDto verifyUserDto) {
+    public ResponseEntity<String> verify(@RequestBody VerifyUserDto dto) {
         try {
-            // Try to verify the user using the code they sent
-            authenticationService.verifyUser(verifyUserDto);
-
-            // Send success message
-            return ResponseEntity.ok("account verified");
-
+            authenticationService.verifyUser(dto);
+            return ResponseEntity.ok("Account verified");
         } catch (RuntimeException e) {
-            // Send back error message
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PostMapping("/resend")
-    public ResponseEntity<?> resendVerificationCode(@RequestBody String email) {
+    public ResponseEntity<String> resend(@RequestBody String email) {
         try {
-            // Resend code to email
             authenticationService.resendVerificationCode(email);
-
-            return ResponseEntity.ok("verification code sent");
-
+            return ResponseEntity.ok("Verification code sent");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

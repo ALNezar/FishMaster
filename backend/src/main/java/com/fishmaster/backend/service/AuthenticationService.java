@@ -5,15 +5,14 @@ import com.fishmaster.backend.repositories.UserRepo;
 import dto.LoginUserDto;
 import dto.RegisterUserDto;
 import dto.VerifyUserDto;
-import jakarta.mail.MessagingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -27,7 +26,6 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
     public AuthenticationService(
             UserRepo userRepo,
@@ -41,7 +39,7 @@ public class AuthenticationService {
         this.emailService = emailService;
     }
 
-    // signup a new user
+    // --- SIGNUP ---
     public User signup(RegisterUserDto input) {
         User user = new User();
         user.setName(input.getUsername());
@@ -49,18 +47,17 @@ public class AuthenticationService {
         user.setPassword(passwordEncoder.encode(input.getPassword()));
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationExpiration(LocalDateTime.now().plusMinutes(15));
-        user.setEnabled(false); // user not active yet
+        user.setEnabled(false);
 
-        // 🟢 NOTE: Keep this commented out until you fix your SMTP settings!
-        // Otherwise, Postman will hang again.
-        // sendVerificationEmail(user);
+        // Send email asynchronously (Non-blocking)
+        sendVerificationEmail(user);
 
-        return userRepo.save(user); // save user
+        return userRepo.save(user);
     }
 
-    // login user (FIXED: Simplified logic)
+    // --- LOGIN ---
     public User authenticate(LoginUserDto input) {
-        // 1. Authenticate (handles bad password/email exceptions)
+        // 1. Check Credentials
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         input.getEmail(),
@@ -68,11 +65,11 @@ public class AuthenticationService {
                 )
         );
 
-        // 2. Fetch the user (we know credentials are correct now)
+        // 2. Fetch User
         User user = userRepo.findByEmail(input.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        // 3. Check if verified
+        // 3. Check Verification Status
         if (!user.isEnabled()) {
             throw new DisabledException("Account not verified, please verify your email");
         }
@@ -80,7 +77,7 @@ public class AuthenticationService {
         return user;
     }
 
-    // resend verification code
+    // --- RESEND CODE ---
     public void resendVerificationCode(String email) {
         Optional<User> optionalUser = userRepo.findByEmail(email);
         if (optionalUser.isPresent()) {
@@ -88,11 +85,12 @@ public class AuthenticationService {
             if (user.isEnabled()) {
                 throw new RuntimeException("Account is already verified");
             }
+            // Generate new code & Extend expiration
             user.setVerificationCode(generateVerificationCode());
             user.setVerificationExpiration(LocalDateTime.now().plusHours(1));
 
-            // TODO: Uncomment when email is fixed
-            // sendVerificationEmail(user);
+            // Send the new code via email
+            sendVerificationEmail(user);
 
             userRepo.save(user);
         } else {
@@ -100,7 +98,7 @@ public class AuthenticationService {
         }
     }
 
-    // verify user account
+    // --- VERIFY USER ---
     public void verifyUser(VerifyUserDto dto) {
         User user = userRepo.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -109,25 +107,26 @@ public class AuthenticationService {
             throw new RuntimeException("Account already verified");
         }
 
-        // NOTE: Check if the DTO field name is 'verficationCode' or 'verificationCode'
-        // I kept your original: dto.getVerficationCode()
+        // Check if code matches
+        // Note: Using getVerficationCode() based on your uploaded DTO (Check for typo in DTO class if red)
         if (!user.getVerificationCode().equals(dto.getVerficationCode())) {
             throw new RuntimeException("Invalid verification code");
         }
 
+        // Check if expired
         if (user.getVerificationExpiration().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Verification code expired");
         }
 
-        user.setEnabled(true); // activate user
+        // Enable user
+        user.setEnabled(true);
         userRepo.save(user);
     }
 
-    // send verification email (FULL HTML RESTORED)
+    // --- HELPER: SEND EMAIL ---
     private void sendVerificationEmail(User user) {
         String subject = "Account Verification";
 
-        // Full HTML template for the email
         String htmlMessage = "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\" />"
                 + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />"
                 + "<title>Fishmaster - Verification</title></head>"
@@ -150,14 +149,11 @@ public class AuthenticationService {
                 + "<p style=\"margin:18px 0 0 0;color:#6b8b92;font-size:12px;\">If you didn't request this, ignore this email.</p>"
                 + "</td></tr></table></td></tr></table></body></html>";
 
-        try {
-            emailService.sendVerificationEmail(user.getEmail(), subject, htmlMessage);
-        } catch (MessagingException e) {
-            logger.error("Email sending failed", e); // log error
-        }
+        // No try-catch block needed here anymore!
+        // The EmailService handles the exception logging internally.
+        emailService.sendVerificationEmail(user.getEmail(), subject, htmlMessage);
     }
 
-    // generate random 6-digit verification code
     private String generateVerificationCode() {
         Random random = new Random();
         int code = random.nextInt(900000) + 100000;

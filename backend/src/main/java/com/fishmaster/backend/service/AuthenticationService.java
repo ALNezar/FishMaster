@@ -44,37 +44,38 @@ public class AuthenticationService {
     // signup a new user
     public User signup(RegisterUserDto input) {
         User user = new User();
-        user.setName(input.getUsername()); // set name
-        user.setEmail(input.getEmail());   // set email
-        user.setPassword(passwordEncoder.encode(input.getPassword())); // encode password
-        user.setVerificationCode(generateVerificationCode()); // 6-digit code
-        user.setVerificationExpiration(LocalDateTime.now().plusMinutes(15)); // code expiry
+        user.setName(input.getUsername());
+        user.setEmail(input.getEmail());
+        user.setPassword(passwordEncoder.encode(input.getPassword()));
+        user.setVerificationCode(generateVerificationCode());
+        user.setVerificationExpiration(LocalDateTime.now().plusMinutes(15));
         user.setEnabled(false); // user not active yet
 
-        sendVerificationEmail(user); // send email
+        // 🟢 NOTE: Keep this commented out until you fix your SMTP settings!
+        // Otherwise, Postman will hang again.
+        // sendVerificationEmail(user);
 
         return userRepo.save(user); // save user
     }
 
-    // login user
+    // login user (FIXED: Simplified logic)
     public User authenticate(LoginUserDto input) {
-        User user = userRepo.findByEmail(input.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("Invalid email or password"));
-
-        if (!passwordEncoder.matches(input.getPassword(), user.getPassword())) {
-            throw new UsernameNotFoundException("Invalid email or password");
-        }
-
-        if (!user.isEnabled()) {
-            throw new DisabledException("Account not verified, please verify your email");
-        }
-
+        // 1. Authenticate (handles bad password/email exceptions)
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         input.getEmail(),
                         input.getPassword()
                 )
         );
+
+        // 2. Fetch the user (we know credentials are correct now)
+        User user = userRepo.findByEmail(input.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        // 3. Check if verified
+        if (!user.isEnabled()) {
+            throw new DisabledException("Account not verified, please verify your email");
+        }
 
         return user;
     }
@@ -89,7 +90,10 @@ public class AuthenticationService {
             }
             user.setVerificationCode(generateVerificationCode());
             user.setVerificationExpiration(LocalDateTime.now().plusHours(1));
-            sendVerificationEmail(user);
+
+            // TODO: Uncomment when email is fixed
+            // sendVerificationEmail(user);
+
             userRepo.save(user);
         } else {
             throw new RuntimeException("User not found");
@@ -105,6 +109,8 @@ public class AuthenticationService {
             throw new RuntimeException("Account already verified");
         }
 
+        // NOTE: Check if the DTO field name is 'verficationCode' or 'verificationCode'
+        // I kept your original: dto.getVerficationCode()
         if (!user.getVerificationCode().equals(dto.getVerficationCode())) {
             throw new RuntimeException("Invalid verification code");
         }
@@ -117,11 +123,11 @@ public class AuthenticationService {
         userRepo.save(user);
     }
 
-    // send verification email
+    // send verification email (FULL HTML RESTORED)
     private void sendVerificationEmail(User user) {
         String subject = "Account Verification";
 
-        // original HTML kept, unicode replaced with normal characters
+        // Full HTML template for the email
         String htmlMessage = "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\" />"
                 + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />"
                 + "<title>Fishmaster - Verification</title></head>"
@@ -135,7 +141,7 @@ public class AuthenticationService {
                 + "</td><td style=\"text-align:right;vertical-align:middle;font-size:14px;opacity:0.95;\">Smart Aquarium Monitoring</td></tr></table>"
                 + "</td></tr>"
                 + "<tr><td style=\"padding:24px;\"><h2 style=\"margin:0 0 8px 0;color:#0b3a4b;font-size:20px;\">Verify your Fishmaster account</h2>"
-                + "<p style=\"margin:0 0 18px 0;color:#3b5d66;font-size:14px;line-height:1.4;\">Enter the verification code below to complete sign-in. This code expires in 10 minutes.</p>"
+                + "<p style=\"margin:0 0 18px 0;color:#3b5d66;font-size:14px;line-height:1.4;\">Enter the verification code below to complete sign-in. This code expires in 15 minutes.</p>"
                 + "<div style=\"background:#f8fbff;padding:18px;border-radius:6px;border:1px solid #e6f2f8;display:inline-block;\">"
                 + "<p style=\"margin:0;font-size:13px;color:#2b3f46;\">Verification Code</p>"
                 + "<p style=\"margin:6px 0 0 0;font-size:24px;font-weight:700;letter-spacing:3px;color:#007b9e;\">" + user.getVerificationCode() + "</p>"

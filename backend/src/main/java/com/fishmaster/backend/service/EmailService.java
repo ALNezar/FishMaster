@@ -17,7 +17,7 @@ public class EmailService {
     @Autowired
     private JavaMailSender emailSender;
 
-    @Async // Runs in a background thread
+    @Async
     public void sendVerificationEmail(String to, String subject, String htmlContent) {
         try {
             logger.info("Attempting to send email to: {}", to);
@@ -25,6 +25,7 @@ public class EmailService {
             MimeMessage message = emailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
+            helper.setFrom("FishMater@gmail.com", "Fishmaster "); // <-- your name/email here
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
@@ -34,7 +35,6 @@ public class EmailService {
             logger.info("Email successfully sent to: {}", to);
 
         } catch (Exception e) {
-            // Log the error here so we can see it in the console
             logger.error("FAILED to send email to: " + to, e);
         }
     }

@@ -107,7 +107,7 @@ public class AuthenticationService {
 
         // Check if code matches
         // Note: Using getVerficationCode() based on your uploaded DTO (Check for typo in DTO class if red)
-        if (!user.getVerificationCode().equals(dto.getVerficationCode())) {
+        if (!user.getVerificationCode().equals(dto.getVerificationCode())) {
             throw new RuntimeException("Invalid verification code");
         }
 

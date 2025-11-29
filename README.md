@@ -12,7 +12,9 @@
     <img src="https://img.shields.io/badge/Spring%20Boot-Backend-brightgreen?logo=springboot&logoColor=white" />
     <img src="https://img.shields.io/badge/React-Frontend-61DAFB?logo=react&logoColor=white" />
     <img src="https://img.shields.io/badge/IoT-Project-orange?logo=icloud&logoColor=white" />
+    <img src="https://img.shields.io/badge/status-in%20development-orange" />
 </p>
+
 
 </div>
 

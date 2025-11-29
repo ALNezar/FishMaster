@@ -1,6 +1,6 @@
 <div align="center">
 
-<img width="7000" height="300" alt="Fish logo" src="https://github.com/user-attachments/assets/4a4d854f-14e6-48f2-ba60-82d6c91dfe55" />
+<img width="700" height="300" alt="Fish logo" src="https://github.com/user-attachments/assets/4a4d854f-14e6-48f2-ba60-82d6c91dfe55" />
 
 <h1>FISHMASTER</h1>
 <h3>Smart Aquarium Monitoring & Control System using ESP32</h3>

@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+
+// --- Variables (Easier to change later) ---
+$blob-color: #CCC20C;
+$blob-hover: #E6D70C;
+$blob-shadow: #B2A70B;
+$text-color: #4B4B4B;
+
+.navbar {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+
+  width: 90%;
+  max-width: 600px;
+  padding: 10px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  // Glassmorphism
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+
+  // --- Nested .navbar-links ---
+  .navbar-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+
+    // --- Nested List Items & Links ---
+    li {
+      a {
+        font-family: 'Special Elite', cursive;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: bold;
+        color: $text-color;
+        text-transform: capitalize;
+
+        // Button shape
+        background-color: $blob-color;
+        padding: 8px 18px;
+        border-radius: 8px;
+
+        // 3D Shadow
+        box-shadow: 0 4px 0 0 $blob-shadow;
+        transition: all 0.2s ease;
+        display: block;
+
+        // --- Interactivity (The "&" refers to the "a" tag) ---
+        &:hover {
+          background-color: $blob-hover;
+          color: #000000;
+          cursor: pointer;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 0 0 $blob-shadow;
+        }
+
+        &:active {
+          transform: translateY(2px);
+          box-shadow: 0 2px 0 0 $blob-shadow;
+        }
+      }
+    }
+  }
+}

@@ -1,1 +1,66 @@
-import './App.css'
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+
+/* --- Container for the Navigation Bar (The "Glass Panel") --- */
+.navbar {
+    width: 90%; 
+    max-width: 600px;
+    margin: 20px auto; 
+    padding: 10px;
+    display: flex; /* Centers the ul element */
+    justify-content: center;
+    align-items: center;
+    
+    /* The "Liquid Glass" Effect */
+    background-color: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    
+    /* Panel styling */
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Unordered List Styling --- */
+.navbar-links {
+    list-style: none; /* Remove bullet points */
+    padding: 0;
+    margin: 0;
+    display: flex; /* Arrange links horizontally */
+    gap: 15px; /* Space between links */
+    align-items: center;
+}
+
+/* --- Styling for Individual List Items and Links (The "Blobs") --- */
+.navbar-links li a {
+    font-family: 'Special Elite', cursive;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    color: #4B4B4B; 
+    text-transform: capitalize; /* Corrects 'about' and 'Features' casing */
+    
+    /* Button shape and color */
+    background-color: #CCC20C; 
+    padding: 8px 18px;
+    border-radius: 8px;
+    
+    /* 3D/Shadow effect like in the image */
+    box-shadow: 0 4px 0 0 #B2A70B;
+    transition: all 0.2s ease;
+    display: block; /* Important for padding/sizing */
+}
+
+/* --- Hover and Active States for Interactivity --- */
+.navbar-links li a:hover {
+    background-color: #E6D70C; 
+    color: #000000;
+    cursor: pointer;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 0 #B2A70B;
+}
+
+.navbar-links li a:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 0 #B2A70B;
+}

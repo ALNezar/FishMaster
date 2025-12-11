@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
 
-// --- Variables (Easier to change later) ---
 $blob-color: #CCC20C;
 $blob-hover: #E6D70C;
 $blob-shadow: #B2A70B;
@@ -12,35 +11,31 @@ $text-color: #4B4B4B;
   left: 50%;
   transform: translateX(-50%);
   z-index: 999;
-
   width: 90%;
   max-width: 600px;
   padding: 10px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
+  
   // Glassmorphism
   background-color: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-
   border-radius: 15px;
   border: 1px solid rgba(255, 255, 255, 0.4);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 
-  // --- Nested .navbar-links ---
   .navbar-links {
     list-style: none;
     padding: 0;
     margin: 0;
     display: flex;
-    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
     align-items: center;
+    gap: 10px;
 
-    // --- Nested List Items & Links ---
     li {
+      flex-shrink: 0;
+      
       a {
         font-family: 'Special Elite', cursive;
         text-decoration: none;
@@ -48,18 +43,18 @@ $text-color: #4B4B4B;
         font-weight: bold;
         color: $text-color;
         text-transform: capitalize;
-
+        
         // Button shape
         background-color: $blob-color;
         padding: 8px 18px;
         border-radius: 8px;
-
+        
         // 3D Shadow
         box-shadow: 0 4px 0 0 $blob-shadow;
         transition: all 0.2s ease;
         display: block;
+        white-space: nowrap;
 
-        // --- Interactivity (The "&" refers to the "a" tag) ---
         &:hover {
           background-color: $blob-hover;
           color: #000000;
@@ -72,6 +67,32 @@ $text-color: #4B4B4B;
           transform: translateY(2px);
           box-shadow: 0 2px 0 0 $blob-shadow;
         }
+      }
+    }
+  }
+
+  // Responsive adjustments
+  @media (max-width: 600px) {
+    width: 95%;
+    padding: 8px;
+    
+    .navbar-links {
+      gap: 8px;
+      
+      li a {
+        font-size: 14px;
+        padding: 6px 14px;
+      }
+    }
+  }
+
+  @media (max-width: 400px) {
+    .navbar-links {
+      gap: 6px;
+      
+      li a {
+        font-size: 12px;
+        padding: 5px 10px;
       }
     }
   }

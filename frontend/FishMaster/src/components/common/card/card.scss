@@ -1,0 +1,38 @@
+$card-bg-color: #Fdf6D6; 
+                         
+// Soft, Realistic Depth Shadow using RED color
+$shadow-color-1: rgba(150, 0, 0, 0.4); 
+$shadow-color-2: rgba(200, 0, 0, 0.2); 
+
+$card-shadow: 
+  0 1px 3px $shadow-color-1, 
+  0 1px 2px $shadow-color-2; 
+
+$card-radius: 0px; 
+
+.fish-master-card {
+  background-color: $card-bg-color;
+  border-radius: $card-radius; 
+  box-shadow: $card-shadow;
+  
+  // Set display to column flex
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+  // *** CRITICAL FIXES FOR HEIGHT ***
+  // 1. Explicitly setting height to 'fit-content' (though 'auto' is usually sufficient, 
+  //    this can help in certain flex/grid contexts).
+  height: fit-content; 
+  // 2. Ensuring no minimum height is interfering
+  min-height: unset; 
+  
+  // Large fixed width based on your Figma request
+  width: 1000px; 
+  
+  // This padding creates the gap between the content and the card side.
+  padding: 40px; 
+  box-sizing: border-box;
+
+  margin: 2rem auto; 
+}

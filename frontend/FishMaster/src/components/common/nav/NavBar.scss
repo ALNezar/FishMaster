@@ -11,7 +11,7 @@ $text-color: #4B4B4B;
   left: 50%;
   transform: translateX(-50%);
   z-index: 999;
-  width: 90%;
+  width: 38%;
   max-width: 600px;
   padding: 10px;
   
@@ -49,17 +49,14 @@ $text-color: #4B4B4B;
         border-radius: 8px;
         
         // 3D Shadow
-        box-shadow: 0 4px 0 0 $blob-shadow;
-        transition: all 0.2s ease;
-        display: block;
-        white-space: nowrap;
+        
 
         &:hover {
           background-color: $blob-hover;
           color: #000000;
           cursor: pointer;
-          transform: translateY(-2px);
-          box-shadow: 0 6px 0 0 $blob-shadow;
+          transform: translateY(-8px);
+        
         }
 
         &:active {

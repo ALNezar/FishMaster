@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+
+
+/* Global */
+body {
+  background-color: #ffffff; // set to pure white
+  margin: 0;
+  padding: 40px 20px;
+  font-family: 'Courier New', monospace;
+  display: flex;
+  justify-content: center;
+}
+
+/* Main wrapper */
+.landing-container {
+  width: 900px;
+  max-width: 95%;
+}
+
+/* Each section is now a Card component */
+.hero-card,
+.about-card {
+  padding: 30px;
+  text-align: center;
+  background-color: #f5efd3;
+  border-radius: 12px;
+  margin-bottom: 30px;
+}
+
+/* NAV */
+.nav-button {
+  background-color: #d4af37;
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #9d8129;
+  transition: all 0.1s;
+  font-size: 14px;
+
+  &:active {
+    box-shadow: 0 2px 0 #9d8129;
+    transform: translateY(2px);
+  }
+}
+
+/* LOGO AREA */
+.logo-area {
+  margin: 30px 0;
+}
+
+.logo {
+  max-width: 450px;
+  width: 100%;
+  height: auto;
+}
+
+/* TEXT */
+.slogan-main {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #000;
+  margin: 15px 0 5px;
+}
+
+.slogan-secondary {
+  font-size: 1em;
+  color: #333;
+  margin-bottom: 30px;
+}
+
+/* CTA */
+.cta-button {
+            font-family: 'Special Elite', cursive;
+
+  background-color: #d4af37;
+  color: #000;
+  font-size: 1.3em;
+  font-weight: bold;
+  padding: 15px 50px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #9d8129;
+  margin: 20px 0 10px;
+  transition: all 0.1s;
+
+  &:active {
+    box-shadow: 0 2px 0 #9d8129;
+    transform: translateY(3px);
+  }
+}
+
+.login-link-container {
+  margin-top: 15px;
+  font-size: 0.9em;
+}
+
+.login-link {
+  color: #2196f3;
+  text-decoration: underline;
+}
+
+/* ABOUT SECTION */
+.about-button {
+  background-color: #d4af37;
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 35px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #9d8129;
+  font-size: 1.1em;
+  margin-bottom: 30px;
+
+  &:active {
+    box-shadow: 0 2px 0 #9d8129;
+    transform: translateY(2px);
+  }
+}
+
+.about-heading {
+  background-color: #d4af37;
+  display: inline-block;
+  padding: 12px 30px;
+  border-radius: 10px;
+  font-size: 1.3em;
+  margin: 20px 0;
+  box-shadow: 0 3px 0 #9d8129;
+}
+
+.fish-text {
+  color: #2196f3;
+  font-weight: bold;
+}
+
+.about-intro {
+  font-size: 1em;
+  font-weight: bold;
+  margin: 25px 0;
+  letter-spacing: 1px;
+}
+
+.fish-intro {
+  background-color: #d4af37;
+  display: inline-block;
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-weight: bold;
+  margin: 20px 0;
+  box-shadow: 0 3px 0 #9d8129;
+}
+
+.fish-highlight {
+  color: #ff1744;
+}
+
+.fish-illustration {
+  margin: 30px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.small-fish {
+  width: 150px;
+  height: auto;
+}

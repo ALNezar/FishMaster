@@ -1,0 +1,30 @@
+// Colors -  warm, whimsical palette
+$color-primary: #d4af37;      // Gold
+$color-secondary: #c74b50;    // Pink/Red
+$color-accent: #4ecdc4;       // Aqua
+$color-background: #f5e6d3;   // Warm beige
+$color-text: #2c1810;         // Dark brown
+$color-white: #fff9e6;
+
+// Typography
+$font-primary: 'Comic Sans MS', 'Courier New', monospace;
+$font-size-base: 16px;
+$font-size-large: 24px;
+$font-size-small: 14px;
+
+// Spacing
+$spacing-xs: 8px;
+$spacing-sm: 16px;
+$spacing-md: 24px;
+$spacing-lg: 32px;
+$spacing-xl: 48px;
+
+// Border radius (for that rounded, friendly look)
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 20px;
+
+// Shadows
+$shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+$shadow-md: 0 5px 15px rgba(0,0,0,0.2);
+$shadow-lg: 0 10px 30px rgba(0,0,0,0.3);

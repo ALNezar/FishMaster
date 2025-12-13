@@ -1,15 +1,7 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
 
-/* Global */
-body {
-  background-color: #ffffff; // set to pure white
-  margin: 0;
-  padding: 40px 20px;
-  font-family: 'Courier New', monospace;
-  display: flex;
-  justify-content: center;
-}
-
+npm install react-wavify
 /* Main wrapper */
 .landing-container {
   width: 900px;
@@ -25,6 +17,30 @@ body {
   border-radius: 12px;
   margin-bottom: 30px;
 }
+.wave-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1; // behind all content
+  overflow: hidden;
+
+  > div {
+    position: absolute;
+    width: 100%;
+    height: 600px;
+    bottom: 0;
+    left: 0;
+    opacity: 0.4;
+  }
+
+  > div:nth-child(2) {
+    bottom: 20px; // offset for layered effect
+    opacity: 0.4;
+  }
+}
+
 
 /* NAV */
 .nav-button {
@@ -128,17 +144,19 @@ body {
 }
 
 .about-heading {
-  background-color: #d4af37;
+    cursor: question;
+
+  background-color: #d4c937;
   display: inline-block;
   padding: 12px 30px;
   border-radius: 10px;
-  font-size: 1.3em;
+  font-size: 23px;
   margin: 20px 0;
-  box-shadow: 0 3px 0 #9d8129;
+  box-shadow: 0 3px 0 #000000;
 }
 
 .fish-text {
-  color: #2196f3;
+  color: #0838A8;
   font-weight: bold;
 }
 
@@ -150,17 +168,17 @@ body {
 }
 
 .fish-intro {
-  background-color: #d4af37;
+  background-color: #d4c937;
   display: inline-block;
   padding: 12px 25px;
   border-radius: 8px;
   font-weight: bold;
   margin: 20px 0;
-  box-shadow: 0 3px 0 #9d8129;
+  box-shadow: 0 3px 0 #000000;
 }
 
 .fish-highlight {
-  color: #ff1744;
+  color: #a80e2d;
 }
 
 .fish-illustration {

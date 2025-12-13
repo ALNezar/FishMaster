@@ -1,24 +1,21 @@
 /* 1. Container - Increase size for better usability */
 ::-webkit-scrollbar {
-  width: 10px; /* Increased from 1px to 10px */
-  height: 10px; /* Increased from 1px to 10px */
+  width: 10px;
+  height: 10px; 
 }
 
 ::-webkit-scrollbar-track {
-  background: #ffec7d; /* Slightly darker base */
+  background: #ffec7d; 
   border-radius: 10px;
 }
 
 /* 3. Thumb - Modern, darker, metallic look */
 ::-webkit-scrollbar-thumb {
-  background-color: #ffec7d; /* Dark gray/metallic color */
-  border-radius: 10px; /* Fully rounded ends */
-  
-  /* Simple, soft depth effect */
+  background-color: #ffec7d; 
+  border-radius: 10px; 
   box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5); 
   
-  /* Remove complex linear-gradient and hard border for a flatter look */
-  border: 3px solid #ffec7d; /* Matches track background to create padding */
+  border: 3px solid #ffec7d; 
 }
 
 /* 4. Hover - Subtle color change on hover */
@@ -39,8 +36,8 @@
 
 /* 7. Firefox */
 * {
-  scrollbar-width: thin; /* 'thin' or 'auto' */
-  scrollbar-color: #ffec7d #101010; /* Thumb color / Track color */
+  scrollbar-width: thin; 
+  scrollbar-color: #ffec7d #101010; 
 }
 
 

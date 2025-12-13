@@ -4,6 +4,8 @@ import Wave from 'react-wavify';
 import Button from '../../components/common/button/button.jsx';
 import Card from '../../components/common/card/card.jsx';
 import FishLogo from '../../assets/images/Fishlogo.svg';
+import ScrollProgress from '../../components/common/nav/ScrollProgress.jsx'
+;
 import './LandingPage.scss';
 
 /**
@@ -23,6 +25,7 @@ function LandingPage() {
 
   return (
     <>
+      <ScrollProgress />
       {/* Wave Background */}
       <div className="wave-background">
         <Wave
@@ -51,7 +54,7 @@ function LandingPage() {
               className="cta-button"
               onClick={handleGetStarted}
             >
-              Get Started!
+              Get Started! (sign up!)
             </Button>
             <p className="login-link-container">
               <button 

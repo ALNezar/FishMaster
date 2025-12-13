@@ -1,61 +1,47 @@
-
-/* 1. Container */
+/* 1. Container - Increase size for better usability */
 ::-webkit-scrollbar {
-  width: 16px;
-  height: 16px;
+  width: 10px; /* Increased from 1px to 10px */
+  height: 10px; /* Increased from 1px to 10px */
 }
 
-/* 2. Track */
 ::-webkit-scrollbar-track {
-  background: #1a1a1a;
-  box-shadow: inset 0 0 0 2px #2a2a2a;
+  background: #ffec7d; /* Slightly darker base */
+  border-radius: 10px;
 }
 
-/* 3. Thumb */
+/* 3. Thumb - Modern, darker, metallic look */
 ::-webkit-scrollbar-thumb {
-  background-color: #FFD700;
-
-  /* Sharp but not harsh */
-  border-radius: 6px;
-
-  /* Panel-cut illusion */
-  background-image:
-    linear-gradient(
-      to bottom,
-      rgba(255,255,255,0.25),
-      rgba(255,255,255,0) 35%,
-      rgba(0,0,0,0.25) 100%
-    );
-
-  /* Hard edge */
-  border: 2px solid #1a1a1a;
-
-  /* Depth without cartoon softness */
-  box-shadow:
-    inset 0 2px 0 rgba(255,255,255,0.3),
-    inset 0 -2px 0 rgba(0,0,0,0.3);
+  background-color: #ffec7d; /* Dark gray/metallic color */
+  border-radius: 10px; /* Fully rounded ends */
+  
+  /* Simple, soft depth effect */
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5); 
+  
+  /* Remove complex linear-gradient and hard border for a flatter look */
+  border: 3px solid #ffec7d; /* Matches track background to create padding */
 }
 
-/* 4. Hover */
+/* 4. Hover - Subtle color change on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #FFEA00;
+  background-color: #ffec7d; 
 }
 
-/* 5. Active (pressed inward) */
+/* 5. Active (pressed inward) - Darker press effect */
 ::-webkit-scrollbar-thumb:active {
-  background-color: #CCAC00;
-  box-shadow:
-    inset 0 3px 4px rgba(0,0,0,0.4);
+  background-color: #ffec7d; 
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.7);
 }
 
 /* 6. Corner */
 ::-webkit-scrollbar-corner {
-  background: #1a1a1a;
+  background: #101010;
 }
 
 /* 7. Firefox */
 * {
-  scrollbar-width: auto;
-  scrollbar-color: #FFD700 #1a1a1a;
+  scrollbar-width: thin; /* 'thin' or 'auto' */
+  scrollbar-color: #ffec7d #101010; /* Thumb color / Track color */
 }
+
+
 

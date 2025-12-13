@@ -48,7 +48,7 @@ function LandingPage() {
               <img src={FishLogo} alt="Fish Master Logo" className="logo" />
             </div>
             <p className="slogan-secondary">            
-              Monitor your aquarium <mark>easily</mark>, <mark>anytime</mark>, <mark>anywhere</mark>.
+              Monitor your aquarium <i> <mark>easily</mark></i>, <i> <mark>anytime</mark></i>, <i> <mark>anywhere</mark></i>.
             </p>
             <Button 
               className="cta-button"

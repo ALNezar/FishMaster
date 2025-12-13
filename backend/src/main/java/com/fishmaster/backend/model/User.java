@@ -52,7 +52,8 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Tank> tanks = new ArrayList<>();
 
-    public User() {}
+    public User() {
+    }
 
     public User(String name, String email, String password, String timezone) {
         this.name = name;
@@ -90,5 +91,10 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
     }
 }

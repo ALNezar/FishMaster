@@ -1,62 +1,61 @@
-/* ============================================================
-   THE BOLD CARTOON SCROLLBAR
-   A chunky, high-contrast style with "grip" hatching.
-   ============================================================ */
 
-/* 1. Container Width */
+/* 1. Container */
 ::-webkit-scrollbar {
-  width: 18px; /* Thick for a chunky feel */
-  height: 18px; /* For horizontal bars */
+  width: 16px;
+  height: 16px;
 }
 
-/* 2. The Track (The "Gutter") */
+/* 2. Track */
 ::-webkit-scrollbar-track {
-  background: #1a1a1a; 
-  border-left: 2px solid #333; /* Adds depth */
+  background: #1a1a1a;
+  box-shadow: inset 0 0 0 2px #2a2a2a;
 }
 
-/* 3. The Thumb (The "Mover") */
+/* 3. Thumb */
 ::-webkit-scrollbar-thumb {
-  /* Bold yellow base */
-  background-color: #FFD700; 
-  
-  /* Thick "Inked" Border */
-  border: 3px solid #1a1a1a;
-  border-radius: 10px;
+  background-color: #FFD700;
 
-  /* The "Grip" Lines: Repeating hatch pattern */
-  background-image: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 5px,
-    rgba(0, 0, 0, 0.2) 5px,
-    rgba(0, 0, 0, 0.2) 10px
-  );
-  
-  /* Soft shadow inside the thumb */
-  box-shadow: inset -4px -4px 0px rgba(0, 0, 0, 0.15);
+  /* Sharp but not harsh */
+  border-radius: 6px;
+
+  /* Panel-cut illusion */
+  background-image:
+    linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.25),
+      rgba(255,255,255,0) 35%,
+      rgba(0,0,0,0.25) 100%
+    );
+
+  /* Hard edge */
+  border: 2px solid #1a1a1a;
+
+  /* Depth without cartoon softness */
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.3),
+    inset 0 -2px 0 rgba(0,0,0,0.3);
 }
 
-/* 4. Hover State (Brightens up) */
+/* 4. Hover */
 ::-webkit-scrollbar-thumb:hover {
   background-color: #FFEA00;
-  border-width: 2px; /* Slight "pop" effect */
-  cursor: pointer;
 }
 
-/* 5. Active/Click State (Darkens/Pressed effect) */
+/* 5. Active (pressed inward) */
 ::-webkit-scrollbar-thumb:active {
   background-color: #CCAC00;
-  box-shadow: inset 2px 2px 0px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    inset 0 3px 4px rgba(0,0,0,0.4);
 }
 
-/* 6. Corner (where vertical and horizontal meet) */
+/* 6. Corner */
 ::-webkit-scrollbar-corner {
   background: #1a1a1a;
 }
 
-/* 7. Firefox Support (Limited customization) */
+/* 7. Firefox */
 * {
   scrollbar-width: auto;
   scrollbar-color: #FFD700 #1a1a1a;
 }
+

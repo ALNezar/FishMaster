@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
 
 
 /* Global */
@@ -52,29 +51,34 @@ body {
 }
 
 .logo {
-  max-width: 450px;
+  max-width: 666px;
   width: 100%;
   height: auto;
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* Internet Explorer/Edge */
+  user-select: none;
 }
 
-/* TEXT */
-.slogan-main {
-  font-size: 1.5em;
-  font-weight: bold;
-  color: #000;
-  margin: 15px 0 5px;
-}
+
+
 
 .slogan-secondary {
-  font-size: 1em;
+  font-size: 28x;
   color: #333;
+    font-weight: bold;
+  
+
+  
+
+
   margin-bottom: 30px;
+
 }
 
 /* CTA */
 .cta-button {
-            font-family: 'Special Elite', cursive;
-
+           
   background-color: #d4af37;
   color: #000;
   font-size: 1.3em;
@@ -101,6 +105,7 @@ body {
 .login-link {
   color: #2196f3;
   text-decoration: underline;
+    font-family: "Short Stack", cursive;
 }
 
 /* ABOUT SECTION */

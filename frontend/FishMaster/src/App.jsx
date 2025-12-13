@@ -1,46 +1,74 @@
 import React from 'react';
 import './App.scss';
+
+import ScrollProgress from './components/common/nav/ScrollProgress.jsx';
 import Button from './components/common/button/button.jsx';
-import Nav from './components/common/nav/NavBar.jsx';
 import Card from './components/common/card/card.jsx';
+
 import FishLogo from './assets/images/Fishlogo.svg';
 import BlackRedFish from './assets/images/blackandredfish.svg';
 
 function App() {
   return (
-    
-    <div className="landing-container">
-      <Card className="hero-card">
-       
-           <Nav />
+    <>
+      {/* Scroll indicator must be global */}
+      <ScrollProgress />
 
-        <div className="logo-area">
-          <img src={FishLogo} alt="Fish Master Logo" className="logo" />
-        </div>
+      <div className="landing-container">
+        
+        {/* HERO */}
+        <section id="home">
+          <Card className="hero-card">
+            <div className="logo-area">
+              <img
+                src={FishLogo}
+                alt="Fish Master Logo"
+                className="logo"
+              />
+            </div>
 
-        <p className="slogan-secondary">Monitor your aquarium easily, anytime, anywhere.</p>
+            <p className="slogan-secondary">
+              Monitor your aquarium easily, anytime, anywhere.
+            </p>
 
-        <Button className="cta-button">Get Started !</Button>
+            <Button className="cta-button">Get Started!</Button>
 
-        <p className="login-link-container">
-          <a href="/login" className="login-link">Already have an account? Log in</a>
-        </p>
-      </Card>
+            <p className="login-link-container">
+              <a href="/login" className="login-link">
+                Already have an account? Log in
+              </a>
+            </p>
+          </Card>
+        </section>
 
-      <Card className="about-card">
-        <Button className="about-button">About</Button>
+        {/* ABOUT */}
+        <section id="about">
+          <Card className="about-card">
+            <Button className="about-button">About</Button>
 
-        <h2 className="about-heading">what is <span className="fish-text">Fish</span>Master anyways?</h2>
+            <h2 className="about-heading">
+              what is <span className="fish-text">FishMaster </span> anyways?
+            </h2>
 
-        <p className="about-intro">TO BEGIN....</p>
+            <p className="about-intro">TO BEGIN....</p>
 
-        <p className="fish-intro">THIS IS OUR HUMBLE FRIEND THE <span className="fish-highlight">FISH</span></p>
+            <p className="fish-intro">
+              THIS IS OUR HUMBLE FRIEND THE{' '}
+              <span className="fish-highlight">FISH</span>
+            </p>
 
-        <div className="fish-illustration">
-          <img src={BlackRedFish} alt="Fish illustration" className="small-fish" />
-        </div>
-      </Card>
-    </div>
+            <div className="fish-illustration">
+              <img
+                src={BlackRedFish}
+                alt="Fish illustration"
+                className="small-fish"
+              />
+            </div>
+          </Card>
+        </section>
+
+      </div>
+    </>
   );
 }
 

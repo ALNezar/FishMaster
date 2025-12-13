@@ -1,0 +1,162 @@
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+
+.waveBackground {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+
+  > div {
+    position: absolute;
+    width: 100%;
+    height: 600px;
+    bottom: 0;
+    left: 0;
+    opacity: 0.4;
+  }
+}
+
+.container {
+  min-height: 100vh;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 24px;
+  color: #2c1810;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: rgba(245, 239, 211, 0.95);
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  font-family: 'Special Elite', cursive;
+  font-size: 28px;
+  color: #2c1810;
+  margin: 0;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  span {
+    color: #2c1810;
+    font-weight: 500;
+  }
+}
+
+.logoutBtn {
+  background: none;
+  border: 2px solid #dc2626;
+  color: #dc2626;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #dc2626;
+    color: white;
+  }
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.welcomeCard {
+  padding: 40px;
+  background: #f5efd3;
+  border-radius: 16px;
+  text-align: center;
+
+  h2 {
+    font-family: 'Special Elite', cursive;
+    font-size: 28px;
+    color: #2c1810;
+    margin: 0 0 12px 0;
+  }
+
+  > p {
+    color: #666;
+    font-size: 16px;
+    max-width: 600px;
+    margin: 0 auto 32px;
+    line-height: 1.6;
+  }
+}
+
+.welcomeIcon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.featureCard {
+  background: #fffef8;
+  padding: 24px;
+  border-radius: 12px;
+  border: 2px solid #d4c4a8;
+  text-align: center;
+
+  h4 {
+    margin: 12px 0 8px;
+    color: #2c1810;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+  }
+}
+
+.featureIcon {
+  font-size: 36px;
+}
+
+.comingSoon {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 32px;
+  border-radius: 12px;
+  text-align: center;
+  border: 2px dashed #d4c4a8;
+
+  p {
+    margin: 0 0 8px;
+    color: #888;
+
+    &:first-child {
+      font-size: 18px;
+      font-weight: 600;
+      color: #666;
+    }
+  }
+}

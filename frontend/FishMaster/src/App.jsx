@@ -1,68 +1,36 @@
 import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 import './index.scss';
-import './App.scss';
-import { CustomScroll } from "react-custom-scroll";
-import ScrollProgress from './components/common/nav/ScrollProgress.jsx';
-import Button from './components/common/button/button.jsx';
-import Card from './components/common/card/card.jsx';
 
-import FishLogo from './assets/images/Fishlogo.svg';
-import BlackRedFish from './assets/images/blackandredfish.svg';
-import Wave from 'react-wavify';
+// Pages
+import LandingPage from './pages/landing/LandingPage.jsx';
+import SignupPage from './pages/auth/SignupPage.jsx';
+import VerifyEmailPage from './pages/auth/VerifyEmailPage.jsx';
+import LoginPage from './pages/auth/LoginPage.jsx';
+import OnboardingFlow from './pages/onboarding/OnboardingFlow.jsx';
+import Dashboard from './pages/dashboard/Dashboard.jsx';
 
+/**
+ * Main App component with routing.
+ * 
+ * Routes:
+ * - / : Landing page
+ * - /signup : User registration
+ * - /verify : Email verification
+ * - /login : User login
+ * - /onboarding : 10-step onboarding wizard
+ * - /dashboard : Main app after onboarding
+ */
 function App() {
   return (
-    <>
-      <ScrollProgress />
-
-      {/* Wave Background */}
-      <div className="wave-background">
-        <Wave
-          fill="#1277b0"
-          paused={false}
-          options={{
-            height: -11,
-            amplitude: 30,
-            speed: 0.15,
-            points: 5
-          }}
-        />
-        
-      </div>
-
-      <div className="landing-container">
-        {/* HERO */}
-        <section id="home">
-          <Card className="hero-card">
-            <div className="logo-area">
-              <img src={FishLogo} alt="Fish Master Logo" className="logo" />
-            </div>
-            <p className="slogan-secondary">
-              Monitor your aquarium easily, anytime, anywhere.
-            </p>
-            <Button className="cta-button">Get Started!
-              (sign up)
-            </Button>
-            <p className="login-link-container">
-              <a href="/login" className="login-link">Already have an account? Log in</a>
-            </p>
-          </Card>
-        </section>
-
-        {/* ABOUT */}
-        <section id="about">
-          <Card className="about-card">
-           
-              
-            <div className="fish-illustration">
-              <img src={BlackRedFish} alt="Fish illustration" className="small-fish" />
-            </div>
-          </Card>
-        </section>
-
-          
-      </div>
-    </>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/signup" element={<SignupPage />} />
+      <Route path="/verify" element={<VerifyEmailPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/onboarding" element={<OnboardingFlow />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+    </Routes>
   );
 }
 

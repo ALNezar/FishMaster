@@ -1,130 +1,114 @@
+/* Container */
 .scroll-progress {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   z-index: 3000;
-  padding: 12px ;
+  padding: 12px;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 16px;
-  animation: slideDown 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: slideDownSmooth 0.8s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-@keyframes slideDown {
-  0% {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
+@keyframes slideDownSmooth {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 .scroll-progress__nav {
   display: flex;
-  justify-content: center;
-  gap: 10px;
-  animation: gentleFloat 4s ease-in-out infinite;
+  gap: 12px;
 }
 
-@keyframes gentleFloat {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-2px);
-  }
-}
-
+/* Pencil-style button */
 .scroll-progress__nav-btn {
   font-family: 'Special Elite', cursive;
   font-size: 14px;
   padding: 8px 20px;
-  background: #CCC20C;
-  border: 2px solid transparent;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  background: white;
   color: #000;
   font-weight: 600;
+  cursor: pointer;
   position: relative;
-  animation: buttonPop 0.6s ease backwards;
-  
-  &:nth-child(1) { animation-delay: 0.1s; }
-  &:nth-child(2) { animation-delay: 0.2s; }
-  &:nth-child(3) { animation-delay: 0.3s; }
-  &:nth-child(4) { animation-delay: 0.4s; }
-  
-  &:hover {
-    background: #E8D614;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(204, 194, 12, 0.25);
-  }
-  
-  &.active {
-    background: #000000;
-    color: #fff;
-    border-color: #CCC20C;
-    box-shadow: 0 0 0 2px rgba(204, 194, 12, 0.3);
-    animation: activeGlow 2.5s ease-in-out infinite;
-  }
-  
-  &:active {
-    transform: translateY(0) scale(0.98);
-    transition: all 0.1s ease;
-  }
+  border: 2px solid #1a1a1a;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  animation: pencilMorph 6s ease-in-out infinite alternate;
+  transition: all 0.2s ease;
 }
 
-@keyframes buttonPop {
+/* Secondary sketch line */
+.scroll-progress__nav-btn::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: -2px;
+  bottom: -2px;
+  border: 1px solid rgba(0,0,0,0.4);
+  border-radius: 15px 225px 15px 255px / 255px 15px 225px 15px;
+  pointer-events: none;
+  z-index: -1;
+  animation: pencilMorph 8s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes pencilMorph {
   0% {
-    transform: scale(0.8);
-    opacity: 0;
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  }
+  33% {
+    border-radius: 15px 225px 15px 255px / 255px 15px 225px 15px;
+  }
+  66% {
+    border-radius: 200px 30px 200px 30px / 30px 200px 30px 200px;
   }
   100% {
-    transform: scale(1);
-    opacity: 1;
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
   }
 }
 
-@keyframes activeGlow {
-  0%, 100% {
-    box-shadow: 0 0 0 2px rgba(204, 194, 12, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 0 2px rgba(204, 194, 12, 0.5),
-                0 0 16px rgba(204, 194, 12, 0.2);
-  }
+.scroll-progress__nav-btn:hover {
+  background: #CCC20C;
+  transform: scale(1.02);
+  border-color: #000;
 }
 
+.scroll-progress__nav-btn.active {
+  background: #CCC20C;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+  border-width: 3px;
+  font-weight: 700;
+}
+
+/* Progress indicators */
 .scroll-progress__indicator {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   align-items: center;
 }
 
 .scroll-progress__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(204, 194, 12, 0.3);
-  transition: all 0.3s ease;
-  
+  width: 8px;
+  height: 8px;
+  border: 2px solid #1a1a1a;
+  background: transparent;
+  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  animation: dotMorph 4s ease-in-out infinite;
+
   &.active {
     background: #CCC20C;
-    transform: scale(1.3);
-    box-shadow: 0 0 8px rgba(204, 194, 12, 0.4);
-    animation: dotPulse 2s ease-in-out infinite;
+    border-color: #000;
+    transform: scale(1.2);
   }
 }
 
-@keyframes dotPulse {
+@keyframes dotMorph {
   0%, 100% {
-    box-shadow: 0 0 8px rgba(204, 194, 12, 0.4);
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
   }
   50% {
-    box-shadow: 0 0 12px rgba(204, 194, 12, 0.5);
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
   }
 }

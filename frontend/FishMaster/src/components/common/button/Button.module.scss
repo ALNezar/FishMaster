@@ -4,55 +4,62 @@
 .button {
   background: #CCC20C;
   border: none;
-  padding: 20px 60px;
- font-family: 'Special Elite', cursive;
+
+  padding: 18px 56px;
+  font-family: 'Special Elite', cursive;
   font-size: 48px;
-  font-weight: bold;
-  color: #000000;
-  border-radius: 8x;
+  font-weight: 700;
+  color: #000;
+
+  border-radius: 8px; 
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  letter-spacing: 2px;
-  
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
-    background: #d4cc15;
+
+  letter-spacing: 1.5px; 
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+
+  transition: 
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px); 
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.25);
+    background-color: #d4cc15;
   }
-  
-  &:active {
+
+  &:active:not(:disabled) {
     transform: translateY(0);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
-  
+
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.45;
     cursor: not-allowed;
-    transform: none;
+    box-shadow: none;
   }
 }
 
+
 // Size variants
 .small {
-  padding: 12px 36px;
+  padding: 10px 32px;
   font-size: 24px;
   border-radius: 8px;
 }
 
 .medium {
-  padding: 16px 48px;
+  padding: 14px 44px;
   font-size: 36px;
   border-radius: 8px;
 }
 
 .large {
-  padding: 20px 60px;
+  padding: 18px 56px;
   font-size: 48px;
   border-radius: 8px;
 }
 
-// Color variants (if you need other colors later)
 .primary {
   background: #CCC20C;
   

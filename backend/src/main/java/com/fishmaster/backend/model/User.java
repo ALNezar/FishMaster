@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -39,11 +40,17 @@ public class User implements UserDetails {
 
     private boolean enabled;
 
+    @Column(name = "onboarding_completed")
+    private boolean onboardingCompleted = false;
+
     @Column(name = "verification_code")
     private String verificationCode;
 
     @Column(name = "verification_expiration")
     private LocalDateTime verificationExpiration;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Tank> tanks = new ArrayList<>();
 
     public User() {}
 

@@ -9,49 +9,47 @@ $card-shadow:
   0 4px 8px $shadow-color-2,
   0 8px 16px $shadow-color-3;
 
-$card-radius: 1px;
+$card-radius: 12px;
+
 .fish-master-card {
   position: relative;
-  padding: 20px;
-  background-color: #f5efd3;
-  border-radius: 12px;
 
-  .card-number {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-weight: bold;
-    font-size: 1.2rem;
-    color: #333;
-  }
-}
-
-.fish-master-card {
-  background-color: $card-bg-color;
-  border-radius: $card-radius;
-  box-shadow: $card-shadow;
-  
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  /* Layout */
   display: flex;
   flex-direction: column;
-  align-items: center;
-  
-  height: fit-content;
-  min-height: unset;
-  
-  width: 814px;
-  
+  gap: 1rem; // spacing between inner sections
+
+  /* Size */
+  width: 100%;
+  max-width: 820px;
+  margin: 2.5rem auto; // vertical spacing between stacked cards
   padding: 40px;
+
+  /* Visuals */
+  background-color: $card-bg-color;
+  border-radius: $card-radius;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  box-shadow: $card-shadow;
+
   box-sizing: border-box;
-  margin: 2rem auto;
-  
-  transition: all 0.8s ease;
-  
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+
   &:hover {
+    transform: translateY(-2px);
     box-shadow: 
       0 4px 8px $shadow-color-1,
       0 8px 16px $shadow-color-2,
       0 16px 24px $shadow-color-3;
-    transform: translateY(-2px);
+  }
+
+  /* Optional card index / label */
+  .card-number {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-weight: 700;
+    font-size: 1rem;
+    opacity: 0.6;
+    pointer-events: none;
   }
 }

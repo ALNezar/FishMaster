@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+
+/* Main wrapper */
+.landing-container {
+  width: 900px;
+  max-width: 95%;
+  margin: 0 auto;
+  padding-top: 40px;
+}
+
+/* Each section is now a Card component */
+.hero-card,
+.about-card {
+  padding: 30px;
+  text-align: center;
+  background-color: #f5efd3;
+  border-radius: 12px;
+  margin-bottom: 30px;
+}
+
+.wave-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+
+  > div {
+    position: absolute;
+    width: 100%;
+    height: 600px;
+    bottom: 0;
+    left: 0;
+    opacity: 0.4;
+  }
+
+  > div:nth-child(2) {
+    bottom: 20px;
+    opacity: 0.4;
+  }
+}
+
+/* LOGO AREA */
+.logo-area {
+  margin: 30px 0;
+}
+
+.logo {
+  max-width: 666px;
+  width: 100%;
+  height: auto;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.slogan-secondary {
+  font-size: 28px;
+  color: #333;
+  font-weight: bold;
+  font-family: 'Special Elite', cursive;
+  margin-bottom: 30px;
+}
+
+/* CTA */
+.cta-button {
+  background-color: #d4af37;
+  color: #000;
+  font-size: 1.3em;
+  font-weight: bold;
+  padding: 15px 50px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #9d8129;
+  margin: 20px 0 10px;
+  transition: all 0.1s;
+
+  &:active {
+    box-shadow: 0 2px 0 #9d8129;
+    transform: translateY(3px);
+  }
+}
+
+.login-link-container {
+  margin-top: 15px;
+  font-size: 0.9em;
+}
+
+.login-link {
+  color: #2196f3;
+  text-decoration: underline;
+  font-family: "Short Stack", cursive;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+  
+  &:hover {
+    color: #1976d2;
+  }
+}

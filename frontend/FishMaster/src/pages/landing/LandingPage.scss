@@ -103,3 +103,151 @@
     color: #1976d2;
   }
 }
+
+/* INFO CARDS */
+.info-card {
+  padding: 40px 30px;
+  text-align: center;
+  background-color: #f5efd3;
+  border-radius: 12px;
+  margin-bottom: 30px;
+}
+
+.section-title {
+  font-family: 'Special Elite', cursive;
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.section-text {
+  font-family: 'Short Stack', cursive;
+  font-size: 1.1rem;
+  color: #555;
+  line-height: 1.8;
+  max-width: 700px;
+  margin: 0 auto 15px;
+}
+
+/* FEATURES GRID */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 25px;
+  margin-top: 30px;
+}
+
+.feature-item {
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
+  padding: 25px 15px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  h3 {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.2rem;
+    color: #333;
+    margin: 10px 0;
+  }
+
+  p {
+    font-family: 'Short Stack', cursive;
+    font-size: 0.95rem;
+    color: #666;
+    line-height: 1.5;
+  }
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 5px;
+}
+
+/* HOW IT WORKS STEPS */
+.steps-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.step-item {
+  flex: 1;
+  min-width: 180px;
+  max-width: 220px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
+  padding: 25px 15px;
+  position: relative;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+  }
+
+  h3 {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.1rem;
+    color: #333;
+    margin: 15px 0 10px;
+  }
+
+  p {
+    font-family: 'Short Stack', cursive;
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+  }
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #d4af37 0%, #f0c848 100%);
+  color: #333;
+  font-family: 'Special Elite', cursive;
+  font-size: 1.4rem;
+  font-weight: bold;
+  border-radius: 50%;
+  box-shadow: 0 3px 0 #9d8129;
+}
+
+/* CTA CARD */
+.cta-card {
+  background: linear-gradient(135deg, #f5efd3 0%, #e8e0c0 100%);
+  border: 2px solid #d4af37;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .section-title {
+    font-size: 1.5rem;
+  }
+  
+  .section-text {
+    font-size: 1rem;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .steps-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .step-item {
+    max-width: 100%;
+  }
+}

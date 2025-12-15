@@ -4,40 +4,48 @@ import Wave from 'react-wavify';
 import Button from '../../components/common/button/button.jsx';
 import Card from '../../components/common/card/card.jsx';
 import FishLogo from '../../assets/images/Fishlogo.svg';
-import ScrollProgress from '../../components/common/nav/ScrollProgress.jsx'
-;
+import ScrollProgress from '../../components/common/nav/ScrollProgress.jsx';
 import './LandingPage.scss';
 
-/**
- * Landing page - the first thing users see.
- * Features the FishMaster logo, slogan, and CTA buttons.
- */
+/** Reusable Wave component with default options */
+const WaveBackground = ({ className }) => (
+  <Wave
+    className={className}
+    fill="#1277b0"
+    paused={false}
+    options={{ height: -11, amplitude: 30, speed: 0.15, points: 5 }}
+  />
+);
+
+/** Reusable feature item */
+const FeatureItem = ({ icon, title, description }) => (
+  <div className="feature-item">
+    <span className="feature-icon">{icon}</span>
+    <h3>{title}</h3>
+    <p>{description}</p>
+  </div>
+);
+
+/** Reusable step item */
+const StepItem = ({ number, title, description }) => (
+  <div className="step-item">
+    <span className="step-number">{number}</span>
+    <h3>{title}</h3>
+    <p>{description}</p>
+    <WaveBackground />
+  </div>
+);
+
 function LandingPage() {
   const navigate = useNavigate();
-
-  const handleGetStarted = () => {
-    navigate('/signup');
-  };
-
-  const handleLogin = () => {
-    navigate('/login');
-  };
 
   return (
     <>
       <ScrollProgress />
+
       {/* Wave Background */}
       <div className="wave-background">
-        <Wave
-          fill="#1277b0"
-          paused={false}
-          options={{
-            height: -11,
-            amplitude: 30,
-            speed: 0.15,
-            points: 5
-          }}
-        />
+        <WaveBackground />
       </div>
 
       <div className="landing-container">
@@ -47,20 +55,14 @@ function LandingPage() {
             <div className="logo-area">
               <img src={FishLogo} alt="Fish Master Logo" className="logo" />
             </div>
-            <p className="slogan-secondary">            
-              Monitor your aquarium <i> <mark>easily</mark></i>, <i> <mark>anytime</mark></i>, <i> <mark>anywhere</mark></i>.
+            <p className="slogan-secondary">
+              Monitor your aquarium <i><mark>easily</mark></i>, <i><mark>anytime</mark></i>, <i><mark>anywhere</mark></i>.
             </p>
-            <Button 
-              className="cta-button"
-              onClick={handleGetStarted}
-            >
+            <Button className="cta-button" onClick={() => navigate('/signup')}>
               Get Started! (sign up!)
             </Button>
             <p className="login-link-container">
-              <button 
-                onClick={handleLogin}
-                className="login-link"
-              >
+              <button onClick={() => navigate('/login')} className="login-link">
                 Already have an account? Log in
               </button>
             </p>
@@ -70,15 +72,13 @@ function LandingPage() {
         {/* WHAT IS FISHMASTER */}
         <section id="about">
           <Card className="info-card">
-            <h2 className="section-title"> What is FishMaster?</h2>
+            <h2 className="section-title">What is FishMaster?</h2>
             <p className="section-text">
-              FishMaster is your <mark>all-in-one aquarium management companion</mark>. 
-              Whether you're a beginner with your first tank or an experienced aquarist 
-              managing multiple setups, FishMaster helps you keep your fish healthy and thriving.
+              FishMaster is your <mark>all-in-one aquarium management companion</mark>.
+              Whether you're a beginner or an experienced aquarist, FishMaster helps keep your fish healthy.
             </p>
             <p className="section-text">
-              Track water parameters, monitor fish health, get feeding reminders, 
-              and receive personalized care recommendations — all in one beautiful app.
+              Track water parameters, monitor fish health, get feeding reminders, and receive personalized care recommendations.
             </p>
           </Card>
         </section>
@@ -88,26 +88,10 @@ function LandingPage() {
           <Card className="info-card">
             <h2 className="section-title">✨ Key Features</h2>
             <div className="features-grid">
-              <div className="feature-item">
-                <span className="feature-icon">💧</span>
-                <h3>Water Monitoring</h3>
-                <p>Track pH, temperature, ammonia, nitrites, and more with smart alerts.</p>
-              </div>
-              <div className="feature-item">
-                <span className="feature-icon">🐟</span>
-                <h3>Fish Profiles</h3>
-                <p>Keep detailed records of each fish with health history and care notes.</p>
-              </div>
-              <div className="feature-item">
-                <span className="feature-icon">⏰</span>
-                <h3>Smart Reminders</h3>
-                <p>Never miss a feeding, water change, or maintenance task again.</p>
-              </div>
-              <div className="feature-item">
-                <span className="feature-icon">📊</span>
-                <h3>Analytics</h3>
-                <p>Visualize trends and patterns to optimize your aquarium care routine.</p>
-              </div>
+              <FeatureItem icon="💧" title="Water Monitoring" description="Track pH, temperature, ammonia, nitrites, and more with smart alerts." />
+              <FeatureItem icon="🐟" title="Fish Profiles" description="Keep detailed records of each fish with health history and care notes." />
+              <FeatureItem icon="⏰" title="Smart Reminders" description="Never miss a feeding, water change, or maintenance task again." />
+              <FeatureItem icon="📊" title="Analytics" description="Visualize trends and patterns to optimize your aquarium care routine." />
             </div>
           </Card>
         </section>
@@ -117,70 +101,11 @@ function LandingPage() {
           <Card className="info-card">
             <h2 className="section-title">🚀 How It Works</h2>
             <div className="steps-container">
-              <div className="step-item">
-                <span className="step-number">1</span>
-                <h3>Create Your Account</h3>
-                <p>Sign up in seconds and verify your email to get started.</p>
-                <Wave
-          fill="#1277b0"
-          paused={false}
-          options={{
-            height: -11,
-            amplitude: 30,
-            speed: 0.15,
-            points: 5
-          }}
-        />
-              </div>
-              <div className="step-item">
-                <span className="step-number">2</span>
-                <h3>Set Up Your Tanks</h3>
-                <p>Add your aquariums with size, type, and equipment details.</p>
-                <Wave
-          fill="#1277b0"
-          paused={false}
-          options={{
-            height: -11,
-            amplitude: 30,
-            speed: 0.15,
-            points: 5
-          }}
-        />
-              </div>
-              <div className="step-item">
-                <span className="step-number">3</span>
-                
-                <h3>Add Your Fish</h3>
-                <p>Create profiles for each fish with species and care requirements.</p>
-                <Wave
-          fill="#1277b0"
-          paused={false}
-          options={{
-            height: -11,
-            amplitude: 30,
-            speed: 0.15,
-            points: 5
-          }}
-        />
-              </div>
-              <div className="step-item">
-                <span className="step-number">4</span>
-                <h3>Start Tracking!</h3>
-                <p>Log water parameters, set reminders, and watch your fish thrive.</p>
-                <Wave
-          fill="#1277b0"
-          paused={false}
-          options={{
-            height: -11,
-            amplitude: 30,
-            speed: 0.15,
-            points: 5
-          }}
-        />
-              </div>
-              
+              <StepItem number="1" title="Create Your Account" description="Sign up in seconds and verify your email to get started." />
+              <StepItem number="2" title="Set Up Your Tanks" description="Add your aquariums with size, type, and equipment details." />
+              <StepItem number="3" title="Add Your Fish" description="Create profiles for each fish with species and care requirements." />
+              <StepItem number="4" title="Start Tracking!" description="Log water parameters, set reminders, and watch your fish thrive." />
             </div>
-       
           </Card>
         </section>
 
@@ -189,13 +114,9 @@ function LandingPage() {
           <Card className="info-card cta-card">
             <h2 className="section-title">Ready to Dive In? 🌊</h2>
             <p className="section-text">
-              Join thousands of aquarium enthusiasts who trust FishMaster 
-              to keep their aquatic friends happy and healthy.
+              Join thousands of aquarium enthusiasts who trust FishMaster to keep their aquatic friends happy and healthy.
             </p>
-            <Button 
-              className="cta-button"
-              onClick={handleGetStarted}
-            >
+            <Button className="cta-button" onClick={() => navigate('/signup')}>
               Start Your Free Account
             </Button>
           </Card>

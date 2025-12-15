@@ -13,6 +13,7 @@
     "react": "^19.2.0",
     "react-custom-scroll": "^7.0.0",
     "react-dom": "^19.2.0",
+    "react-icons": "^5.5.0",
     "react-router-dom": "^7.10.1",
     "react-wavify": "^1.11.1"
   },

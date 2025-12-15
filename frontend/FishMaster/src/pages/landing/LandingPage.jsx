@@ -121,23 +121,66 @@ function LandingPage() {
                 <span className="step-number">1</span>
                 <h3>Create Your Account</h3>
                 <p>Sign up in seconds and verify your email to get started.</p>
+                <Wave
+          fill="#1277b0"
+          paused={false}
+          options={{
+            height: -11,
+            amplitude: 30,
+            speed: 0.15,
+            points: 5
+          }}
+        />
               </div>
               <div className="step-item">
                 <span className="step-number">2</span>
                 <h3>Set Up Your Tanks</h3>
                 <p>Add your aquariums with size, type, and equipment details.</p>
+                <Wave
+          fill="#1277b0"
+          paused={false}
+          options={{
+            height: -11,
+            amplitude: 30,
+            speed: 0.15,
+            points: 5
+          }}
+        />
               </div>
               <div className="step-item">
                 <span className="step-number">3</span>
+                
                 <h3>Add Your Fish</h3>
                 <p>Create profiles for each fish with species and care requirements.</p>
+                <Wave
+          fill="#1277b0"
+          paused={false}
+          options={{
+            height: -11,
+            amplitude: 30,
+            speed: 0.15,
+            points: 5
+          }}
+        />
               </div>
               <div className="step-item">
                 <span className="step-number">4</span>
                 <h3>Start Tracking!</h3>
                 <p>Log water parameters, set reminders, and watch your fish thrive.</p>
+                <Wave
+          fill="#1277b0"
+          paused={false}
+          options={{
+            height: -11,
+            amplitude: 30,
+            speed: 0.15,
+            points: 5
+          }}
+        />
               </div>
+              
             </div>
+       
           </Card>
         </section>
 

@@ -1,6 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Wave from 'react-wavify';
+// 1. Import the specific icons you want to use
+import { FaWater, FaFishFins, FaRegBell, FaChartLine, FaRocket } from "react-icons/fa6"; 
+
 import Button from '../../components/common/button/button.jsx';
 import Card from '../../components/common/card/card.jsx';
 import FishLogo from '../../assets/images/Fishlogo.svg';
@@ -20,7 +23,8 @@ const WaveBackground = ({ className }) => (
 /** Reusable feature item */
 const FeatureItem = ({ icon, title, description }) => (
   <div className="feature-item">
-    <span className="feature-icon">{icon}</span>
+    {/* 2. Added a wrapper class for consistent icon sizing/color */}
+    <span className="feature-icon icon-glow">{icon}</span>
     <h3>{title}</h3>
     <p>{description}</p>
   </div>
@@ -38,6 +42,9 @@ const StepItem = ({ number, title, description }) => (
 
 function LandingPage() {
   const navigate = useNavigate();
+
+  // Helper to standardise icon style
+  const iconStyle = { fontSize: '2.5rem', color: '#1277b0' };
 
   return (
     <>
@@ -88,10 +95,27 @@ function LandingPage() {
           <Card className="info-card">
             <h2 className="section-title">✨ Key Features</h2>
             <div className="features-grid">
-              <FeatureItem icon="💧" title="Water Monitoring" description="Track pH, temperature, ammonia, nitrites, and more with smart alerts." />
-              <FeatureItem icon="🐟" title="Fish Profiles" description="Keep detailed records of each fish with health history and care notes." />
-              <FeatureItem icon="⏰" title="Smart Reminders" description="Never miss a feeding, water change, or maintenance task again." />
-              <FeatureItem icon="📊" title="Analytics" description="Visualize trends and patterns to optimize your aquarium care routine." />
+              {/* 3. Replaced Emojis with React Components */}
+              <FeatureItem 
+                icon={<FaWater style={iconStyle} />} 
+                title="Water Monitoring" 
+                description="Track pH, temperature, ammonia, nitrites, and more with smart alerts." 
+              />
+              <FeatureItem 
+                icon={<FaFishFins style={iconStyle} />} 
+                title="Fish Profiles" 
+                description="Keep detailed records of each fish with health history and care notes." 
+              />
+              <FeatureItem 
+                icon={<FaRegBell style={iconStyle} />} 
+                title="Smart Reminders" 
+                description="Never miss a feeding, water change, or maintenance task again." 
+              />
+              <FeatureItem 
+                icon={<FaChartLine style={iconStyle} />} 
+                title="Analytics" 
+                description="Visualize trends and patterns to optimize your aquarium care routine." 
+              />
             </div>
           </Card>
         </section>
@@ -99,7 +123,11 @@ function LandingPage() {
         {/* HOW IT WORKS */}
         <section id="how-it-works">
           <Card className="info-card">
-            <h2 className="section-title">🚀 How It Works</h2>
+            <h2 className="section-title">
+                {/* Optional: Add a rocket icon here for extra flair */}
+                <FaRocket style={{ color: '#ff6b6b', marginRight: '10px' }} /> 
+                How It Works
+            </h2>
             <div className="steps-container">
               <StepItem number="1" title="Create Your Account" description="Sign up in seconds and verify your email to get started." />
               <StepItem number="2" title="Set Up Your Tanks" description="Add your aquariums with size, type, and equipment details." />

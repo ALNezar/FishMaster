@@ -3,6 +3,14 @@ import { getCurrentUser } from '../../services/api.js';
 import Card from '../../components/common/card/card.jsx';
 import styles from './Dashboard.module.scss';
 import { FaFish, FaTemperatureHigh, FaBell, FaUtensils, FaPlus, FaCheck, FaExclamationTriangle } from 'react-icons/fa';
+import SplitText from "./SplitText.jsx";
+
+
+const handleAnimationComplete = () => {
+
+  console.log('All letters have animated!');
+
+};
 
 /**
  * Dashboard - Main app view
@@ -19,7 +27,34 @@ function Dashboard() {
     <div className={styles.dashboardContainer}>
       <header className={styles.header}>
         <div className={styles.welcomeText}>
-          <h1>Hello, {user?.name || 'Fishkeeper'}! 🐠</h1>
+          <h1>
+
+            <SplitText
+
+              text={`Hello, ${user?.name || 'Fishkeeper'}`}
+
+
+              delay={100}
+
+              duration={0.6}
+
+              ease="power3.out"
+
+              splitType="chars"
+
+              from={{ opacity: 0, y: 40 }}
+
+              to={{ opacity: 1, y: 0 }}
+
+              threshold={0.1}
+
+              rootMargin="-100px"
+
+              textAlign="center"
+
+              onLetterAnimationComplete={handleAnimationComplete}
+
+            /> </h1>
           <p>Here's what's happening in your aquariums today.</p>
         </div>
         <button className={styles.addTankBtn}>

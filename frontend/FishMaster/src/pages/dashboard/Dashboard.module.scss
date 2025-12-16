@@ -1,162 +1,306 @@
 @import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
 
-.waveBackground {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-  overflow: hidden;
+// Colors
+$primary: #1277b0;
+$primary-dark: #0e5a85;
+$bg-cream: #f5f1e3;
+$text-dark: #3d3021;
+$text-light: #666;
+$success: #16a34a;
+$warning: #ca8a04;
+$danger: #dc2626;
 
-  > div {
-    position: absolute;
-    width: 100%;
-    height: 600px;
-    bottom: 0;
-    left: 0;
-    opacity: 0.4;
+.dashboardContainer {
+  font-family: 'DM Sans', sans-serif;
+  
+  h1, h2, h3 {
+    font-family: 'Special Elite', cursive;
+    color: $text-dark;
   }
-}
-
-.container {
-  min-height: 100vh;
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-size: 24px;
-  color: #2c1810;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  background: rgba(245, 239, 211, 0.95);
-  border-radius: 12px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
+  align-items: flex-end;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 
-.logo {
-  font-family: 'Special Elite', cursive;
-  font-size: 28px;
-  color: #2c1810;
-  margin: 0;
-}
-
-.userInfo {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-
-  span {
-    color: #2c1810;
-    font-weight: 500;
+  .welcomeText {
+    h1 {
+      font-size: 2rem;
+      margin: 0 0 0.5rem 0;
+    }
+    p {
+      color: $text-light;
+      margin: 0;
+    }
   }
 }
 
-.logoutBtn {
-  background: none;
-  border: 2px solid #dc2626;
-  color: #dc2626;
-  padding: 8px 16px;
-  border-radius: 8px;
+.addTankBtn {
+  background: $primary;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-family: 'Special Elite', cursive;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px rgba($primary, 0.2);
 
   &:hover {
-    background: #dc2626;
-    color: white;
+    background: $primary-dark;
+    transform: translateY(-2px);
   }
 }
 
-.main {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.5rem;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
 }
 
-.welcomeCard {
-  padding: 40px;
-  background: #f5efd3;
+.card {
+  background: white;
   border-radius: 16px;
-  text-align: center;
+  border: 2px solid $text-dark;
+  padding: 1.5rem;
+  box-shadow: 4px 4px 0 rgba($text-dark, 0.1);
+  transition: transform 0.2s;
+}
 
-  h2 {
-    font-family: 'Special Elite', cursive;
-    font-size: 28px;
-    color: #2c1810;
-    margin: 0 0 12px 0;
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+
+  h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.25rem;
+  }
+}
+
+// Specific Card Layouts
+.statusCard {
+  grid-column: span 8;
+  
+  @media (max-width: 1024px) {
+    grid-column: span 12;
+  }
+  @media (max-width: 768px) {
+    grid-column: span 1;
+  }
+}
+
+.alertCard {
+  grid-column: span 4;
+  
+  @media (max-width: 1024px) {
+    grid-column: span 12;
+  }
+}
+
+.chartCard {
+  grid-column: span 8;
+  
+  @media (max-width: 1024px) {
+    grid-column: span 12;
+  }
+}
+
+.tipCard {
+  grid-column: span 4;
+  background: #FFFBEB; // Light yellow
+  border-color: $warning;
+  
+  @media (max-width: 1024px) {
+    grid-column: span 12;
   }
 
-  > p {
-    color: #666;
-    font-size: 16px;
-    max-width: 600px;
-    margin: 0 auto 32px;
+  p {
+    font-style: italic;
+    color: $text-dark;
     line-height: 1.6;
   }
 }
 
-.welcomeIcon {
-  font-size: 64px;
-  margin-bottom: 16px;
+
+// Badges
+.badgeSuccess {
+  background: #DCFCE7;
+  color: $success;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
-.features {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
+.badgeWarning {
+  background: #FEF9C3;
+  color: $warning;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
-.featureCard {
-  background: #fffef8;
-  padding: 24px;
+// Lists
+.tankList, .alertList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tankItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: $bg-cream;
   border-radius: 12px;
-  border: 2px solid #d4c4a8;
-  text-align: center;
+  border: 1px solid rgba($text-dark, 0.1);
 
-  h4 {
-    margin: 12px 0 8px;
-    color: #2c1810;
-  }
-
-  p {
-    margin: 0;
-    font-size: 14px;
-    color: #666;
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
   }
 }
 
-.featureIcon {
-  font-size: 36px;
+.tankInfo {
+  display: flex;
+  flex-direction: column;
 }
 
-.comingSoon {
-  background: rgba(255, 255, 255, 0.8);
-  padding: 32px;
+.tankName {
+  font-weight: 700;
+  color: $text-dark;
+  font-size: 1.1rem;
+}
+
+.tankDetail {
+  font-size: 0.9rem;
+  color: $text-light;
+}
+
+.tankMetrics {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.metricLabel {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: $text-light;
+  font-weight: 600;
+}
+
+.metricValue {
+  font-family: 'Special Elite', cursive;
+  font-size: 1.25rem;
+  color: $primary;
+}
+
+// Alerts
+.alertItem {
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
   border-radius: 12px;
-  text-align: center;
-  border: 2px dashed #d4c4a8;
+  background: #FFF5F5;
+  border-left: 4px solid $danger;
 
-  p {
-    margin: 0 0 8px;
-    color: #888;
-
-    &:first-child {
-      font-size: 18px;
-      font-weight: 600;
-      color: #666;
-    }
+  &.alertInfo {
+    background: #EFF6FF;
+    border-left-color: $primary;
+    .alertIcon { color: $primary; }
   }
+}
+
+.alertIcon {
+  color: $danger;
+  font-size: 1.2rem;
+  margin-top: 2px;
+}
+
+.actionBtn {
+  margin-left: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: $success;
+  
+  &:hover {
+    background: #f0fdf4;
+    border-color: $success;
+  }
+}
+
+// Chart Placeholder
+.chartPlaceholder {
+  height: 200px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 1rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  position: relative;
+  border: 1px dashed #cbd5e1;
+}
+
+.chartBar {
+  width: 8%;
+  background: rgba($primary, 0.6);
+  border-radius: 4px 4px 0 0;
+  transition: height 1s ease;
+  
+  &:hover {
+    background: $primary;
+  }
+}
+
+.chartLabel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #94a3b8;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.timeSelect {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-family: 'DM Sans', sans-serif;
 }

@@ -1,77 +1,172 @@
-/* Import a retro/slab font to match the image style */
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Merriweather:wght@400;700&display=swap');
 
-// Variables for easy tweaking
-$bg-color: #fcf8e8; // Creamy beige background
-$text-color: #5d5d5d; // Dark grey text
-$active-bg: #ffffff; // White background for active item
-$active-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-$font-family: 'Merriweather', 'Courier Prime', serif; 
-$hover-color: #f0ebd8;
-
-.fishmaster-navbar {
-  width: 260px;
-  background-color: $bg-color;
-  padding: 2rem 1rem;
-  height: 100%; // Adjust based on your layout needs
-  min-height: 100vh;
-  box-sizing: border-box;
-  font-family: $font-family;
-  border-right: 1px solid rgba(0,0,0,0.02); // Subtle separation
-
-  .nav-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 12px; // Spacing between items
-  }
-
-  .nav-item {
-    display: flex;
-    align-items: center;
-    padding: 12px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    color: $text-color;
-    font-size: 0.95rem;
-    font-weight: 500;
-
-    // Icon spacing
-    .icon-wrapper {
-      margin-right: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-    }
-
-    // Hover State
-    &:hover {
-      background-color: $hover-color;
-    }
-
-    // Active State (matches the "Dashboard" look in image)
-    &.active {
-      background-color: $active-bg;
-      box-shadow: $active-shadow;
-      font-weight: 700; // Slightly bolder text for active
-      
-      // Use the specific orange/home color for the active icon if desired
-      .icon-wrapper {
-        color: #d97757; 
-      }
-    }
-  }
+/* Menu Toggle Button */
+.navbar__menu-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 3001;
+  background: #f5f1e3;
+  border: 2px solid #3d3021;
+  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-// Custom Colors for specific icons to match the screenshot vibe
-.icon-blue { color: #5B9BD5; }
-.icon-green { color: #70AD47; }
-.icon-yellow { color: #FFC000; }
-.icon-blue-light { color: #9DC3E6; }
-.icon-brown { color: #9E480E; }
-.icon-dark { color: #2E4053; }
-.icon-peach { color: #ED7D31; }
+.navbar__menu-btn:hover {
+  background: #CCC20C;
+  transform: scale(1.05);
+}
+
+/* Overlay */
+.navbar__overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.2);
+  z-index: 2999;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Sidebar */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 240px;
+  background: #f5f1e3;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
+}
+
+.navbar--open {
+  transform: translateX(0);
+}
+
+/* Header */
+.navbar__header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #3d3021;
+}
+
+.navbar__title {
+  font-family: 'Special Elite', cursive;
+  font-size: 18px;
+  font-weight: 700;
+  color: #3d3021;
+  margin: 0;
+  text-align: center;
+}
+
+/* Navigation Items */
+.navbar__items {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.navbar__items::-webkit-scrollbar {
+  width: 4px;
+}
+
+.navbar__items::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.navbar__items::-webkit-scrollbar-thumb {
+  background: #3d3021;
+  border-radius: 2px;
+}
+
+.navbar__item {
+  font-family: 'Special Elite', cursive;
+  font-size: 14px;
+  padding: 10px 12px;
+  background: #fff;
+  color: #3d3021;
+  font-weight: 500;
+  cursor: pointer;
+  border: 2px solid #3d3021;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+.navbar__item:hover {
+  background: #CCC20C;
+  transform: translateX(4px);
+}
+
+.navbar__item--active {
+  background: #CCC20C;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.navbar__item-icon {
+  flex-shrink: 0;
+}
+
+.navbar__item-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Footer */
+.navbar__footer {
+  padding-top: 16px;
+  border-top: 2px solid #3d3021;
+}
+
+.navbar__user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 2px solid #3d3021;
+  border-radius: 12px;
+  font-family: 'Special Elite', cursive;
+  font-size: 14px;
+  color: #3d3021;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.navbar__user:hover {
+  background: #CCC20C;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar {
+    width: 280px;
+  }
+}

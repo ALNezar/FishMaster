@@ -1,0 +1,40 @@
+.layout {
+  min-height: 100vh;
+  position: relative;
+  background-color: #faf9f6; /* Warm off-white background */
+  overflow-x: hidden;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: 'Special Elite', cursive;
+  font-size: 1.5rem;
+  color: #1277b0;
+}
+
+.waveBackground {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 200px;
+  z-index: 0;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  padding: 80px 20px 40px; /* Top padding for the fixed menu button */
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+  
+  @media (min-width: 768px) {
+    padding: 40px 40px 40px 100px; /* Left padding in case user wants menu always visible in future, for now mostly centered but shifted slightly */
+  }
+}

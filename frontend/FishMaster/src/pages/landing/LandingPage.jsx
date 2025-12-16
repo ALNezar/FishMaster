@@ -136,8 +136,10 @@ function LandingPage() {
           </h2>
           <p className="section-text">
             Have questions, suggestions, or just want to say hi?
-            <p>I'm the one-person team behind Fishmaster, and I’d love to hear from you :D !</p>
+            <p>I'm the one-person team behind Fishmaster. </p>
+            <p> I’d love to hear from you :D !</p>
           </p>
+
 
           <div className="contact-info">
             <p className="section-text">
@@ -149,7 +151,7 @@ function LandingPage() {
             <p className="section-text">
               <strong>Follow me:</strong>
               <a href="https://twitter.com/fishmaster" target="_blank" rel="noopener noreferrer">Twitter</a> |
-              <a href="https://instagram.com/fishmaster" target="_blank" rel="noopener noreferrer">Instagram</a>
+              <a href="https://instagram.com/AlNezaree" target="_blank" rel="noopener noreferrer">Instagram</a>
             </p>
           </div>
 

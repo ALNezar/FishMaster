@@ -9,17 +9,13 @@ import VerifyEmailPage from './pages/auth/VerifyEmailPage.jsx';
 import LoginPage from './pages/auth/LoginPage.jsx';
 import OnboardingFlow from './pages/onboarding/OnboardingFlow.jsx';
 import Dashboard from './pages/dashboard/Dashboard.jsx';
+import PlaceholderPage from './pages/PlaceholderPage.jsx';
+
+// Layouts
+import DashboardLayout from './components/layout/DashboardLayout.jsx';
 
 /**
  * Main App component with routing.
- * 
- * Routes:
- * - / : Landing page
- * - /signup : User registration
- * - /verify : Email verification
- * - /login : User login
- * - /onboarding : 10-step onboarding wizard
- * - /dashboard : Main app after onboarding
  */
 function App() {
   return (
@@ -29,7 +25,18 @@ function App() {
       <Route path="/verify" element={<VerifyEmailPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/onboarding" element={<OnboardingFlow />} />
-      <Route path="/dashboard" element={<Dashboard />} />
+
+      {/* Authenticated Dashboard Routes */}
+      <Route element={<DashboardLayout />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/tanks" element={<PlaceholderPage title="My Tanks" />} />
+        <Route path="/analytics" element={<PlaceholderPage title="Data & Trends" />} />
+        <Route path="/alerts" element={<PlaceholderPage title="Alert Rules" />} />
+        <Route path="/notifications" element={<PlaceholderPage title="Notifications" />} />
+        <Route path="/education" element={<PlaceholderPage title="Learn & Care" />} />
+        <Route path="/device" element={<PlaceholderPage title="Device Setup" />} />
+        <Route path="/settings" element={<PlaceholderPage title="Profile & Settings" />} />
+      </Route>
     </Routes>
   );
 }

@@ -1,117 +1,123 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getCurrentUser, logout, isAuthenticated } from '../../services/api.js';
-import Button from '../../components/common/button/button.jsx';
+import { getCurrentUser } from '../../services/api.js';
 import Card from '../../components/common/card/card.jsx';
-import Wave from 'react-wavify';
 import styles from './Dashboard.module.scss';
+import { FaFish, FaTemperatureHigh, FaBell, FaUtensils, FaPlus, FaCheck, FaExclamationTriangle } from 'react-icons/fa';
 
 /**
- * Dashboard - Main app view after onboarding
- * Shows tank status and monitoring overview
+ * Dashboard - Main app view
  */
 function Dashboard() {
-  const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadUser = async () => {
-      if (!isAuthenticated()) {
-        navigate('/login');
-        return;
-      }
-
-      try {
-        const userData = await getCurrentUser();
-        setUser(userData);
-      } catch (err) {
-        console.error('Failed to load user:', err);
-        // Token might be invalid
-        logout();
-        navigate('/login');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadUser();
-  }, [navigate]);
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
-
-  if (loading) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.loading}>Loading...</div>
-      </div>
-    );
-  }
+    // Layout handles auth check, we just load user data for display
+    getCurrentUser().then(setUser).catch(() => { });
+  }, []);
 
   return (
-    <>
-      {/* Wave Background */}
-      <div className={styles.waveBackground}>
-        <Wave
-          fill="#1277b0"
-          paused={false}
-          options={{
-            height: -11,
-            amplitude: 30,
-            speed: 0.15,
-            points: 5
-          }}
-        />
-      </div>
+    <div className={styles.dashboardContainer}>
+      <header className={styles.header}>
+        <div className={styles.welcomeText}>
+          <h1>Hello, {user?.name || 'Fishkeeper'}! 🐠</h1>
+          <p>Here's what's happening in your aquariums today.</p>
+        </div>
+        <button className={styles.addTankBtn}>
+          <FaPlus /> Add New Tank
+        </button>
+      </header>
 
-      <div className={styles.container}>
-        <header className={styles.header}>
-          <h1 className={styles.logo}>🐠 FishMaster</h1>
-          <div className={styles.userInfo}>
-            <span>Welcome, {user?.name || 'User'}!</span>
-            <button onClick={handleLogout} className={styles.logoutBtn}>
-              Logout
-            </button>
+      {/* Main Stats Grid */}
+      <div className={styles.grid}>
+
+        {/* Tank Status Card */}
+        <Card className={`${styles.card} ${styles.statusCard}`}>
+          <div className={styles.cardHeader}>
+            <h3><FaFish /> Tank Status</h3>
+            <span className={styles.badgeSuccess}>All Optimal</span>
           </div>
-        </header>
-
-        <main className={styles.main}>
-          <Card className={styles.welcomeCard}>
-            <div className={styles.welcomeIcon}>🎉</div>
-            <h2>Welcome to Your Dashboard!</h2>
-            <p>
-              Your FishMaster setup is complete. This is where you'll monitor your tanks,
-              view water parameters, and manage feeding schedules.
-            </p>
-            <div className={styles.features}>
-              <div className={styles.featureCard}>
-                <span className={styles.featureIcon}>🌡️</span>
-                <h4>Real-time Monitoring</h4>
-                <p>Track pH, temperature, and water quality</p>
+          <div className={styles.tankList}>
+            <div className={styles.tankItem}>
+              <div className={styles.tankInfo}>
+                <span className={styles.tankName}>{user?.tanks?.[0]?.name || 'Community Tank'}</span>
+                <span className={styles.tankDetail}>200L • 12 Fish</span>
               </div>
-              <div className={styles.featureCard}>
-                <span className={styles.featureIcon}>🔔</span>
-                <h4>Smart Alerts</h4>
-                <p>Get notified when conditions need attention</p>
-              </div>
-              <div className={styles.featureCard}>
-                <span className={styles.featureIcon}>🍽️</span>
-                <h4>Conditional Feeding</h4>
-                <p>Automated feeding based on water quality</p>
+              <div className={styles.tankMetrics}>
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>pH</span>
+                  <span className={styles.metricValue}>7.0</span>
+                </div>
+                <div className={styles.metric}>
+                  <span className={styles.metricLabel}>Temp</span>
+                  <span className={styles.metricValue}>25.5°C</span>
+                </div>
               </div>
             </div>
-          </Card>
-
-          <div className={styles.comingSoon}>
-            <p>🚧 Full dashboard features coming soon!</p>
-            <p>Connect your ESP32 device to start real-time monitoring.</p>
+            {/* Placeholder for more tanks */}
+            {!user?.tanks?.length && (
+              <div className={styles.emptyState}>
+                <p>No real tanks connected yet.</p>
+              </div>
+            )}
           </div>
-        </main>
+        </Card>
+
+        {/* Action Required / Alerts */}
+        <Card className={`${styles.card} ${styles.alertCard}`}>
+          <div className={styles.cardHeader}>
+            <h3><FaBell /> Alerts</h3>
+            <span className={styles.badgeWarning}>1 Notice</span>
+          </div>
+          <ul className={styles.alertList}>
+            <li className={styles.alertItem}>
+              <FaUtensils className={styles.alertIcon} />
+              <div>
+                <strong>Feeding Reminder</strong>
+                <p>Time to feed the Goldfish!</p>
+              </div>
+              <button className={styles.actionBtn}><FaCheck /></button>
+            </li>
+            <li className={`${styles.alertItem} ${styles.alertInfo}`}>
+              <FaExclamationTriangle className={styles.alertIcon} />
+              <div>
+                <strong>Filter Maintenance</strong>
+                <p>Due in 3 days.</p>
+              </div>
+            </li>
+          </ul>
+        </Card>
+
+        {/* Water Quality Overview */}
+        <Card className={`${styles.card} ${styles.chartCard}`}>
+          <div className={styles.cardHeader}>
+            <h3><FaTemperatureHigh /> Water Quality Trends</h3>
+            <select className={styles.timeSelect}>
+              <option>Last 24 Hours</option>
+              <option>Last Week</option>
+            </select>
+          </div>
+          <div className={styles.chartPlaceholder}>
+            {/* Placeholder for a chart library like Recharts */}
+            <div className={styles.chartBar} style={{ height: '60%' }}></div>
+            <div className={styles.chartBar} style={{ height: '70%' }}></div>
+            <div className={styles.chartBar} style={{ height: '50%' }}></div>
+            <div className={styles.chartBar} style={{ height: '80%' }}></div>
+            <div className={styles.chartBar} style={{ height: '65%' }}></div>
+            <div className={styles.chartBar} style={{ height: '75%' }}></div>
+            <div className={styles.chartBar} style={{ height: '70%' }}></div>
+            <p className={styles.chartLabel}>Temperature Stability</p>
+          </div>
+        </Card>
+
+        {/* Quick Tips */}
+        <Card className={`${styles.card} ${styles.tipCard}`}>
+          <h3>💡 Daily Tip</h3>
+          <p>
+            "Consistency is key! Fish adapt better to stable parameters than perfectly ideal ones that fluctuate wildly."
+          </p>
+        </Card>
       </div>
-    </>
+    </div>
   );
 }
 

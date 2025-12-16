@@ -1,49 +1,82 @@
-import React, { useState } from 'react';
-import '../nav/NavBar.scss';
-import { 
-  FaHome, 
-  FaFish, 
-  FaChartBar, 
-  FaBell, 
-  FaEnvelope, 
-  FaBook, 
-  FaMicrochip, 
-  FaUser 
-} from 'react-icons/fa';
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import {
+  MdDashboard,
+  MdWaterDrop,
+  MdTrendingUp,
+  MdNotifications,
+  MdWarning,
+  MdMenuBook,
+  MdSettings,
+  MdPerson,
+  MdLogout,
+  MdMenu,
+  MdClose
+} from 'react-icons/md';
+import { logout } from '../../../services/api';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import './NavBar.scss';
 
-const NavBar = () => {
-  // State to track the active menu item. Default is 'Dashboard' based on image.
-  const [activeItem, setActiveItem] = useState('Dashboard');
+const sections = [
+  { path: '/dashboard', label: 'Dashboard', icon: MdDashboard },
+  { path: '/tanks', label: 'My Tanks', icon: MdWaterDrop },
+  { path: '/analytics', label: 'Data & Trends', icon: MdTrendingUp },
+  { path: '/alerts', label: 'Alert Rules', icon: MdWarning },
+  { path: '/notifications', label: 'Notifications', icon: MdNotifications },
+  { path: '/education', label: 'Learn & Care', icon: MdMenuBook },
+  { path: '/device', label: 'Device Setup', icon: MdSettings },
+  { path: '/settings', label: 'Profile & Settings', icon: MdPerson },
+];
 
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: <FaHome /> },
-    { id: 'tanks', label: 'My Tanks', icon: <FaFish className="icon-blue" /> },
-    { id: 'trends', label: 'Data & Trends', icon: <FaChartBar className="icon-green" /> },
-    { id: 'alerts', label: 'Alert Rules', icon: <FaBell className="icon-yellow" /> },
-    { id: 'notifications', label: 'Notifications', icon: <FaEnvelope className="icon-blue-light" /> },
-    { id: 'learn', label: 'Learn & Care', icon: <FaBook className="icon-brown" /> },
-    { id: 'device', label: 'Device Setup', icon: <FaMicrochip className="icon-dark" /> },
-    { id: 'profile', label: 'Profile & Settings', icon: <FaUser className="icon-peach" /> },
-  ];
+export default function NavBar() {
+  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const toggleMenu = () => setIsOpen(!isOpen);
+  const closeMenu = () => setIsOpen(false);
 
   return (
-    <nav className="fishmaster-navbar">
-      <ul className="nav-list">
-        {menuItems.map((item) => (
-          <li 
-            key={item.id} 
-            className={`nav-item ${activeItem === item.label ? 'active' : ''}`}
-            onClick={() => setActiveItem(item.label)}
-          >
-            <span className="icon-wrapper">
-              {item.icon}
-            </span>
-            <span className="label">{item.label}</span>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  );
-};
+    <>
+      <button className="navbar__menu-btn" onClick={toggleMenu} aria-label="Toggle Menu">
+        {isOpen ? <MdClose size={24} /> : <MdMenu size={24} />}
+      </button>
 
-export default NavBar;
+      {isOpen && <div className="navbar__overlay" onClick={closeMenu} />}
+
+      <nav className={`navbar ${isOpen ? 'navbar--open' : ''}`}>
+        <div className="navbar__header">
+          <h2 className="navbar__title">FishMaster</h2>
+        </div>
+
+        <div className="navbar__items">
+          {sections.map(({ path, label, icon: Icon }) => (
+            <NavLink
+              key={path}
+              to={path}
+              className={({ isActive }) =>
+                `navbar__item ${isActive ? 'navbar__item--active' : ''}`
+              }
+              onClick={closeMenu}
+            >
+              <Icon size={20} className="navbar__item-icon" />
+              <span className="navbar__item-label">{label}</span>
+            </NavLink>
+          ))}
+        </div>
+
+        <div className="navbar__footer">
+          <button className="navbar__user" onClick={handleLogout}>
+            <MdLogout size={20} />
+            <span>Logout</span>
+          </button>
+        </div>
+      </nav>
+    </>
+  );
+}

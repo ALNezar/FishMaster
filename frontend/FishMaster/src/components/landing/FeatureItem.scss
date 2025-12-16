@@ -1,0 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+
+.feature-item {
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
+  padding: 25px 15px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  h3 {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.2rem;
+    color: #333;
+    margin: 10px 0;
+  }
+
+  p {
+    font-family: 'Short Stack', cursive;
+    font-size: 0.95rem;
+    color: #666;
+    line-height: 1.5;
+  }
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 5px;
+}

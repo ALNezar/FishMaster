@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+
+.step-item {
+  flex: 1;
+  min-width: 180px;
+  max-width: 220px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
+  padding: 25px 15px;
+  position: relative;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+  }
+
+  h3 {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.1rem;
+    color: #333;
+    margin: 15px 0 10px;
+  }
+
+  p {
+    font-family: 'Short Stack', cursive;
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+  }
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #d4af37 0%, #f0c848 100%);
+  color: #333;
+  font-family: 'Special Elite', cursive;
+  font-size: 1.4rem;
+  font-weight: bold;
+  border-radius: 50%;
+  box-shadow: 0 3px 0 #9d8129;
+}
+
+/* Responsive override */
+@media (max-width: 600px) {
+  .step-item {
+    max-width: 100%;
+  }
+}

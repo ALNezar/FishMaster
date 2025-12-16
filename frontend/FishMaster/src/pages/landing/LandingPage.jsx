@@ -1,44 +1,19 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import Wave from 'react-wavify';
-// 1. Import the specific icons you want to use
 import { FaWater, FaFishFins, FaRegBell, FaChartLine, FaRocket } from "react-icons/fa6"; 
 
 import Button from '../../components/common/button/button.jsx';
 import Card from '../../components/common/card/card.jsx';
+import WaveBackground from '../../components/common/wave/WaveBackground.jsx';
+import FeatureItem from '../../components/landing/FeatureItem.jsx';
+import StepItem from '../../components/landing/StepItem.jsx';
 import FishLogo from '../../assets/images/Fishlogo.svg';
 import ScrollProgress from '../../components/common/nav/ScrollProgress.jsx';
 import './LandingPage.scss';
 
-/** Reusable Wave component with default options */
-const WaveBackground = ({ className }) => (
-  <Wave
-    className={className}
-    fill="#1277b0"
-    paused={false}
-    options={{ height: -11, amplitude: 30, speed: 0.15, points: 5 }}
-  />
-);
 
-/** Reusable feature item */
-const FeatureItem = ({ icon, title, description }) => (
-  <div className="feature-item">
-    {/* 2. Added a wrapper class for consistent icon sizing/color */}
-    <span className="feature-icon icon-glow">{icon}</span>
-    <h3>{title}</h3>
-    <p>{description}</p>
-  </div>
-);
 
-/** Reusable step item */
-const StepItem = ({ number, title, description }) => (
-  <div className="step-item">
-    <span className="step-number">{number}</span>
-    <h3>{title}</h3>
-    <p>{description}</p>
-    <WaveBackground />
-  </div>
-);
+
 
 function LandingPage() {
   const navigate = useNavigate();

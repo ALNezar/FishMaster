@@ -1,0 +1,108 @@
+.contact-section {
+  padding: 60px 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.info-card {
+  width: 100%;
+  max-width: 600px;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  background-color: #f5efd3;
+
+  .section-title {
+    font-family: 'Special Elite', cursive;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    color: #0077b6;
+    justify-content: center;
+  }
+
+  .section-text {
+    font-size: 1rem;
+    color: #333333;
+    line-height: 1.6;
+    margin-bottom: 15px;
+
+    a {
+      color: #0077b6;
+      text-decoration: none;
+      transition: color 0.2s;
+
+      &:hover {
+        color: #023e8a;
+      }
+    }
+  }
+
+  .contact-info {
+    margin-bottom: 30px;
+  }
+
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    .form-input,
+    .form-textarea {
+      width: 89%;
+      padding: 12px 15px;
+      border: 1px solid #cccccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+
+      &:focus {
+        border-color: #0077b6;
+        box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.2);
+        outline: none;
+      }
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .submit-button {
+      align-self: flex-start;
+      padding: 12px 25px;
+      background-color: #0077b6;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+
+      &:hover {
+        background-color: #023e8a;
+        transform: translateY(-2px);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+}
+
+// Responsive tweaks
+@media (max-width: 650px) {
+  .info-card {
+    padding: 30px 20px;
+  }
+
+  .section-title {
+    font-size: 1.7rem;
+  }
+
+  .section-text {
+    font-size: 0.95rem;
+  }
+}

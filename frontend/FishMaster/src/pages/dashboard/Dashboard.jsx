@@ -57,9 +57,7 @@ function Dashboard() {
             /> </h1>
           <p>Here's what's happening in your aquariums today.</p>
         </div>
-        <button className={styles.addTankBtn}>
-          <FaPlus /> Add New Tank
-        </button>
+
       </header>
 
       {/* Main Stats Grid */}
@@ -95,6 +93,9 @@ function Dashboard() {
               </div>
             )}
           </div>
+          <button className={styles.addTankBtn}>
+            <FaPlus /> Add New Tank
+          </button>
         </Card>
 
         {/* Action Required / Alerts */}

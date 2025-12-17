@@ -2,10 +2,37 @@
 <html lang="en">
 
 <head>
-  <link rel="icon" href="./public/FishMaterAppLogo.ico" />
+  <!-- Basic Meta -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FishMaster</title>
+  <title>FishMaster - Smart Aquarium Monitoring</title>
+  <meta name="description"
+    content="FishMaster: Smart aquarium monitoring dashboard. Track water quality, fish health, and more." />
+
+
+  <!-- Open Graph / Social Sharing -->
+  <meta property="og:title" content="FishMaster - Smart Aquarium Monitoring" />
+  <meta property="og:description"
+    content="Monitor your aquarium with FishMaster: real-time data on water quality, fish health, and analytics." />
+  <meta property="og:image" content="/assets/Fishlogo.svg" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://yourdomain.com" />
+
+  <link rel="icon" href="/public/FishMaterAppLogo.ico" type="image/x-icon" />
+
+  <link rel="preload" as="image" href="/assets/Fishlogo.svg" />
+  <link rel="preload" as="font" href="/assets/fonts/SpecialElite.woff2" type="font/woff2" crossorigin="anonymous" />
+
+  <style>
+    @font-face {
+      font-family: 'Special Elite';
+      src: url('/assets/fonts/SpecialElite.woff2') format('woff2'),
+        url('/assets/fonts/SpecialElite.woff') format('woff');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+  </style>
 </head>
 
 <body>

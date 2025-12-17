@@ -12,6 +12,10 @@ import Dashboard from './pages/dashboard/Dashboard.jsx';
 import PlaceholderPage from './pages/PlaceholderPage.jsx';
 
 // Layouts
+import MyTanksPage from './pages/tanks/MyTanksPage.jsx';
+import TankDetailsPage from './pages/tanks/TankDetailsPage.jsx';
+
+// Layouts
 import DashboardLayout from './components/layout/DashboardLayout.jsx';
 
 /**
@@ -29,7 +33,8 @@ function App() {
       {/* Authenticated Dashboard Routes */}
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/tanks" element={<PlaceholderPage title="My Tanks" />} />
+        <Route path="/tanks" element={<MyTanksPage />} />
+        <Route path="/tanks/:id" element={<TankDetailsPage />} />
         <Route path="/analytics" element={<PlaceholderPage title="Data & Trends" />} />
         <Route path="/alerts" element={<PlaceholderPage title="Alert Rules" />} />
         <Route path="/notifications" element={<PlaceholderPage title="Notifications" />} />

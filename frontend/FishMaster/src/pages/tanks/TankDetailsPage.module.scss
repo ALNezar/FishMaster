@@ -1,0 +1,155 @@
+
+
+.pageContainer {
+  padding: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  margin-bottom: 20px;
+  font-size: 1rem;
+  padding: 0;
+  
+  &:hover {
+    color: #333;
+    text-decoration: underline;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+
+  h1 {
+    font-family: 'Special Elite', cursive;
+    margin: 0;
+    color: #333;
+  }
+}
+
+.hidden {
+  display: none;
+}
+
+.editCard {
+  background: #fff;
+  padding: 20px;
+  margin-bottom: 30px;
+  border-left: 5px solid #d4af37;
+
+  form {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+  }
+
+  .formGroup {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+
+    label {
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.statusCard {
+  background: linear-gradient(135deg, #eef7fb 0%, #e0f2f7 100%);
+  
+  .statusItems {
+    display: flex;
+    gap: 30px;
+  }
+
+  .statusItem {
+    display: flex;
+    flex-direction: column;
+    
+    span {
+      color: #666;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+    }
+
+    strong {
+      font-size: 2rem;
+      color: #0b3a4b;
+      font-family: 'Special Elite', cursive;
+    }
+  }
+}
+
+.fishList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.fishItem {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.fishIcon {
+  font-size: 1.5rem;
+  background: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fishDetails {
+  display: flex;
+  flex-direction: column;
+
+  strong {
+    color: #333;
+  }
+
+  small {
+    color: #888;
+  }
+}
+
+.emptyText {
+  color: #999;
+  font-style: italic;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 50px;
+  font-size: 1.2rem;
+  color: #666;
+}

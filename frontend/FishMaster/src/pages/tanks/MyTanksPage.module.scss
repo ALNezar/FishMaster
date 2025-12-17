@@ -1,0 +1,338 @@
+
+
+/* Page Layout */
+.pageWrapper {
+  min-height: 100vh;
+  position: relative;
+  background-color: #fcfcfc;
+}
+
+.headerWave {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  z-index: 0;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.pageContainer {
+  position: relative;
+  z-index: 1;
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header Section */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 50px;
+  border-bottom: 2px solid #eef7fb;
+  padding-bottom: 20px;
+
+  h1 {
+    font-family: 'Special Elite', cursive;
+    color: #0b3a4b;
+    font-size: 3rem;
+    margin: 0 0 5px 0;
+    text-shadow: 2px 2px 0px rgba(0,0,0,0.05);
+  }
+
+  .subtitle {
+    margin: 0;
+    color: #666;
+    font-family: 'Short Stack', cursive;
+    font-size: 1.1rem;
+  }
+}
+
+.addBtn {
+  box-shadow: 0 4px 0 #9d8129;
+  &:active {
+    box-shadow: 0 2px 0 #9d8129;
+  }
+}
+
+/* Add Tank Form - Drawer Style */
+.addFormContainer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), margin-bottom 0.4s;
+  margin-bottom: 0;
+
+  &.open {
+    max-height: 400px;
+    margin-bottom: 50px;
+  }
+}
+
+.formContent {
+  background: #fff;
+  padding: 30px;
+  border-radius: 16px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  max-width: 600px;
+  margin: 0 auto;
+  border-top: 4px solid #d4af37;
+
+  h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-family: 'Special Elite', cursive;
+    color: #333;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .formGroup {
+    display: flex;
+    flex-direction: column;
+    
+    label {
+      font-weight: bold;
+      color: #555;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input {
+      padding: 12px 15px;
+      border: 2px solid #eee;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+      font-family: inherit;
+
+      &:focus {
+        outline: none;
+        border-color: #d4af37;
+      }
+    }
+  }
+
+  .createBtn {
+    align-self: flex-start;
+    margin-top: 10px;
+  }
+}
+
+/* Tank Grid */
+.tankGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+/* Tank Card */
+.tankCard {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  border: 1px solid rgba(0,0,0,0.03);
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+
+    .viewLabel {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .cardImage {
+      transform: scale(1.05);
+    }
+    
+    .deleteBtn {
+        opacity: 0.8;
+    }
+  }
+}
+
+.cardImage {
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  transition: transform 0.5s ease;
+}
+
+.imageOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s;
+
+  .tankCard:hover & {
+    background: rgba(0,0,0,0.4);
+  }
+}
+
+.viewLabel {
+  color: #fff;
+  border: 2px solid #fff;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s;
+}
+
+.cardContent {
+  padding: 20px;
+  background: #fff;
+  position: relative; /* ensure context above image transform */
+  z-index: 2; 
+}
+
+.tankName {
+  margin: 0 0 10px 0;
+  font-family: 'Special Elite', cursive;
+  font-size: 1.4rem;
+  color: #333;
+}
+
+.tankMeta {
+  display: flex;
+  gap: 15px;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 15px;
+  
+  span {
+    background: #f5f5f5;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+}
+
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  background-color: #4caf50;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1);
+}
+
+.deleteBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0; /* hidden by default */
+  transition: all 0.2s;
+  z-index: 10;
+
+  &:hover {
+    background: #f44336;
+    transform: scale(1.1);
+    opacity: 1 !important;
+  }
+}
+
+/* Loading & Empty States */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: #0b3a4b;
+  font-family: 'Special Elite', cursive;
+}
+
+.loader {
+  font-size: 4rem;
+  animation: swim 2s ease-in-out infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes swim {
+  0%, 100% { transform: translateX(-10px) rotate(-5deg); }
+  50% { transform: translateX(10px) rotate(5deg); }
+}
+
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 80px 20px;
+  background: #fff;
+  border-radius: 20px;
+  border: 2px dashed #e0e0e0;
+  
+  .emptyIcon {
+    font-size: 5rem;
+    margin-bottom: 20px;
+  }
+
+  h3 {
+    font-size: 1.8rem;
+    font-family: 'Special Elite', cursive;
+    color: #333;
+    margin: 0 0 10px 0;
+  }
+
+  p {
+    color: #777;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+  }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    
+    h1 { font-size: 2.2rem; }
+  }
+  
+  .tankGrid {
+    grid-template-columns: 1fr;
+  }
+}

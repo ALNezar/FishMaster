@@ -5,11 +5,6 @@ import styles from './Dashboard.module.scss';
 import { FaFish, FaTemperatureHigh, FaBell, FaUtensils, FaPlus, FaCheck, FaExclamationTriangle } from 'react-icons/fa';
 import Header from "./header.jsx";
 
-const handleAnimationComplete = () => {
-
-  console.log('All letters have animated!');
-
-};
 
 /**
  * Dashboard - Main app view

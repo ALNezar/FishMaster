@@ -1,3 +1,23 @@
+@font-face {
+  font-family: 'Special Elite';
+  src: url('../../assets/fonts/SpecialElite-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+.logoWrapper {
+  width: 200px;
+  height: 200px;
+  position: relative; 
+  display: flex;           
+  justify-content: center; 
+  align-items: center;     
+  overflow: visible; 
+  shadow-color: #2c3e50;
+  shadow-radius: 10px;
+  
+}
+
+
 .header {
   display: flex;
   align-items: flex-end;
@@ -21,13 +41,15 @@
   }
   
   .clock {
+    font-family: 'Special Elite', monospace, sans-serif;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     font-size: 1.5rem;
     font-weight: bold;
-    background: rgb(0, 195, 255);
+    color: #2c3e50;
+    background: rgb(240, 244, 245);
     padding: 0.75rem 1.5rem;
     border-radius: 12px;
     box-shadow: 

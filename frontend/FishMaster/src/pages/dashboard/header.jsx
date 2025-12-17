@@ -1,6 +1,8 @@
+import fishLogo from "../../assets/images/blackandredfish.svg";
 import { useEffect, useState } from 'react';
-import SplitText from "./SplitText.jsx";
+import SplitText from "../../components/common/Effect/SplitText.jsx";
 import styles from './Header.module.scss';
+import StickerPeel from "../../components/common/Effect/StickerPeel.jsx";
 
 export default function Header({ user }) {
     const [time, setTime] = useState(new Date());
@@ -18,6 +20,20 @@ export default function Header({ user }) {
 
     return (
         <header className={styles.header}>
+            <div className={styles.logoWrapper}>
+                <StickerPeel
+                    imageSrc={fishLogo}
+                    rotate={0}
+                    peelBackHoverPct={22}
+                    peelBackActivePct={226}
+                    width={200}
+                    shadowIntensity={0.6}
+                    lightingIntensity={0.1}
+                    initialPosition={{ x: 0, y: 0 }}
+                    peelDirection={4}
+                    className={styles.logo}
+                />
+            </div>
             <div className={styles.welcomeText}>
                 <h1>
                     <SplitText

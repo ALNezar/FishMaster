@@ -51,8 +51,13 @@
   }
 }
 
+
 .addBtn {
   box-shadow: 0 4px 0 #9d8129;
+  font-size: 0.9rem !important;
+  padding: 8px 20px !important;
+  height: auto !important;
+
   &:active {
     box-shadow: 0 2px 0 #9d8129;
   }
@@ -73,25 +78,26 @@
 
 .formContent {
   background: #fff;
-  padding: 30px;
+  padding: 25px;
   border-radius: 16px;
   border: 1px solid #e0e0e0;
   box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-  max-width: 600px;
+  max-width: 500px;
   margin: 0 auto;
   border-top: 4px solid #d4af37;
 
   h2 {
     margin-top: 0;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     font-family: 'Special Elite', cursive;
     color: #333;
+    font-size: 1.3rem;
   }
 
   form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
   }
   
   .formGroup {
@@ -101,17 +107,17 @@
     label {
       font-weight: bold;
       color: #555;
-      margin-bottom: 8px;
-      font-size: 0.9rem;
+      margin-bottom: 5px;
+      font-size: 0.85rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     input {
-      padding: 12px 15px;
+      padding: 10px 12px;
       border: 2px solid #eee;
       border-radius: 8px;
-      font-size: 1rem;
+      font-size: 0.95rem;
       transition: border-color 0.2s;
       font-family: inherit;
 
@@ -124,31 +130,35 @@
 
   .createBtn {
     align-self: flex-start;
-    margin-top: 10px;
+    margin-top: 5px;
+    padding: 10px 20px !important;
+    font-size: 0.9rem !important;
   }
 }
 
 /* Tank Grid */
 .tankGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
 }
 
 /* Tank Card */
 .tankCard {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+  box-shadow: 0 4px 15px rgba(11, 58, 75, 0.1);
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
-  border: 1px solid rgba(0,0,0,0.03);
-
+  /* Tank-like glass border */
+  border: 4px solid rgba(225, 245, 254, 0.8);
+  
   &:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(11, 58, 75, 0.15);
+    border-color: #b3e5fc;
 
     .viewLabel {
       opacity: 1;
@@ -166,11 +176,24 @@
 }
 
 .cardImage {
-  height: 200px;
+  height: 140px;
   background-size: cover;
   background-position: center;
   position: relative;
   transition: transform 0.5s ease;
+  
+  /* Water surface shininess */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 30%;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
 }
 
 .imageOverlay {
@@ -179,95 +202,103 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.2);
+  background: rgba(0,0,0,0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.3s;
 
   .tankCard:hover & {
-    background: rgba(0,0,0,0.4);
+    background: rgba(0,0,0,0.3);
   }
 }
 
 .viewLabel {
   color: #fff;
-  border: 2px solid #fff;
-  padding: 8px 16px;
-  border-radius: 20px;
+  border: 1px solid #fff;
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 0.85rem;
   font-weight: bold;
   opacity: 0;
   transform: translateY(10px);
   transition: all 0.3s;
+  backdrop-filter: blur(4px);
+  background: rgba(255,255,255,0.1);
 }
 
 .cardContent {
-  padding: 20px;
-  background: #fff;
-  position: relative; /* ensure context above image transform */
+  padding: 15px;
+  background: #fbfbfb;
+  position: relative;
   z-index: 2; 
 }
 
 .tankName {
-  margin: 0 0 10px 0;
+  margin: 0 0 6px 0;
   font-family: 'Special Elite', cursive;
-  font-size: 1.4rem;
-  color: #333;
+  font-size: 1.1rem;
+  color: #0b3a4b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tankMeta {
   display: flex;
-  gap: 15px;
-  font-size: 0.9rem;
+  gap: 10px;
+  font-size: 0.8rem;
   color: #666;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   
   span {
-    background: #f5f5f5;
-    padding: 4px 10px;
-    border-radius: 6px;
+    background: #eef7fb;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #e0f2f1;
   }
 }
 
 .statusIndicator {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
+  gap: 6px;
+  font-size: 0.75rem;
   color: #4caf50;
   font-weight: bold;
 }
 
 .statusDot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   background-color: #4caf50;
   border-radius: 50%;
-  box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1);
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
 }
 
 .deleteBtn {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 32px;
-  height: 32px;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: rgba(0,0,0,0.5);
-  color: white;
+  background: rgba(255, 255, 255, 0.8);
+  color: #d32f2f;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0; /* hidden by default */
+  opacity: 0;
   transition: all 0.2s;
   z-index: 10;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 
   &:hover {
-    background: #f44336;
+    background: #FFEBEE;
     transform: scale(1.1);
     opacity: 1 !important;
   }
@@ -285,7 +316,7 @@
 }
 
 .loader {
-  font-size: 4rem;
+  font-size: 3rem;
   animation: swim 2s ease-in-out infinite;
   margin-bottom: 20px;
 }
@@ -298,18 +329,18 @@
 .emptyState {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 80px 20px;
+  padding: 60px 20px;
   background: #fff;
   border-radius: 20px;
   border: 2px dashed #e0e0e0;
   
   .emptyIcon {
-    font-size: 5rem;
-    margin-bottom: 20px;
+    font-size: 4rem;
+    margin-bottom: 15px;
   }
 
   h3 {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-family: 'Special Elite', cursive;
     color: #333;
     margin: 0 0 10px 0;
@@ -317,8 +348,8 @@
 
   p {
     color: #777;
-    margin-bottom: 30px;
-    font-size: 1.1rem;
+    margin-bottom: 20px;
+    font-size: 1rem;
   }
 }
 
@@ -327,12 +358,12 @@
   .header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 20px;
+    gap: 15px;
     
-    h1 { font-size: 2.2rem; }
+    h1 { font-size: 2rem; }
   }
   
   .tankGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   }
 }

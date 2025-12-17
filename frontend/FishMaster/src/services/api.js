@@ -1,80 +1,70 @@
-/**
- * FishMaster API Service
- * Handles all HTTP communication with the Spring Boot backend.
- */
+// api.js
+const DEV_MODE = true; // toggle to false in production
 
 const API_BASE_URL = 'http://localhost:8080';
 
-/**
- * Get the stored JWT token
- */
 const getToken = () => localStorage.getItem('fishmaster_token');
+export const setToken = (token) => localStorage.setItem('fishmaster_token', token);
+export const removeToken = () => localStorage.removeItem('fishmaster_token');
 
-/**
- * Store the JWT token
- */
-export const setToken = (token) => {
-  localStorage.setItem('fishmaster_token', token);
-};
-
-/**
- * Remove the JWT token (logout)
- */
-export const removeToken = () => {
-  localStorage.removeItem('fishmaster_token');
-};
-
-/**
- * Check if user is authenticated
- */
 export const isAuthenticated = () => {
+  if (DEV_MODE) return true;
   return !!getToken();
 };
 
-/**
- * Create headers with optional auth token
- */
+if (DEV_MODE) {
+  localStorage.setItem('fishmaster_token', 'dev');
+}
+
 const createHeaders = (includeAuth = true) => {
-  const headers = {
-    'Content-Type': 'application/json',
-  };
-  
+  const headers = { 'Content-Type': 'application/json' };
   if (includeAuth) {
     const token = getToken();
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+    if (token) headers['Authorization'] = `Bearer ${token}`;
   }
-  
   return headers;
 };
 
-/**
- * Generic API request handler
- */
 const apiRequest = async (endpoint, options = {}) => {
+  if (DEV_MODE) {
+    switch (endpoint) {
+      case '/users/me':
+        return { id: 1, username: 'Dev User', email: 'dev@fishmaster.app' };
+      case '/api/onboarding/fish-types':
+        return [
+          { id: 1, name: 'Goldfish', careLevel: 'Easy' },
+          { id: 2, name: 'Betta', careLevel: 'Medium' },
+          { id: 3, name: 'Guppy', careLevel: 'Easy' },
+        ];
+      case '/api/onboarding/status':
+        return { completed: true };
+      case '/api/onboarding/complete':
+        return { success: true };
+      // Mock Tank Data
+      case '/tanks':
+        return [
+          { id: 1, name: 'Living Room Tank', sizeLiters: 120, fish: [] },
+          { id: 2, name: 'Betta Bowl', sizeLiters: 20, fish: [] }
+        ];
+      default:
+        // Handle dynamic routes for mocks
+        if (endpoint.match(/^\/tanks\/\d+$/)) {
+             return { id: 1, name: 'Living Room Tank', sizeLiters: 120, fish: [] };
+        }
+        return {}; // fallback
+    }
+  }
+
   const url = `${API_BASE_URL}${endpoint}`;
-  const config = {
-    ...options,
-    headers: createHeaders(options.includeAuth !== false),
-  };
-  
+  const config = { ...options, headers: createHeaders(options.includeAuth !== false) };
+
   try {
     const response = await fetch(url, config);
+    if (response.status === 204) return null; // Handle no content
     
-    // Handle non-JSON responses
     const contentType = response.headers.get('content-type');
-    let data;
-    if (contentType && contentType.includes('application/json')) {
-      data = await response.json();
-    } else {
-      data = await response.text();
-    }
-    
-    if (!response.ok) {
-      throw new Error(data.message || data || 'Request failed');
-    }
-    
+    const data = contentType && contentType.includes('application/json') ? await response.json() : await response.text();
+    if (!response.ok) throw new Error(data.message || data || 'Request failed');
     return data;
   } catch (error) {
     console.error(`API Error [${endpoint}]:`, error);
@@ -82,118 +72,14 @@ const apiRequest = async (endpoint, options = {}) => {
   }
 };
 
-// ============================================
-// AUTH ENDPOINTS
-// ============================================
-
-/**
- * Register a new user
- */
-export const signup = async (username, email, password) => {
-  return apiRequest('/auth/signup', {
-    method: 'POST',
-    includeAuth: false,
-    body: JSON.stringify({ username, email, password }),
-  });
-};
-
-/**
- * Verify email with 6-digit code
- */
-export const verifyEmail = async (email, verificationCode) => {
-  return apiRequest('/auth/verify', {
-    method: 'POST',
-    includeAuth: false,
-    body: JSON.stringify({ email, verificationCode }),
-  });
-};
-
-/**
- * Resend verification code
- */
-export const resendVerificationCode = async (email) => {
-  return apiRequest('/auth/resend', {
-    method: 'POST',
-    includeAuth: false,
-    body: JSON.stringify(email),
-  });
-};
-
-/**
- * Login user
- */
-export const login = async (email, password) => {
-  const response = await apiRequest('/auth/login', {
-    method: 'POST',
-    includeAuth: false,
-    body: JSON.stringify({ email, password }),
-  });
-  
-  if (response.token) {
-    setToken(response.token);
-  }
-  
-  return response;
-};
-
-/**
- * Logout user
- */
-export const logout = () => {
-  removeToken();
-};
-
-// ============================================
-// ONBOARDING ENDPOINTS
-// ============================================
-
-/**
- * Get available fish types for the dropdown
- */
-export const getFishTypes = async (careLevel = null) => {
-  const params = careLevel ? `?careLevel=${careLevel}` : '';
-  return apiRequest(`/api/onboarding/fish-types${params}`);
-};
-
-/**
- * Check onboarding status
- */
-export const getOnboardingStatus = async () => {
-  return apiRequest('/api/onboarding/status');
-};
-
-/**
- * Complete onboarding with all collected data
- */
-export const completeOnboarding = async (onboardingData) => {
-  return apiRequest('/api/onboarding/complete', {
-    method: 'POST',
-    body: JSON.stringify(onboardingData),
-  });
-};
-
-// ============================================
-// USER ENDPOINTS
-// ============================================
-
-/**
- * Get current user info
- */
-export const getCurrentUser = async () => {
-  return apiRequest('/users/me');
-};
-
-export default {
-  signup,
-  verifyEmail,
-  resendVerificationCode,
-  login,
-  logout,
-  getFishTypes,
-  getOnboardingStatus,
-  completeOnboarding,
-  getCurrentUser,
-  isAuthenticated,
-  setToken,
-  removeToken,
-};
+// Export endpoints
+export const signup = async (username, email, password) => apiRequest('/auth/signup', { method: 'POST', includeAuth: false, body: JSON.stringify({ username, email, password }) });
+export const verifyEmail = async (email, verificationCode) => apiRequest('/auth/verify', { method: 'POST', includeAuth: false, body: JSON.stringify({ email, verificationCode }) });
+export const resendVerificationCode = async (email) => apiRequest('/auth/resend', { method: 'POST', includeAuth: false, body: JSON.stringify(email) });
+export const login = async (email, password) => { const res = await apiRequest('/auth/login', { method: 'POST', includeAuth: false, body: JSON.stringify({ email, password }) }); if (res.token) setToken(res.token); return res; };
+export const logout = () => removeToken();
+export const getFishTypes = async (careLevel = null) => apiRequest(`/api/onboarding/fish-types${careLevel ? `?careLevel=${careLevel}` : ''}`);
+export const getOnboardingStatus = async () => apiRequest('/api/onboarding/status');
+export const completeOnboarding = async (data) => apiRequest('/api/onboarding/complete', { method: 'POST', body: JSON.stringify(data) });
+export const getCurrentUser = async () => apiRequest('/users/me');
+export default { signup, verifyEmail, resendVerificationCode, login, logout, getFishTypes, getOnboardingStatus, completeOnboarding, getCurrentUser, isAuthenticated, setToken, removeToken };

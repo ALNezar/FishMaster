@@ -19,6 +19,7 @@ export default function Header({ user }) {
     });
 
     return (
+
         <header className={styles.header}>
             <div className={styles.logoWrapper}>
                 <StickerPeel
@@ -34,23 +35,31 @@ export default function Header({ user }) {
                     className={styles.logo}
                 />
             </div>
-            <div className={styles.welcomeText}>
-                <h1>
-                    <SplitText
-                        text={`Hello, ${user?.name || 'Fishkeeper'}`}
-                        delay={100}
-                        duration={0.6}
-                        ease="power3.out"
-                        splitType="chars"
-                        from={{ opacity: 0, y: 40 }}
-                        to={{ opacity: 1, y: 0 }}
-                        threshold={0.1}
-                        rootMargin="-100px"
-                    />
-                </h1>
-                <p>Here's what's happening in your aquariums today (●'◡'●) .</p>
-            </div>
+            <section className={styles.section}>
+
+                <div className={styles.welcomeText}>
+                    <h1>
+                        <SplitText
+                            text={`Hello, ${user?.name || 'Fishkeeper'}`}
+                            delay={100}
+                            duration={0.6}
+                            ease="power3.out"
+                            splitType="chars"
+                            from={{ opacity: 0, y: 40 }}
+                            to={{ opacity: 1, y: 0 }}
+                            threshold={0.1}
+                            rootMargin="-100px"
+                        />
+                    </h1>
+                    <p>
+                        Here's what's happening in your aquariums today
+                        <span className={styles.shyFace}>
+                        </span>.
+                    </p>
+                </div>
+            </section>
             <div className={styles.clock}>{formattedTime}</div>
         </header>
+
     );
 }

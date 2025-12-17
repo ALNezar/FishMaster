@@ -101,55 +101,55 @@ function OnboardingFlow() {
 
   // Define steps configuration
   const steps = [
-    { 
-      component: WelcomeStep, 
+    {
+      component: WelcomeStep,
       title: 'Welcome',
-      showProgress: false 
+      showProgress: false
     },
-    { 
-      component: NameStep, 
+    {
+      component: NameStep,
       title: 'Your Name',
-      showProgress: true 
+      showProgress: true
     },
-    { 
-      component: EmailStep, 
+    {
+      component: EmailStep,
       title: 'Your Email',
-      showProgress: true 
+      showProgress: true
     },
-    { 
-      component: TankNameStep, 
+    {
+      component: TankNameStep,
       title: 'Tank Name',
-      showProgress: true 
+      showProgress: true
     },
-    { 
-      component: TankSizeStep, 
+    {
+      component: TankSizeStep,
       title: 'Tank Size',
-      showProgress: true 
+      showProgress: true
     },
-    { 
-      component: FishCountStep, 
+    {
+      component: FishCountStep,
       title: 'Fish Count',
-      showProgress: true 
+      showProgress: true
     },
-    { 
-      component: FishDetailsStep, 
+    {
+      component: FishDetailsStep,
       title: 'Fish Details',
-      showProgress: true 
+      showProgress: true
     },
-    { 
-      component: WaterParamsStep, 
+    {
+      component: WaterParamsStep,
       title: 'Water Parameters',
-      showProgress: true 
+      showProgress: true
     },
-    { 
-      component: ReviewStep, 
+    {
+      component: ReviewStep,
       title: 'Review',
-      showProgress: true 
+      showProgress: true
     },
-    { 
-      component: SuccessStep, 
+    {
+      component: SuccessStep,
       title: 'Success',
-      showProgress: false 
+      showProgress: false
     },
   ];
 
@@ -179,7 +179,7 @@ function OnboardingFlow() {
         {currentStepConfig.showProgress && (
           <div className={styles.progressContainer}>
             <div className={styles.progressBar}>
-              <div 
+              <div
                 className={styles.progressFill}
                 style={{ width: `${(currentProgressIndex / progressSteps) * 100}%` }}
               />

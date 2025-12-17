@@ -147,7 +147,7 @@ const MyTanksPage = () => {
                             <div className={styles.emptyIcon}>🌊</div>
                             <h3>No Aquariums Yet</h3>
                             <p>Start your journey by adding your first tank.</p>
-                            <Button onClick={() => setShowAddForm(true)}>Add Your First Tank</Button>
+                            <Button className={styles.addBtn} onClick={() => setShowAddForm(true)}>Add Your First Tank</Button>
                         </div>
                     ) : (
                         tanks.map(tank => (

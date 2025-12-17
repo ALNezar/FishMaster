@@ -4,6 +4,60 @@
   font-weight: normal;
   font-style: normal;
 }
+
+
+.shyFace {
+  display: inline-block;
+  position: relative;
+  font-size: 1.2rem;
+  cursor: default;
+  white-space: nowrap; 
+
+  &::before,
+  &::after {
+    display: inline-block;
+    transition: opacity 0.4s ease; 
+  }
+
+
+
+  &::before {
+    content: "(●'◡'●)";
+    opacity: 1;
+  }
+
+ 
+  &::after {
+    content: "(*>﹏<*)";
+    opacity: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%; 
+    text-align: center; 
+  }
+
+  &:hover {
+    animation: shyShake 0.8s ease-in-out 2;
+  }
+
+  &:hover::before {
+    opacity: 0;
+  }
+
+  &:hover::after {
+    opacity: 1;
+  }
+}
+
+@keyframes shyShake {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(-2px, 0) rotate(-5deg); }
+  50%  { transform: translate(2px, 0) rotate(5deg); }
+  75%  { transform: translate(-1px, 0) rotate(-3deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
 .logoWrapper {
   width: 200px;
   height: 200px;
@@ -31,7 +85,7 @@
     min-width: 15rem;
     
     h1 {
-      font-size: 2rem;
+      font-size: 3rem;
       margin-bottom: 0.5rem;
     }
     

@@ -10,7 +10,12 @@ const WaveBackground = ({ className }) => (
     className={className}
     fill="#1277b0"
     paused={false}
-    options={{ height: -11, amplitude: 30, speed: 0.15, points: 5 }}
+    options={{
+      height: 20,
+      amplitude: 30,
+      speed: 0.15,
+      points: 5
+    }}
   />
 );
 

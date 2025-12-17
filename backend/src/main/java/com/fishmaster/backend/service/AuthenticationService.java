@@ -1,10 +1,12 @@
 package com.fishmaster.backend.service;
 
 import com.fishmaster.backend.model.User;
-import com.fishmaster.backend.repositories.UserRepo;
+import com.fishmaster.backend.repositories.UserRepository;
+import com.fishmaster.backend.service.EmailService;
 import dto.LoginUserDto;
 import dto.RegisterUserDto;
 import dto.VerifyUserDto;
+import jakarta.mail.MessagingException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,21 +21,19 @@ import java.util.Random;
 @Service
 public class AuthenticationService {
 
-    private final UserRepo userRepo;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
 
-
     public AuthenticationService(
-            UserRepo userRepo,
-            PasswordEncoder passwordEncoder,
+            UserRepository userRepository,
             AuthenticationManager authenticationManager,
-            EmailService emailService
-    ) {
-        this.userRepo = userRepo;
-        this.passwordEncoder = passwordEncoder;
+            PasswordEncoder passwordEncoder,
+            EmailService emailService) {
         this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
     }
 
@@ -50,7 +50,7 @@ public class AuthenticationService {
         // Send email asynchronously (Non-blocking)
         sendVerificationEmail(user);
 
-        return userRepo.save(user);
+        return userRepository.save(user);
     }
 
     // --- LOGIN ---
@@ -59,12 +59,10 @@ public class AuthenticationService {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         input.getEmail(),
-                        input.getPassword()
-                )
-        );
+                        input.getPassword()));
 
         // 2. Fetch User
-        User user = userRepo.findByEmail(input.getEmail())
+        User user = userRepository.findByEmail(input.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         // 3. Check Verification Status
@@ -77,7 +75,7 @@ public class AuthenticationService {
 
     // --- RESEND CODE ---
     public void resendVerificationCode(String email) {
-        Optional<User> optionalUser = userRepo.findByEmail(email);
+        Optional<User> optionalUser = userRepository.findByEmail(email);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             if (user.isEnabled()) {
@@ -90,7 +88,7 @@ public class AuthenticationService {
             // Send the new code via email
             sendVerificationEmail(user);
 
-            userRepo.save(user);
+            userRepository.save(user);
         } else {
             throw new RuntimeException("User not found");
         }
@@ -98,7 +96,7 @@ public class AuthenticationService {
 
     // --- VERIFY USER ---
     public void verifyUser(VerifyUserDto dto) {
-        User user = userRepo.findByEmail(dto.getEmail())
+        User user = userRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (user.isEnabled()) {
@@ -106,7 +104,8 @@ public class AuthenticationService {
         }
 
         // Check if code matches
-        // Note: Using getVerficationCode() based on your uploaded DTO (Check for typo in DTO class if red)
+        // Note: Using getVerficationCode() based on your uploaded DTO (Check for typo
+        // in DTO class if red)
         if (!user.getVerificationCode().equals(dto.getVerificationCode())) {
             throw new RuntimeException("Invalid verification code");
         }
@@ -118,7 +117,7 @@ public class AuthenticationService {
 
         // Enable user
         user.setEnabled(true);
-        userRepo.save(user);
+        userRepository.save(user);
     }
 
     // --- HELPER: SEND EMAIL ---
@@ -141,7 +140,8 @@ public class AuthenticationService {
                 + "<p style=\"margin:0 0 18px 0;color:#3b5d66;font-size:14px;line-height:1.4;\">Enter the verification code below to complete sign-in. This code expires in 15 minutes.</p>"
                 + "<div style=\"background:#f8fbff;padding:18px;border-radius:6px;border:1px solid #e6f2f8;display:inline-block;\">"
                 + "<p style=\"margin:0;font-size:13px;color:#2b3f46;\">Verification Code</p>"
-                + "<p style=\"margin:6px 0 0 0;font-size:24px;font-weight:700;letter-spacing:3px;color:#007b9e;\">" + user.getVerificationCode() + "</p>"
+                + "<p style=\"margin:6px 0 0 0;font-size:24px;font-weight:700;letter-spacing:3px;color:#007b9e;\">"
+                + user.getVerificationCode() + "</p>"
                 + "</div>"
                 + "<p style=\"margin:18px 0 0 0;\"><a href=\"#\" style=\"display:inline-block;padding:10px 16px;border-radius:6px;background:#007b9e;color:#fff;text-decoration:none;font-weight:600;\">Open Fishmaster Dashboard</a></p>"
                 + "<p style=\"margin:18px 0 0 0;color:#6b8b92;font-size:12px;\">If you didn't request this, ignore this email.</p>"

@@ -27,6 +27,7 @@ public class WaterParameters {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tank_id", nullable = false, unique = true)
     private Tank tank;

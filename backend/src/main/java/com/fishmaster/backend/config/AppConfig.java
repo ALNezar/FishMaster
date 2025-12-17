@@ -1,6 +1,6 @@
 package com.fishmaster.backend.config;
 
-import com.fishmaster.backend.repositories.UserRepo;
+import com.fishmaster.backend.repositories.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,19 +12,19 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-@Configuration  //
+@Configuration //
 public class AppConfig {
 
-    private final UserRepo userRepo;
+    private final UserRepository userRepository;
 
-    public AppConfig(UserRepo userRepo) {
-        this.userRepo = userRepo;
+    public AppConfig(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     // Bean 1: UserDetailsService - Loads user from database
     @Bean
     UserDetailsService userDetailsService() {
-        return username -> userRepo.findByEmail(username)
+        return username -> userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
     }

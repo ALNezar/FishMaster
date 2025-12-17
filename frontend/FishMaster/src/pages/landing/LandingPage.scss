@@ -71,6 +71,7 @@
   color: #000;
   font-size: 1.3em;
   font-weight: bold;
+
   padding: 15px 50px;
   border: none;
   border-radius: 8px;
@@ -96,13 +97,16 @@
     border: none;
     padding: 0;
     font-size: 1rem;
-    color: #333; // default text color
-    cursor: pointer;
+    color: #000000; 
 
     b.login-link-login {
+      font-size:20px;
       font-weight: 700;
-      color: #4a90e2; // highlighted color
+      color: #2c8fff; 
       transition: color 0.2s ease;
+      text-decoration: none;
+      cursor: pointer;
+
 
       &:hover {
         color: #357ab8; // darker shade on hover

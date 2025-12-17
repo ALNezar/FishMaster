@@ -1,0 +1,11 @@
+# ===== FishMaster Robots.txt =====
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /src/
+Disallow: /node_modules/
+Disallow: /build/
+Disallow: /private/
+Disallow: /config/
+

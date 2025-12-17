@@ -1,0 +1,89 @@
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  
+  .welcomeText {
+    flex-grow: 1;
+    min-width: 15rem;
+    
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    p {
+      margin: 0;
+    }
+  }
+  
+  .clock {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.5rem;
+    font-weight: bold;
+    background: rgb(0, 195, 255);
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 
+      3px 3px 0px rgba(0, 0, 0, 0.1),
+      -1px -1px 0px rgba(255, 255, 255, 0.2);
+    animation: handDrawnWobble 3s ease-in-out infinite;
+    transition: transform 0.15s ease;
+    white-space: nowrap;
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 12px;
+      border: 2px solid rgba(0, 0, 0, 0.15);
+      animation: sketchyBorder 2s ease-in-out infinite alternate;
+    }
+ 
+    &:hover {
+      transform: rotate(-2deg) scale(1.05);
+      animation: handDrawnShake 0.3s ease-in-out;
+    }
+  }
+}
+
+@keyframes handDrawnWobble {
+  0%, 100% {
+    border-radius: 12px 14px 11px 13px / 13px 11px 14px 12px;
+    transform: rotate(0deg);
+  }
+  25% {
+    border-radius: 14px 12px 13px 11px / 11px 13px 12px 14px;
+    transform: rotate(0.5deg);
+  }
+  50% {
+    border-radius: 11px 13px 12px 14px / 14px 12px 13px 11px;
+    transform: rotate(-0.5deg);
+  }
+  75% {
+    border-radius: 13px 11px 14px 12px / 12px 14px 11px 13px;
+    transform: rotate(0.3deg);
+  }
+}
+
+@keyframes sketchyBorder {
+  0%, 100% {
+    border-radius: 11px 13px 12px 14px / 14px 12px 13px 11px;
+  }
+  50% {
+    border-radius: 13px 11px 14px 12px / 12px 14px 11px 13px;
+  }
+}
+
+@keyframes handDrawnShake {
+  0%, 100% { transform: rotate(0deg) scale(1.05); }
+  25% { transform: rotate(-3deg) scale(1.05); }
+  75% { transform: rotate(3deg) scale(1.05); }
+}

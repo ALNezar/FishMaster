@@ -8,6 +8,7 @@ import SignupPage from './pages/auth/SignupPage.jsx';
 import VerifyEmailPage from './pages/auth/VerifyEmailPage.jsx';
 import LoginPage from './pages/auth/LoginPage.jsx';
 import OnboardingFlow from './pages/onboarding/OnboardingFlow.jsx';
+import Profile from './pages/profile/Profile.jsx';
 import Dashboard from './pages/dashboard/Dashboard.jsx';
 import PlaceholderPage from './pages/PlaceholderPage.jsx';
 
@@ -33,6 +34,7 @@ function App() {
       {/* Authenticated Dashboard Routes */}
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/tanks" element={<MyTanksPage />} />
         <Route path="/tanks/:id" element={<TankDetailsPage />} />
         <Route path="/analytics" element={<PlaceholderPage title="Data & Trends" />} />
@@ -40,7 +42,6 @@ function App() {
         <Route path="/notifications" element={<PlaceholderPage title="Notifications" />} />
         <Route path="/education" element={<PlaceholderPage title="Learn & Care" />} />
         <Route path="/device" element={<PlaceholderPage title="Device Setup" />} />
-        <Route path="/settings" element={<PlaceholderPage title="Profile & Settings" />} />
       </Route>
     </Routes>
   );

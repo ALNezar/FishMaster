@@ -26,7 +26,7 @@ const sections = [
   { path: '/notifications', label: 'Notifications', icon: MdNotifications },
   { path: '/education', label: 'Learn & Care', icon: MdMenuBook },
   { path: '/device', label: 'Device Setup', icon: MdSettings },
-  { path: '/settings', label: 'Profile & Settings', icon: MdPerson },
+  { path: '/profile', label: 'My Profile', icon: MdPerson },
 ];
 
 export default function NavBar() {

@@ -82,4 +82,6 @@ export const getFishTypes = async (careLevel = null) => apiRequest(`/api/onboard
 export const getOnboardingStatus = async () => apiRequest('/api/onboarding/status');
 export const completeOnboarding = async (data) => apiRequest('/api/onboarding/complete', { method: 'POST', body: JSON.stringify(data) });
 export const getCurrentUser = async () => apiRequest('/users/me');
-export default { signup, verifyEmail, resendVerificationCode, login, logout, getFishTypes, getOnboardingStatus, completeOnboarding, getCurrentUser, isAuthenticated, setToken, removeToken };
+export const updateProfile = async (data) => apiRequest('/users/me', { method: 'PUT', body: JSON.stringify(data) });
+export const deleteAccount = async () => apiRequest('/users/me', { method: 'DELETE' });
+export default { signup, verifyEmail, resendVerificationCode, login, logout, getFishTypes, getOnboardingStatus, completeOnboarding, getCurrentUser, updateProfile, deleteAccount, isAuthenticated, setToken, removeToken };

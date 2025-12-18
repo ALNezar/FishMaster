@@ -1,0 +1,218 @@
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=DM+Sans:wght@400;600;700&display=swap');
+
+// Theme colors
+$primary: #1277b0;
+$primary-dark: #0e5a85;
+$bg-cream: #f5f1e3;
+$text-dark: #3d3021;
+$text-light: #666;
+$danger: #dc2626;
+
+.profileContainer {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: 'DM Sans', sans-serif;
+  color: $text-dark;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.header {
+  margin-bottom: 2.5rem;
+  text-align: center;
+
+  h2 {
+    font-family: 'Special Elite', cursive;
+    font-size: 2.5rem;
+    margin: 0;
+    color: $text-dark;
+  }
+}
+
+.profileCard {
+  position: relative;
+  background: white;
+  border: 2px solid $text-dark;
+  padding: 2.5rem;
+  margin-top: 3.5rem;
+  animation: pencilMorph 8s ease-in-out infinite alternate-reverse;
+  box-shadow: 6px 6px 0 rgba($text-dark, 0.1);
+}
+
+.editBtn {
+  position: absolute;
+  top: -24px;
+  right: 40px;
+
+  background: $primary;
+  color: white;
+  border: 2px solid $text-dark;
+  border-radius: 12px;
+  padding: 0.6rem 1.5rem;
+  font-family: 'Special Elite', cursive;
+  font-size: 1.1rem;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 4px 4px 0 $text-dark;
+  transition: all 0.1s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 6px 0 $text-dark;
+    background: $primary-dark;
+  }
+
+  &:active {
+    transform: translateY(2px);
+    box-shadow: 0 0 0 $text-dark;
+  }
+}
+
+.section {
+  margin-bottom: 2rem;
+
+  h3 {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.5rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 2px dashed rgba($text-dark, 0.2);
+    padding-bottom: 0.5rem;
+    color: $primary;
+  }
+
+  &.deleteZone {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 2px solid #fee2e2;
+
+    h3 {
+      color: $danger;
+      border-bottom-color: rgba($danger, 0.2);
+    }
+  }
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.infoItem {
+  background: $bg-cream;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba($text-dark, 0.05);
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: $text-light;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.1rem;
+    margin: 0;
+    color: $text-dark;
+  }
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+
+  input:not([type="checkbox"]) {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    border: 2px solid #ddd;
+    background: #fdfdfd;
+    font-family: 'DM Sans', sans-serif;
+
+    &:focus {
+      outline: none;
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.1);
+    }
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  justify-content: flex-end;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  border: none;
+  font-family: 'Special Elite', cursive;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+
+  &.primary {
+    background: $primary;
+    color: white;
+    box-shadow: 0 4px 0 $primary-dark;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 0 $primary-dark;
+    }
+
+    &:active {
+      transform: translateY(2px);
+      box-shadow: 0 0 0 $primary-dark;
+    }
+  }
+
+  &.secondary {
+    background: $bg-cream;
+    color: $text-dark;
+    border: 2px solid $text-dark;
+
+    &:hover {
+      background: white;
+    }
+  }
+
+  &.danger {
+    background: white;
+    color: $danger;
+    border: 2px solid $danger;
+    box-shadow: 2px 2px 0 rgba($danger, 0.1);
+
+    &:hover {
+      background: #fff5f5;
+      transform: scale(1.02);
+    }
+  }
+}
+
+@keyframes pencilMorph {
+  0%   { border-radius: 80px 30px 60px 20px / 20px 60px 30px 80px; }
+  25%  { border-radius: 30px 80px 20px 60px / 60px 20px 80px 30px; }
+  50%  { border-radius: 45px / 35px; }
+  75%  { border-radius: 60px 20px 80px 30px / 30px 80px 20px 60px; }
+  100% { border-radius: 80px 30px 60px 20px / 20px 60px 30px 80px; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -42,6 +42,18 @@ export default function DashboardLayout() {
                     fill="#1277b0"
                     paused={false}
                     options={{
+                        height: '100%',
+                        width: '100%',
+                        height: -10,
+                        amplitude: 25,
+                        speed: 0.15,
+                        points: 4
+                    }}
+                />
+                <Wave
+                    fill="#043158ff"
+                    paused={false}
+                    options={{
                         height: 10,
                         amplitude: 25,
                         speed: 0.15,

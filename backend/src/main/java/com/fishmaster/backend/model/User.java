@@ -49,6 +49,15 @@ public class User implements UserDetails {
     @Column(name = "verification_expiration")
     private LocalDateTime verificationExpiration;
 
+    @Column(name = "contact_number")
+    private String contactNumber;
+
+    @Column(name = "email_notifications")
+    private boolean emailNotifications = true;
+
+    @Column(name = "sms_notifications")
+    private boolean smsNotifications = false;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Tank> tanks = new ArrayList<>();
 

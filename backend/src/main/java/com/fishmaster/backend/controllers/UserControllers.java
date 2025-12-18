@@ -27,7 +27,23 @@ public class UserControllers {
 
     @GetMapping("/")
     public ResponseEntity<List<User>> allUsers() {
-        List <User> users = userService.getAllUsers();
+        List<User> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
+    }
+
+    @org.springframework.web.bind.annotation.PutMapping("/me")
+    public ResponseEntity<User> updateUser(@org.springframework.web.bind.annotation.RequestBody dto.UpdateUserDto dto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        User updatedUser = userService.updateUser(currentUser.getId(), dto);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    @org.springframework.web.bind.annotation.DeleteMapping("/me")
+    public ResponseEntity<Void> deleteUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        userService.deleteUser(currentUser.getId());
+        return ResponseEntity.noContent().build();
     }
 }

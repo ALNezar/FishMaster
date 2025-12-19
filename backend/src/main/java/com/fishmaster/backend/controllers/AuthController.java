@@ -10,6 +10,7 @@ import dto.VerifyUserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -20,10 +21,11 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/signup")
-    public ResponseEntity<User> signup(@RequestBody RegisterUserDto dto) {
-        User user = authenticationService.signup(dto);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<String> signup(@RequestBody RegisterUserDto dto) {
+        authenticationService.signup(dto);
+        return ResponseEntity.ok("Verification email sent");
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginUserDto dto) {
@@ -33,14 +35,18 @@ public class AuthController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<String> verify(@RequestBody VerifyUserDto dto) {
+    public ResponseEntity<?> verify(@RequestBody VerifyUserDto dto) {
         try {
             authenticationService.verifyUser(dto);
-            return ResponseEntity.ok("Account verified");
+            return ResponseEntity.ok(Map.of("verified", true));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of(
+                    "verified", false,
+                    "error", e.getMessage()
+            ));
         }
     }
+
 
     @PostMapping("/resend")
     public ResponseEntity<String> resend(@RequestBody String email) {

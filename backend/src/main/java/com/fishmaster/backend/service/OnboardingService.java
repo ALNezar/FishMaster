@@ -61,7 +61,7 @@ public class OnboardingService {
                 String tankName = tanks.isEmpty() ? null : tanks.get(0).getName();
 
                 return new OnboardingStatusDto(
-                                user.isOnboardingCompleted(),
+                        Boolean.TRUE.equals(user.getOnboardingCompleted()),
                                 user.getName(),
                                 tankName);
         }

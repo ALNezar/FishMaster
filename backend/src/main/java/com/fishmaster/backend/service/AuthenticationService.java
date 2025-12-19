@@ -43,15 +43,19 @@ public class AuthenticationService {
         user.setName(input.getUsername());
         user.setEmail(input.getEmail());
         user.setPassword(passwordEncoder.encode(input.getPassword()));
+
+        user.setEnabled(false);
+        user.setEmailNotifications(true);
+        user.setSmsNotifications(false);
+        user.setOnboardingCompleted(false);
+
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationExpiration(LocalDateTime.now().plusMinutes(15));
-        user.setEnabled(false);
 
-        // Send email asynchronously (Non-blocking)
         sendVerificationEmail(user);
-
         return userRepository.save(user);
     }
+
 
     // --- LOGIN ---
     public User authenticate(LoginUserDto input) {

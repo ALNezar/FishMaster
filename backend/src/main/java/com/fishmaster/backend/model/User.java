@@ -35,13 +35,14 @@ public class User implements UserDetails {
     @Column(length = 50)
     private String timezone;
 
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at", updatable = false, nullable = false)
     private Instant createdAt = Instant.now();
 
-    private boolean enabled;
+    @Column(nullable = false)
+    private Boolean enabled = false;
 
-    @Column(name = "onboarding_completed")
-    private boolean onboardingCompleted = false;
+    @Column(name = "onboarding_completed", nullable = false)
+    private Boolean onboardingCompleted = false;
 
     @Column(name = "verification_code")
     private String verificationCode;
@@ -52,26 +53,32 @@ public class User implements UserDetails {
     @Column(name = "contact_number")
     private String contactNumber;
 
-    @Column(name = "email_notifications")
-    private boolean emailNotifications = true;
+    @Column(name = "email_notifications", nullable = false)
+    private Boolean emailNotifications = true;
 
-    @Column(name = "sms_notifications")
-    private boolean smsNotifications = false;
+    @Column(name = "sms_notifications", nullable = false)
+    private Boolean smsNotifications = false;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Tank> tanks = new ArrayList<>();
 
-    public User() {
-    }
+    // Default constructor
+    public User() {}
 
+    // Convenience constructor
     public User(String name, String email, String password, String timezone) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.timezone = timezone;
         this.createdAt = Instant.now();
+        this.enabled = false;
+        this.onboardingCompleted = false;
+        this.emailNotifications = true;
+        this.smsNotifications = false;
     }
 
+    // Spring Security roles
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
@@ -97,9 +104,10 @@ public class User implements UserDetails {
         return true;
     }
 
+    // Null-safe enabled check
     @Override
     public boolean isEnabled() {
-        return enabled;
+        return Boolean.TRUE.equals(enabled);
     }
 
     @Override

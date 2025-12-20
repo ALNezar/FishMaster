@@ -34,6 +34,9 @@ public class SecurityConfig {
                 // Turn off CSRF since we use JWT, not sessions
                 .csrf(csrf -> csrf.disable())
 
+                // Enable CORS with default configuration
+                .cors(Customizer.withDefaults())
+
                 // Allow /auth/** for public access, protect everything else
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()

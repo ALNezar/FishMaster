@@ -1,5 +1,5 @@
 // api.js
-const DEV_MODE = false; // toggle to false in production
+const DEV_MODE = true; // toggle to false in production
 
 const API_BASE_URL = 'http://localhost:8080';
 

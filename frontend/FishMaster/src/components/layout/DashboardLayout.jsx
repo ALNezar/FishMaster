@@ -12,17 +12,22 @@ export default function DashboardLayout() {
     useEffect(() => {
         const checkAuth = async () => {
             if (!isAuthenticated()) {
-                navigate('/login');
+                navigate('/login', { replace: true });
                 return;
             }
             try {
                 await getCurrentUser();
+                setLoading(false);
             } catch (err) {
                 console.error('Auth check failed:', err);
-                logout();
-                navigate('/login');
-            } finally {
-                setLoading(false);
+                // Only logout if it's a 401/403 auth error, not network errors
+                if (err.message?.includes('401') || err.message?.includes('403') || err.message?.includes('Unauthorized')) {
+                    logout();
+                    navigate('/login', { replace: true });
+                } else {
+                    // For other errors (network, etc.), still show dashboard
+                    setLoading(false);
+                }
             }
         };
         checkAuth();

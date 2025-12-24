@@ -55,9 +55,6 @@ const apiRequest = async (endpoint, options = {}) => {
   const headers = createHeaders(options.includeAuth !== false, options.headers || {});
   const config = { ...options, headers };
 
-  // Debug logging
-  console.log(`API Request [${endpoint}]:`, { url, method: config.method || 'GET', body: options.body });
-
   try {
     const response = await fetch(url, config);
     if (response.status === 204) return null; // Handle no content

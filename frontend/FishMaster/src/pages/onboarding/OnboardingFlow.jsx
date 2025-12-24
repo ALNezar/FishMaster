@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getFishTypes, completeOnboarding, login } from '../../services/api.js';
+import { getFishTypes, completeOnboarding, login, isAuthenticated } from '../../services/api.js';
 import Wave from 'react-wavify';
 
 // Import step components
@@ -25,11 +25,13 @@ function OnboardingFlow() {
   const navigate = useNavigate();
   const location = useLocation();
   const userEmail = location.state?.email || '';
+  const userPassword = location.state?.password || '';
 
   const [currentStep, setCurrentStep] = useState(0);
   const [fishTypes, setFishTypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Collected data from all steps
   const [data, setData] = useState({
@@ -41,6 +43,33 @@ function OnboardingFlow() {
     fish: [],
     waterParameters: null, // null = use defaults
   });
+
+  // Check/ensure authentication on mount
+  useEffect(() => {
+    const ensureAuth = async () => {
+      // If already authenticated, we're good
+      if (isAuthenticated()) {
+        setIsLoggedIn(true);
+        return;
+      }
+      
+      // If not authenticated but we have credentials, try to login
+      if (userEmail && userPassword) {
+        try {
+          await login(userEmail, userPassword);
+          setIsLoggedIn(true);
+        } catch (err) {
+          console.error('Auto-login failed:', err);
+          // Redirect to login page if we can't authenticate
+          navigate('/login', { state: { message: 'Please login to continue onboarding' } });
+        }
+      } else {
+        // No credentials, redirect to login
+        navigate('/login', { state: { message: 'Please login to continue onboarding' } });
+      }
+    };
+    ensureAuth();
+  }, [userEmail, userPassword, navigate]);
 
   // Fetch fish types on mount
   useEffect(() => {
@@ -157,6 +186,27 @@ function OnboardingFlow() {
   const StepComponent = currentStepConfig.component;
   const progressSteps = steps.filter(s => s.showProgress).length;
   const currentProgressIndex = steps.slice(0, currentStep + 1).filter(s => s.showProgress).length;
+
+  // Show loading while checking authentication
+  if (!isLoggedIn) {
+    return (
+      <>
+        <div className={styles.waveBackground}>
+          <Wave
+            fill="#1277b0"
+            paused={false}
+            options={{ height: -11, amplitude: 30, speed: 0.15, points: 5 }}
+          />
+        </div>
+        <div className={styles.container}>
+          <div style={{ textAlign: 'center', padding: '2rem', color: 'white' }}>
+            <h2>🔐 Authenticating...</h2>
+            <p>Please wait while we set things up.</p>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

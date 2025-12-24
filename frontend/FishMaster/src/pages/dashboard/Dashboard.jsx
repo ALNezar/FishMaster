@@ -20,7 +20,6 @@ function Dashboard() {
     // Layout handles auth check, we just load user data for display
     getCurrentUser().then(setUser).catch(() => { });
     
-    // Fetch actual tanks from API
     getTanks()
       .then(data => setTanks(data || []))
       .catch(err => console.error('Failed to load tanks:', err))

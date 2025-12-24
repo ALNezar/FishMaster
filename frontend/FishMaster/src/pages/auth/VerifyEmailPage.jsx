@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { verifyEmail, resendVerificationCode } from '../../services/api.js';
+import { verifyEmail, resendVerificationCode, login } from '../../services/api.js';
 import Button from '../../components/common/button/button.jsx';
 import Card from '../../components/common/card/card.jsx';
 import Wave from 'react-wavify';
@@ -14,6 +14,7 @@ function VerifyEmailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email || '';
+  const password = location.state?.password || '';
   
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
@@ -78,8 +79,15 @@ function VerifyEmailPage() {
 
     try {
       await verifyEmail(email, fullCode);
-      // Success! Navigate to onboarding
-      navigate('/onboarding', { state: { email } });
+      
+      // Auto-login after successful verification to get JWT token
+      if (password) {
+        await login(email, password);
+      }
+      
+      // Success! Navigate to onboarding (user is now logged in with JWT)
+      // Pass password in case we need to retry login
+      navigate('/onboarding', { state: { email, password } });
     } catch (err) {
       setError(err.message || 'Invalid verification code');
     } finally {

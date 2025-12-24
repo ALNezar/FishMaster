@@ -61,8 +61,8 @@ function SignupPage() {
 
     try {
       await signup(formData.username, formData.email, formData.password);
-      // Navigate to verification page with email
-      navigate('/verify', { state: { email: formData.email } });
+      // Navigate to verification page with email and password (for auto-login after verify)
+      navigate('/verify', { state: { email: formData.email, password: formData.password } });
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.');
     } finally {

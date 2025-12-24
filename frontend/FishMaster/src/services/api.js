@@ -60,10 +60,39 @@ const apiRequest = async (endpoint, options = {}) => {
     if (response.status === 204) return null; // Handle no content
     
     const contentType = response.headers.get('content-type');
-    const data = contentType && contentType.includes('application/json') ? await response.json() : await response.text();
+    let data;
+    const rawText = await response.text();
+    
+    // Try to parse as JSON if content-type suggests it
+    if (contentType && contentType.includes('application/json') && rawText) {
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        data = rawText;
+      }
+    } else {
+      data = rawText;
+    }
+    
+    // Debug logging for errors
     if (!response.ok) {
+      console.error(`API Error Details [${endpoint}]:`, {
+        status: response.status,
+        statusText: response.statusText,
+        contentType,
+        rawResponse: rawText,
+        parsedData: data
+      });
+      
       // Handle different error response formats from backend
-      const errorMessage = data.error || data.message || (typeof data === 'string' ? data : 'Request failed');
+      let errorMessage;
+      if (typeof data === 'string' && data.length > 0) {
+        errorMessage = data;
+      } else if (typeof data === 'object' && data !== null) {
+        errorMessage = data.error || data.message || JSON.stringify(data);
+      } else {
+        errorMessage = `Request failed with status ${response.status}`;
+      }
       throw new Error(errorMessage);
     }
     return data;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getCurrentUser } from '../../services/api.js';
+import { useNavigate } from 'react-router-dom';
+import { getCurrentUser, getTanks } from '../../services/api.js';
 import Card from '../../components/common/card/card.jsx';
 import styles from './Dashboard.module.scss';
 import { FaFish, FaTemperatureHigh, FaBell, FaUtensils, FaPlus, FaCheck, FaExclamationTriangle } from 'react-icons/fa';
@@ -10,11 +11,20 @@ import Header from "./header.jsx";
  * Dashboard - Main app view
  */
 function Dashboard() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [tanks, setTanks] = useState([]);
+  const [loadingTanks, setLoadingTanks] = useState(true);
 
   useEffect(() => {
     // Layout handles auth check, we just load user data for display
     getCurrentUser().then(setUser).catch(() => { });
+    
+    // Fetch actual tanks from API
+    getTanks()
+      .then(data => setTanks(data || []))
+      .catch(err => console.error('Failed to load tanks:', err))
+      .finally(() => setLoadingTanks(false));
   }, []);
 
   return (
@@ -28,34 +38,51 @@ function Dashboard() {
         <Card className={`${styles.card} ${styles.statusCard}`}>
           <div className={styles.cardHeader}>
             <h3><FaFish /> Tank Status</h3>
-            <span className={styles.badgeSuccess}>All Optimal</span>
+            {tanks.length > 0 && <span className={styles.badgeSuccess}>All Optimal</span>}
           </div>
           <div className={styles.tankList}>
-            <div className={styles.tankItem}>
-              <div className={styles.tankInfo}>
-                <span className={styles.tankName}>{user?.tanks?.[0]?.name || 'Community Tank'}</span>
-                <span className={styles.tankDetail}>200L • 12 Fish</span>
-              </div>
-              <div className={styles.tankMetrics}>
-                <div className={styles.metric}>
-                  <span className={styles.metricLabel}>pH</span>
-                  <span className={styles.metricValue}>7.0</span>
-                </div>
-                <div className={styles.metric}>
-                  <span className={styles.metricLabel}>Temp</span>
-                  <span className={styles.metricValue}>25.5°C</span>
-                </div>
-              </div>
-            </div>
-            {/* Placeholder for more tanks */}
-            {!user?.tanks?.length && (
+            {loadingTanks ? (
               <div className={styles.emptyState}>
-                <p>No real tanks connected yet.</p>
+                <p>Loading tanks...</p>
+              </div>
+            ) : tanks.length > 0 ? (
+              tanks.slice(0, 3).map(tank => (
+                <div 
+                  key={tank.id} 
+                  className={styles.tankItem}
+                  onClick={() => navigate(`/tanks/${tank.id}`)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className={styles.tankInfo}>
+                    <span className={styles.tankName}>{tank.name}</span>
+                    <span className={styles.tankDetail}>
+                      {tank.sizeLiters}L • {tank.fish?.length || 0} Fish
+                    </span>
+                  </div>
+                  <div className={styles.tankMetrics}>
+                    <div className={styles.metric}>
+                      <span className={styles.metricLabel}>pH</span>
+                      <span className={styles.metricValue}>
+                        {tank.waterParameters?.targetPh?.toFixed(1) || '—'}
+                      </span>
+                    </div>
+                    <div className={styles.metric}>
+                      <span className={styles.metricLabel}>Temp</span>
+                      <span className={styles.metricValue}>
+                        {tank.waterParameters?.targetTemperature ? `${tank.waterParameters.targetTemperature}°C` : '—'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className={styles.emptyState}>
+                <p>No tanks yet. Create your first tank!</p>
               </div>
             )}
           </div>
-          <button className={styles.addTankBtn}>
-            <FaPlus /> Add New Tank
+          <button className={styles.addTankBtn} onClick={() => navigate('/tanks')}>
+            <FaPlus /> {tanks.length > 0 ? 'Manage Tanks' : 'Add New Tank'}
           </button>
         </Card>
 

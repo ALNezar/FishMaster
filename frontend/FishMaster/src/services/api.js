@@ -1,5 +1,5 @@
 // api.js
-const DEV_MODE = true; // toggle to false in production
+const DEV_MODE = false; // toggle to true for local development without backend
 
 const API_BASE_URL = 'http://localhost:8080';
 
@@ -12,12 +12,8 @@ export const isAuthenticated = () => {
   return !!getToken();
 };
 
-if (DEV_MODE) {
-  localStorage.setItem('fishmaster_token', 'dev');
-}
-
-const createHeaders = (includeAuth = true) => {
-  const headers = { 'Content-Type': 'application/json' };
+const createHeaders = (includeAuth = true, customHeaders = {}) => {
+  const headers = { 'Content-Type': 'application/json', ...customHeaders };
   if (includeAuth) {
     const token = getToken();
     if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -56,7 +52,11 @@ const apiRequest = async (endpoint, options = {}) => {
   }
 
   const url = `${API_BASE_URL}${endpoint}`;
-  const config = { ...options, headers: createHeaders(options.includeAuth !== false) };
+  const headers = createHeaders(options.includeAuth !== false, options.headers || {});
+  const config = { ...options, headers };
+
+  // Debug logging
+  console.log(`API Request [${endpoint}]:`, { url, method: config.method || 'GET', body: options.body });
 
   try {
     const response = await fetch(url, config);
@@ -64,7 +64,11 @@ const apiRequest = async (endpoint, options = {}) => {
     
     const contentType = response.headers.get('content-type');
     const data = contentType && contentType.includes('application/json') ? await response.json() : await response.text();
-    if (!response.ok) throw new Error(data.message || data || 'Request failed');
+    if (!response.ok) {
+      // Handle different error response formats from backend
+      const errorMessage = data.error || data.message || (typeof data === 'string' ? data : 'Request failed');
+      throw new Error(errorMessage);
+    }
     return data;
   } catch (error) {
     console.error(`API Error [${endpoint}]:`, error);
@@ -75,7 +79,7 @@ const apiRequest = async (endpoint, options = {}) => {
 // Export endpoints
 export const signup = async (username, email, password) => apiRequest('/auth/signup', { method: 'POST', includeAuth: false, body: JSON.stringify({ username, email, password }) });
 export const verifyEmail = async (email, verificationCode) => apiRequest('/auth/verify', { method: 'POST', includeAuth: false, body: JSON.stringify({ email, verificationCode }) });
-export const resendVerificationCode = async (email) => apiRequest('/auth/resend', { method: 'POST', includeAuth: false, body: JSON.stringify(email) });
+export const resendVerificationCode = async (email) => apiRequest('/auth/resend', { method: 'POST', includeAuth: false, body: email, headers: { 'Content-Type': 'text/plain' } });
 export const login = async (email, password) => { const res = await apiRequest('/auth/login', { method: 'POST', includeAuth: false, body: JSON.stringify({ email, password }) }); if (res.token) setToken(res.token); return res; };
 export const logout = () => removeToken();
 export const getFishTypes = async (careLevel = null) => apiRequest(`/api/onboarding/fish-types${careLevel ? `?careLevel=${careLevel}` : ''}`);
@@ -84,4 +88,15 @@ export const completeOnboarding = async (data) => apiRequest('/api/onboarding/co
 export const getCurrentUser = async () => apiRequest('/users/me');
 export const updateProfile = async (data) => apiRequest('/users/me', { method: 'PUT', body: JSON.stringify(data) });
 export const deleteAccount = async () => apiRequest('/users/me', { method: 'DELETE' });
-export default { signup, verifyEmail, resendVerificationCode, login, logout, getFishTypes, getOnboardingStatus, completeOnboarding, getCurrentUser, updateProfile, deleteAccount, isAuthenticated, setToken, removeToken };
+
+// Tank endpoints
+export const getTanks = async () => apiRequest('/tanks');
+export const getTank = async (id) => apiRequest(`/tanks/${id}`);
+export const createTank = async (data) => apiRequest('/tanks', { method: 'POST', body: JSON.stringify(data) });
+export const updateTank = async (id, data) => apiRequest(`/tanks/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deleteTank = async (id) => apiRequest(`/tanks/${id}`, { method: 'DELETE' });
+
+// Export apiRequest for direct use (backwards compatibility)
+export { apiRequest };
+
+export default { signup, verifyEmail, resendVerificationCode, login, logout, getFishTypes, getOnboardingStatus, completeOnboarding, getCurrentUser, updateProfile, deleteAccount, isAuthenticated, setToken, removeToken, getTanks, getTank, createTank, updateTank, deleteTank, apiRequest };

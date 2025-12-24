@@ -36,4 +36,8 @@
   @media (min-width: 768px) {
     padding: 40px 40px 40px 100px; /* Left padding in case user wants menu always visible in future, for now mostly centered but shifted slightly */
   }
+
+  @media (max-width: 480px) {
+    padding: 70px 12px 30px;
+  }
 }

@@ -93,6 +93,27 @@
     border-color: #1277b0;
     box-shadow: 0 0 0 3px rgba(18, 119, 176, 0.2);
   }
+
+  @media (max-width: 400px) {
+    width: 42px;
+    height: 52px;
+    font-size: 22px;
+    border-radius: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 24px 20px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .codeInputs {
+    gap: 8px;
+  }
 }
 
 .error {

@@ -34,6 +34,21 @@
   background: #f5efd3;
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+
+  @media (max-width: 480px) {
+    padding: 24px 20px;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 26px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
 }
 
 .header {

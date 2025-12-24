@@ -87,10 +87,18 @@
     h1 {
       font-size: 3rem;
       margin-bottom: 0.5rem;
+
+      @media (max-width: 600px) {
+        font-size: 2rem;
+      }
     }
     
     p {
       margin: 0;
+    }
+
+    @media (max-width: 600px) {
+      min-width: 100%;
     }
   }
   
@@ -113,6 +121,11 @@
     transition: transform 0.15s ease;
     white-space: nowrap;
     position: relative;
+
+    @media (max-width: 600px) {
+      font-size: 1.1rem;
+      padding: 0.5rem 1rem;
+    }
     
     &::before {
       content: '';
@@ -127,6 +140,11 @@
       transform: rotate(-2deg) scale(1.05);
       animation: handDrawnShake 0.3s ease-in-out;
     }
+  }
+
+  @media (max-width: 600px) {
+    gap: 1rem;
+    margin-bottom: 1.5rem;
   }
 }
 

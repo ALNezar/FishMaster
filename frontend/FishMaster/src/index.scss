@@ -40,5 +40,43 @@
   scrollbar-color: #ffec7d #101010; 
 }
 
+/* Global Mobile-Friendly Styles */
+html {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Ensure touch targets are at least 44px for accessibility */
+button, 
+a, 
+input[type="submit"], 
+input[type="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Prevent zoom on input focus for iOS */
+@media screen and (max-width: 768px) {
+  input, 
+  select, 
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Safe area padding for notched devices */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+}
+
 
 

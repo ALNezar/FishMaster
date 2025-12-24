@@ -69,6 +69,11 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   text-align: center;
   animation: fadeIn 0.3s ease;
+
+  @media (max-width: 600px) {
+    padding: 24px 16px;
+    border-radius: 16px;
+  }
 }
 
 @keyframes fadeIn {
@@ -92,6 +97,10 @@
   font-size: 32px;
   color: #2c1810;
   margin: 0 0 16px 0;
+
+  @media (max-width: 600px) {
+    font-size: 24px;
+  }
 }
 
 .stepSubtitle {
@@ -99,6 +108,11 @@
   color: #666;
   margin: 0 0 32px 0;
   line-height: 1.5;
+
+  @media (max-width: 600px) {
+    font-size: 15px;
+    margin-bottom: 24px;
+  }
 }
 
 .inputGroup {
@@ -160,6 +174,15 @@
   button {
     min-width: 140px;
   }
+
+  @media (max-width: 500px) {
+    flex-direction: column-reverse;
+    gap: 12px;
+
+    button {
+      width: 100%;
+    }
+  }
 }
 
 .backButton {
@@ -193,6 +216,11 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 24px;
+
+  @media (max-width: 500px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 
 .sizeCard {

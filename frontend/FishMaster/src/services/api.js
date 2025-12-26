@@ -1,5 +1,5 @@
 // api.js
-const DEV_MODE = false; // toggle to true for local development without backend
+const DEV_MODE = true; // toggle to true for local development without backend
 
 const API_BASE_URL = 'http://localhost:8080';
 
@@ -21,6 +21,92 @@ const createHeaders = (includeAuth = true, customHeaders = {}) => {
   return headers;
 };
 
+// Generate mock sensor data for a given time range
+const generateMockSensorData = (timeRange, tankId) => {
+  const now = new Date();
+  let labels = [];
+  let dataPoints = 0;
+  
+  switch (timeRange) {
+    case '24h':
+      dataPoints = 24;
+      for (let i = 23; i >= 0; i--) {
+        const hour = new Date(now - i * 3600000);
+        labels.push(hour.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
+      }
+      break;
+    case '7d':
+      dataPoints = 7;
+      for (let i = 6; i >= 0; i--) {
+        const day = new Date(now - i * 86400000);
+        labels.push(day.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }));
+      }
+      break;
+    case '30d':
+      dataPoints = 30;
+      for (let i = 29; i >= 0; i--) {
+        const day = new Date(now - i * 86400000);
+        labels.push(day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      }
+      break;
+    default:
+      dataPoints = 24;
+      for (let i = 23; i >= 0; i--) {
+        labels.push(`${23-i}:00`);
+      }
+  }
+  
+  // Generate realistic fluctuating data
+  const generateValues = (base, variance, min, max) => {
+    return Array(dataPoints).fill(0).map((_, i) => {
+      const noise = (Math.random() - 0.5) * variance;
+      const trend = Math.sin(i / dataPoints * Math.PI) * (variance / 2);
+      return Math.min(max, Math.max(min, base + noise + trend));
+    });
+  };
+
+  return {
+    temperature: {
+      labels,
+      values: generateValues(25, 2, 22, 28),
+      target: 25,
+      min: 20,
+      max: 30,
+    },
+    ph: {
+      labels,
+      values: generateValues(7.2, 0.4, 6.5, 8.0),
+      target: 7.0,
+    },
+    turbidity: {
+      labels,
+      values: generateValues(2, 2, 0, 6),
+    },
+    ammonia: {
+      labels,
+      values: generateValues(0.1, 0.15, 0, 0.4),
+    },
+    multiParam: {
+      labels,
+      temperature: generateValues(70, 15, 50, 90), // normalized
+      ph: generateValues(75, 10, 60, 90), // normalized  
+      ammonia: generateValues(80, 20, 40, 100), // normalized
+    },
+    summary: {
+      optimal: 78,
+      warning: 15,
+      critical: 7,
+    },
+    currentReadings: {
+      temperature: { value: 25.2, unit: '°C', status: 'optimal', trend: 'stable' },
+      ph: { value: 7.1, unit: '', status: 'optimal', trend: 'rising' },
+      turbidity: { value: 1.8, unit: 'NTU', status: 'optimal', trend: 'stable' },
+      ammonia: { value: 0.08, unit: 'ppm', status: 'optimal', trend: 'falling' },
+    },
+    lastUpdated: now.toISOString(),
+  };
+};
+
 const apiRequest = async (endpoint, options = {}) => {
   if (DEV_MODE) {
     switch (endpoint) {
@@ -39,13 +125,18 @@ const apiRequest = async (endpoint, options = {}) => {
       // Mock Tank Data
       case '/tanks':
         return [
-          { id: 1, name: 'Living Room Tank', sizeLiters: 120, fish: [] },
-          { id: 2, name: 'Betta Bowl', sizeLiters: 20, fish: [] }
+          { id: 1, name: 'Living Room Tank', sizeLiters: 120, fish: [{ id: 1, name: 'Goldie' }, { id: 2, name: 'Finn' }], waterParameters: { targetPh: 7.0, targetTemperature: 25 } },
+          { id: 2, name: 'Betta Bowl', sizeLiters: 20, fish: [{ id: 3, name: 'Blue' }], waterParameters: { targetPh: 7.2, targetTemperature: 26 } }
         ];
       default:
         // Handle dynamic routes for mocks
         if (endpoint.match(/^\/tanks\/\d+$/)) {
-             return { id: 1, name: 'Living Room Tank', sizeLiters: 120, fish: [] };
+             return { id: 1, name: 'Living Room Tank', sizeLiters: 120, fish: [{ id: 1, name: 'Goldie' }, { id: 2, name: 'Finn' }], waterParameters: { targetPh: 7.0, targetTemperature: 25 } };
+        }
+        // Handle sensor data endpoints
+        const sensorMatch = endpoint.match(/^\/tanks\/(\d+)\/sensors\?timeRange=(\w+)$/);
+        if (sensorMatch) {
+          return generateMockSensorData(sensorMatch[2], sensorMatch[1]);
         }
         return {}; // fallback
     }
@@ -122,7 +213,10 @@ export const createTank = async (data) => apiRequest('/tanks', { method: 'POST',
 export const updateTank = async (id, data) => apiRequest(`/tanks/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 export const deleteTank = async (id) => apiRequest(`/tanks/${id}`, { method: 'DELETE' });
 
+// Sensor data endpoints
+export const getSensorData = async (tankId, timeRange = '24h') => apiRequest(`/tanks/${tankId}/sensors?timeRange=${timeRange}`);
+
 // Export apiRequest for direct use (backwards compatibility)
 export { apiRequest };
 
-export default { signup, verifyEmail, resendVerificationCode, login, logout, getFishTypes, getOnboardingStatus, completeOnboarding, getCurrentUser, updateProfile, deleteAccount, isAuthenticated, setToken, removeToken, getTanks, getTank, createTank, updateTank, deleteTank, apiRequest };
+export default { signup, verifyEmail, resendVerificationCode, login, logout, getFishTypes, getOnboardingStatus, completeOnboarding, getCurrentUser, updateProfile, deleteAccount, isAuthenticated, setToken, removeToken, getTanks, getTank, createTank, updateTank, deleteTank, getSensorData, apiRequest };

@@ -11,7 +11,10 @@ import {
   MdPerson,
   MdLogout,
   MdMenu,
-  MdClose
+  MdClose,
+  MdHistory,
+  MdShowChart,
+  MdSensors
 } from 'react-icons/md';
 import { logout } from '../../../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +24,9 @@ import './NavBar.scss';
 const sections = [
   { path: '/dashboard', label: 'Dashboard', icon: MdDashboard },
   { path: '/tanks', label: 'My Tanks', icon: MdWaterDrop },
-  { path: '/analytics', label: 'Data & Trends', icon: MdTrendingUp },
+  { path: '/data', label: 'Sensor Data', icon: MdSensors },
+  { path: '/trends', label: 'Trends', icon: MdShowChart },
+  { path: '/history', label: 'History', icon: MdHistory },
   { path: '/alerts', label: 'Alert Rules', icon: MdWarning },
   { path: '/notifications', label: 'Notifications', icon: MdNotifications },
   { path: '/education', label: 'Learn & Care', icon: MdMenuBook },

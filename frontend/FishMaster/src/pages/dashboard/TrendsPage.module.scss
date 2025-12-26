@@ -1,0 +1,328 @@
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+
+$primary: #1277b0;
+$primary-dark: #0e5a85;
+$bg-cream: #f5f1e3;
+$text-dark: #3d3021;
+$text-light: #666;
+$success: #16a34a;
+$warning: #ca8a04;
+$danger: #dc2626;
+
+.trendsPage {
+  font-family: 'DM Sans', sans-serif;
+}
+
+.header {
+  margin-bottom: 1.5rem;
+  
+  h1 {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.75rem;
+    color: $text-dark;
+    margin: 0 0 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    
+    svg {
+      color: $primary;
+    }
+  }
+  
+  p {
+    color: $text-light;
+    margin: 0;
+  }
+}
+
+.controls {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.controlGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  
+  label {
+    font-size: 0.875rem;
+    color: $text-light;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+.select {
+  padding: 0.75rem 1rem;
+  border: 2px solid rgba($text-dark, 0.2);
+  border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  background: white;
+  min-width: 200px;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    border-color: $primary;
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.1);
+  }
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: $text-light;
+  
+  p {
+    margin-top: 1rem;
+  }
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba($primary, 0.2);
+  border-top-color: $primary;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// Trend Cards
+.trendCards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.trendCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem !important;
+  background: white;
+  border-radius: 16px;
+  border: 2px solid rgba($text-dark, 0.1);
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  &.active {
+    border-color: var(--accent-color, $primary);
+    box-shadow: 0 4px 12px rgba($primary, 0.15);
+  }
+}
+
+.cardIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba($primary, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.cardContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.metricLabel {
+  font-size: 0.8rem;
+  color: $text-light;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.cardValue {
+  font-family: 'Special Elite', cursive;
+  font-size: 1.5rem;
+  color: $text-dark;
+  line-height: 1.2;
+  
+  .unit {
+    font-size: 0.875rem;
+    color: $text-light;
+    margin-left: 2px;
+  }
+}
+
+.cardTrend {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0.25rem 0;
+  font-size: 0.875rem;
+  
+  .stable {
+    color: $text-light;
+  }
+  
+  .rising {
+    color: $warning;
+  }
+  
+  .falling {
+    color: $success;
+  }
+}
+
+.trendUp {
+  color: $warning;
+}
+
+.trendDown {
+  color: $success;
+}
+
+.trendStable {
+  color: $text-light;
+}
+
+.optimal {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+// Chart Card
+.chartCard {
+  padding: 1.5rem !important;
+  background: white;
+  border-radius: 16px;
+  border: 2px solid rgba($text-dark, 0.1);
+  margin-bottom: 1.5rem;
+  
+  h2 {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.25rem;
+    color: $text-dark;
+    margin: 0 0 1rem;
+  }
+}
+
+.chartContainer {
+  height: 350px;
+  
+  @media (max-width: 768px) {
+    height: 280px;
+  }
+}
+
+// Insights Card
+.insightsCard {
+  padding: 1.5rem !important;
+  background: white;
+  border-radius: 16px;
+  border: 2px solid rgba($text-dark, 0.1);
+  
+  h2 {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.25rem;
+    color: $text-dark;
+    margin: 0 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    svg {
+      color: #ca8a04;
+    }
+  }
+}
+
+.insightsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.insight {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 12px;
+  background: $bg-cream;
+  
+  &.success {
+    background: #F0FDF4;
+    border-left: 3px solid $success;
+  }
+  
+  &.warning {
+    background: #FFFBEB;
+    border-left: 3px solid $warning;
+  }
+  
+  &.info {
+    background: #EFF6FF;
+    border-left: 3px solid $primary;
+  }
+}
+
+.insightIcon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.insight p {
+  margin: 0;
+  color: $text-dark;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+// Mobile responsive
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .trendCard {
+    padding: 1rem !important;
+  }
+  
+  .cardIcon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+  }
+  
+  .cardValue {
+    font-size: 1.25rem;
+  }
+}

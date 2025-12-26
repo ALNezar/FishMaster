@@ -23,6 +23,63 @@ $danger: #dc2626;
   }
 }
 
+// Tab Navigation
+.tabNavigation {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  background: rgba($text-dark, 0.05);
+  padding: 0.5rem;
+  border-radius: 16px;
+  width: fit-content;
+  
+  @media (max-width: 600px) {
+    width: 100%;
+    justify-content: stretch;
+  }
+}
+
+.tabButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Special Elite', cursive;
+  font-size: 1rem;
+  color: $text-light;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: rgba(white, 0.5);
+    color: $text-dark;
+  }
+  
+  &.activeTab {
+    background: white;
+    color: $primary;
+    box-shadow: 0 2px 8px rgba($text-dark, 0.1);
+  }
+  
+  svg {
+    font-size: 1.1rem;
+  }
+  
+  @media (max-width: 600px) {
+    flex: 1;
+    justify-content: center;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    
+    svg {
+      font-size: 1rem;
+    }
+  }
+}
+
 
 .addTankBtn {
   background: $primary;

@@ -107,31 +107,116 @@ const generateMockSensorData = (timeRange, tankId) => {
   };
 };
 
+// Mock fish types data
+const mockFishTypes = [
+  { id: 1, name: 'Goldfish', careLevel: 'Easy', minTankSize: 40, temperatureMin: 18, temperatureMax: 24, phMin: 6.5, phMax: 7.5 },
+  { id: 2, name: 'Betta', careLevel: 'Medium', minTankSize: 10, temperatureMin: 24, temperatureMax: 28, phMin: 6.5, phMax: 7.5 },
+  { id: 3, name: 'Guppy', careLevel: 'Easy', minTankSize: 20, temperatureMin: 22, temperatureMax: 28, phMin: 6.8, phMax: 7.8 },
+  { id: 4, name: 'Neon Tetra', careLevel: 'Easy', minTankSize: 40, temperatureMin: 20, temperatureMax: 26, phMin: 6.0, phMax: 7.0 },
+  { id: 5, name: 'Corydoras', careLevel: 'Easy', minTankSize: 40, temperatureMin: 22, temperatureMax: 26, phMin: 6.0, phMax: 8.0 },
+  { id: 6, name: 'Angelfish', careLevel: 'Medium', minTankSize: 80, temperatureMin: 24, temperatureMax: 28, phMin: 6.0, phMax: 7.5 },
+  { id: 7, name: 'Molly', careLevel: 'Easy', minTankSize: 40, temperatureMin: 22, temperatureMax: 28, phMin: 7.0, phMax: 8.5 },
+  { id: 8, name: 'Platy', careLevel: 'Easy', minTankSize: 40, temperatureMin: 20, temperatureMax: 26, phMin: 7.0, phMax: 8.2 },
+  { id: 9, name: 'Dwarf Gourami', careLevel: 'Medium', minTankSize: 40, temperatureMin: 22, temperatureMax: 28, phMin: 6.0, phMax: 7.5 },
+  { id: 10, name: 'Cherry Shrimp', careLevel: 'Easy', minTankSize: 10, temperatureMin: 18, temperatureMax: 28, phMin: 6.5, phMax: 8.0 },
+];
+
+// In-memory mock tanks for DEV_MODE
+let mockTanks = [
+  { 
+    id: 1, 
+    name: 'Living Room Tank', 
+    sizeLiters: 120, 
+    fish: [
+      { id: 1, name: 'Goldie', fishType: mockFishTypes[0] }, 
+      { id: 2, name: 'Finn', fishType: mockFishTypes[2] }
+    ], 
+    waterParameters: { targetPh: 7.0, targetTemperature: 25, ph: 7.1, temperature: 25 } 
+  },
+  { 
+    id: 2, 
+    name: 'Betta Bowl', 
+    sizeLiters: 20, 
+    fish: [
+      { id: 3, name: 'Blue', fishType: mockFishTypes[1] }
+    ], 
+    waterParameters: { targetPh: 7.2, targetTemperature: 26, ph: 7.0, temperature: 26 } 
+  }
+];
+let nextFishId = 4;
+let nextTankId = 3;
+
 const apiRequest = async (endpoint, options = {}) => {
   if (DEV_MODE) {
+    // Handle POST/PUT/DELETE for fish
+    const fishAddMatch = endpoint.match(/^\/tanks\/(\d+)\/fish$/);
+    const fishDeleteMatch = endpoint.match(/^\/tanks\/(\d+)\/fish\/(\d+)$/);
+    
+    if (fishAddMatch && options.method === 'POST') {
+      const tankId = parseInt(fishAddMatch[1]);
+      const tank = mockTanks.find(t => t.id === tankId);
+      if (tank) {
+        const fishData = JSON.parse(options.body);
+        const fishType = mockFishTypes.find(ft => ft.id === fishData.fishTypeId);
+        const newFish = {
+          id: nextFishId++,
+          name: fishData.name,
+          fishType: fishType || null
+        };
+        tank.fish.push(newFish);
+        return newFish;
+      }
+    }
+    
+    if (fishDeleteMatch && options.method === 'DELETE') {
+      const tankId = parseInt(fishDeleteMatch[1]);
+      const fishId = parseInt(fishDeleteMatch[2]);
+      const tank = mockTanks.find(t => t.id === tankId);
+      if (tank) {
+        tank.fish = tank.fish.filter(f => f.id !== fishId);
+        return null;
+      }
+    }
+    
+    // Handle tank creation
+    if (endpoint === '/tanks' && options.method === 'POST') {
+      const tankData = JSON.parse(options.body);
+      const newTank = {
+        id: nextTankId++,
+        name: tankData.name,
+        sizeLiters: parseInt(tankData.sizeLiters),
+        fish: [],
+        waterParameters: { targetPh: 7.0, targetTemperature: 25, ph: 7.0, temperature: 25 }
+      };
+      mockTanks.push(newTank);
+      return newTank;
+    }
+    
+    // Handle tank deletion
+    const tankDeleteMatch = endpoint.match(/^\/tanks\/(\d+)$/);
+    if (tankDeleteMatch && options.method === 'DELETE') {
+      const tankId = parseInt(tankDeleteMatch[1]);
+      mockTanks = mockTanks.filter(t => t.id !== tankId);
+      return null;
+    }
+    
     switch (endpoint) {
       case '/users/me':
         return { id: 1, username: 'Dev User', email: 'dev@fishmaster.app' };
       case '/api/onboarding/fish-types':
-        return [
-          { id: 1, name: 'Goldfish', careLevel: 'Easy' },
-          { id: 2, name: 'Betta', careLevel: 'Medium' },
-          { id: 3, name: 'Guppy', careLevel: 'Easy' },
-        ];
+        return mockFishTypes;
       case '/api/onboarding/status':
         return { completed: true };
       case '/api/onboarding/complete':
         return { success: true };
-      // Mock Tank Data
       case '/tanks':
-        return [
-          { id: 1, name: 'Living Room Tank', sizeLiters: 120, fish: [{ id: 1, name: 'Goldie' }, { id: 2, name: 'Finn' }], waterParameters: { targetPh: 7.0, targetTemperature: 25 } },
-          { id: 2, name: 'Betta Bowl', sizeLiters: 20, fish: [{ id: 3, name: 'Blue' }], waterParameters: { targetPh: 7.2, targetTemperature: 26 } }
-        ];
+        return mockTanks;
       default:
         // Handle dynamic routes for mocks
-        if (endpoint.match(/^\/tanks\/\d+$/)) {
-             return { id: 1, name: 'Living Room Tank', sizeLiters: 120, fish: [{ id: 1, name: 'Goldie' }, { id: 2, name: 'Finn' }], waterParameters: { targetPh: 7.0, targetTemperature: 25 } };
+        const tankMatch = endpoint.match(/^\/tanks\/(\d+)$/);
+        if (tankMatch) {
+          const tankId = parseInt(tankMatch[1]);
+          return mockTanks.find(t => t.id === tankId) || mockTanks[0];
         }
         // Handle sensor data endpoints
         const sensorMatch = endpoint.match(/^\/tanks\/(\d+)\/sensors\?timeRange=(\w+)$/);
@@ -213,10 +298,15 @@ export const createTank = async (data) => apiRequest('/tanks', { method: 'POST',
 export const updateTank = async (id, data) => apiRequest(`/tanks/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 export const deleteTank = async (id) => apiRequest(`/tanks/${id}`, { method: 'DELETE' });
 
+// Fish endpoints
+export const addFishToTank = async (tankId, fishData) => apiRequest(`/tanks/${tankId}/fish`, { method: 'POST', body: JSON.stringify(fishData) });
+export const removeFishFromTank = async (tankId, fishId) => apiRequest(`/tanks/${tankId}/fish/${fishId}`, { method: 'DELETE' });
+export const updateFish = async (tankId, fishId, fishData) => apiRequest(`/tanks/${tankId}/fish/${fishId}`, { method: 'PUT', body: JSON.stringify(fishData) });
+
 // Sensor data endpoints
 export const getSensorData = async (tankId, timeRange = '24h') => apiRequest(`/tanks/${tankId}/sensors?timeRange=${timeRange}`);
 
 // Export apiRequest for direct use (backwards compatibility)
 export { apiRequest };
 
-export default { signup, verifyEmail, resendVerificationCode, login, logout, getFishTypes, getOnboardingStatus, completeOnboarding, getCurrentUser, updateProfile, deleteAccount, isAuthenticated, setToken, removeToken, getTanks, getTank, createTank, updateTank, deleteTank, getSensorData, apiRequest };
+export default { signup, verifyEmail, resendVerificationCode, login, logout, getFishTypes, getOnboardingStatus, completeOnboarding, getCurrentUser, updateProfile, deleteAccount, isAuthenticated, setToken, removeToken, getTanks, getTank, createTank, updateTank, deleteTank, addFishToTank, removeFishFromTank, updateFish, getSensorData, apiRequest };

@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Card from '../../components/common/card/card';
 import Button from '../../components/common/button/button';
-import api from '../../services/api';
+import api, { getFishTypes, addFishToTank, removeFishFromTank } from '../../services/api';
 import styles from './TankDetailsPage.module.scss';
+import { FaFish, FaPlus, FaTrash, FaEdit, FaTimes, FaThermometerHalf, FaTint } from 'react-icons/fa';
 
 const TankDetailsPage = () => {
     const { id } = useParams();
@@ -13,9 +14,16 @@ const TankDetailsPage = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState({ name: '', sizeLiters: '' });
     const [error, setError] = useState('');
+    
+    // Fish management state
+    const [showAddFish, setShowAddFish] = useState(false);
+    const [fishTypes, setFishTypes] = useState([]);
+    const [newFish, setNewFish] = useState({ name: '', fishTypeId: '' });
+    const [addingFish, setAddingFish] = useState(false);
 
     useEffect(() => {
         fetchTankDetails();
+        loadFishTypes();
     }, [id]);
 
     const fetchTankDetails = async () => {
@@ -29,6 +37,15 @@ const TankDetailsPage = () => {
             setError('Failed to load tank details.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadFishTypes = async () => {
+        try {
+            const types = await getFishTypes();
+            setFishTypes(types || []);
+        } catch (err) {
+            console.error('Failed to load fish types:', err);
         }
     };
 
@@ -46,6 +63,51 @@ const TankDetailsPage = () => {
         }
     };
 
+    const handleAddFish = async (e) => {
+        e.preventDefault();
+        if (!newFish.name.trim() || !newFish.fishTypeId) {
+            setError('Please enter a name and select a species.');
+            return;
+        }
+
+        setAddingFish(true);
+        setError('');
+
+        try {
+            await addFishToTank(id, {
+                name: newFish.name,
+                fishTypeId: parseInt(newFish.fishTypeId)
+            });
+            
+            // Refresh tank data to get updated fish list
+            await fetchTankDetails();
+            
+            // Reset form
+            setNewFish({ name: '', fishTypeId: '' });
+            setShowAddFish(false);
+        } catch (err) {
+            setError(err.message || 'Failed to add fish.');
+        } finally {
+            setAddingFish(false);
+        }
+    };
+
+    const handleRemoveFish = async (fishId) => {
+        if (!window.confirm('Are you sure you want to remove this fish?')) return;
+
+        try {
+            await removeFishFromTank(id, fishId);
+            await fetchTankDetails();
+        } catch (err) {
+            setError('Failed to remove fish.');
+        }
+    };
+
+    const getSelectedFishType = () => {
+        if (!newFish.fishTypeId) return null;
+        return fishTypes.find(ft => ft.id === parseInt(newFish.fishTypeId));
+    };
+
     if (loading) return <div className={styles.loading}>Loading tank...</div>;
     if (!tank) return <div className={styles.error}>Tank not found.</div>;
 
@@ -61,7 +123,7 @@ const TankDetailsPage = () => {
                     {isEditing ? (
                         <Button onClick={() => setIsEditing(false)}>Cancel</Button>
                     ) : (
-                        <Button onClick={() => setIsEditing(true)}>Edit Details</Button>
+                        <Button onClick={() => setIsEditing(true)}><FaEdit /> Edit Details</Button>
                     )}
                 </div>
             </div>
@@ -97,26 +159,102 @@ const TankDetailsPage = () => {
             <div className={styles.grid}>
                 {/* STATUS CARD */}
                 <Card className={styles.statusCard}>
-                    <h2>Current Status</h2>
+                    <h2><FaThermometerHalf /> Current Status</h2>
                     <div className={styles.statusItems}>
                         <div className={styles.statusItem}>
-                            <span>pH</span>
-                            <strong>
-                                {tank.waterParameters ? tank.waterParameters.ph : 'N/A'}
-                            </strong>
+                            <span className={styles.statusIcon}><FaTint /></span>
+                            <div className={styles.statusInfo}>
+                                <span className={styles.statusLabel}>pH Level</span>
+                                <strong className={styles.statusValue}>
+                                    {tank.waterParameters?.ph || tank.waterParameters?.targetPh || 'N/A'}
+                                </strong>
+                            </div>
                         </div>
                         <div className={styles.statusItem}>
-                            <span>Temp</span>
-                            <strong>
-                                {tank.waterParameters ? `${tank.waterParameters.temperature}°C` : 'N/A'}
-                            </strong>
+                            <span className={styles.statusIcon}><FaThermometerHalf /></span>
+                            <div className={styles.statusInfo}>
+                                <span className={styles.statusLabel}>Temperature</span>
+                                <strong className={styles.statusValue}>
+                                    {tank.waterParameters?.temperature || tank.waterParameters?.targetTemperature 
+                                        ? `${tank.waterParameters?.temperature || tank.waterParameters?.targetTemperature}°C` 
+                                        : 'N/A'}
+                                </strong>
+                            </div>
+                        </div>
+                        <div className={styles.statusItem}>
+                            <span className={styles.statusIcon}>💧</span>
+                            <div className={styles.statusInfo}>
+                                <span className={styles.statusLabel}>Volume</span>
+                                <strong className={styles.statusValue}>{tank.sizeLiters}L</strong>
+                            </div>
                         </div>
                     </div>
                 </Card>
 
                 {/* FISH LIST */}
                 <Card className={styles.fishCard}>
-                    <h2>Inhabitants</h2>
+                    <div className={styles.fishHeader}>
+                        <h2><FaFish /> Inhabitants ({tank.fish?.length || 0})</h2>
+                        <Button 
+                            className={styles.addFishBtn}
+                            onClick={() => setShowAddFish(!showAddFish)}
+                        >
+                            {showAddFish ? <><FaTimes /> Cancel</> : <><FaPlus /> Add Fish</>}
+                        </Button>
+                    </div>
+
+                    {/* Add Fish Form */}
+                    {showAddFish && (
+                        <div className={styles.addFishForm}>
+                            <form onSubmit={handleAddFish}>
+                                <div className={styles.formRow}>
+                                    <div className={styles.formGroup}>
+                                        <label>Fish Name</label>
+                                        <input
+                                            type="text"
+                                            value={newFish.name}
+                                            onChange={(e) => setNewFish({ ...newFish, name: e.target.value })}
+                                            placeholder="e.g., Nemo"
+                                            required
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label>Species</label>
+                                        <select
+                                            value={newFish.fishTypeId}
+                                            onChange={(e) => setNewFish({ ...newFish, fishTypeId: e.target.value })}
+                                            required
+                                        >
+                                            <option value="">Select species...</option>
+                                            {fishTypes.map(type => (
+                                                <option key={type.id} value={type.id}>
+                                                    {type.name} ({type.careLevel})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                {/* Species Info Preview */}
+                                {getSelectedFishType() && (
+                                    <div className={styles.speciesInfo}>
+                                        <h4>🐟 {getSelectedFishType().name}</h4>
+                                        <div className={styles.speciesDetails}>
+                                            <span>Care: <strong>{getSelectedFishType().careLevel}</strong></span>
+                                            <span>Min Tank: <strong>{getSelectedFishType().minTankSize}L</strong></span>
+                                            <span>Temp: <strong>{getSelectedFishType().temperatureMin}-{getSelectedFishType().temperatureMax}°C</strong></span>
+                                            <span>pH: <strong>{getSelectedFishType().phMin}-{getSelectedFishType().phMax}</strong></span>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                <Button type="submit" disabled={addingFish}>
+                                    {addingFish ? 'Adding...' : 'Add Fish to Tank'}
+                                </Button>
+                            </form>
+                        </div>
+                    )}
+
                     {tank.fish && tank.fish.length > 0 ? (
                         <ul className={styles.fishList}>
                             {tank.fish.map(fish => (
@@ -124,13 +262,29 @@ const TankDetailsPage = () => {
                                     <span className={styles.fishIcon}>🐟</span>
                                     <div className={styles.fishDetails}>
                                         <strong>{fish.name}</strong>
-                                        <small>{fish.fishType ? fish.fishType.name : 'Unknown Species'}</small>
+                                        <small>{fish.fishType?.name || 'Unknown Species'}</small>
+                                        {fish.fishType?.careLevel && (
+                                            <span className={`${styles.careBadge} ${styles[fish.fishType.careLevel.toLowerCase()]}`}>
+                                                {fish.fishType.careLevel}
+                                            </span>
+                                        )}
                                     </div>
+                                    <button 
+                                        className={styles.removeFishBtn}
+                                        onClick={() => handleRemoveFish(fish.id)}
+                                        title="Remove fish"
+                                    >
+                                        <FaTrash />
+                                    </button>
                                 </li>
                             ))}
                         </ul>
                     ) : (
-                        <p className={styles.emptyText}>No fish in this tank yet.</p>
+                        <div className={styles.emptyFish}>
+                            <span className={styles.emptyIcon}>🐠</span>
+                            <p>No fish in this tank yet.</p>
+                            <small>Click "Add Fish" to add your first inhabitant!</small>
+                        </div>
                     )}
                 </Card>
             </div>

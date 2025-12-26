@@ -1,0 +1,324 @@
+import React, { useState, useEffect } from 'react';
+import { getSensorData, getTanks } from '../../services/api.js';
+import Card from '../../components/common/card/card.jsx';
+import {
+  TemperatureChart,
+  PhChart,
+  TurbidityChart,
+  AmmoniaChart,
+  WaterQualitySummary,
+  MultiParameterChart,
+} from '../../components/charts/SensorCharts.jsx';
+import styles from './Analytics.module.scss';
+import { 
+  FaThermometerHalf, 
+  FaTint, 
+  FaWater, 
+  FaFlask,
+  FaChartLine,
+  FaExclamationTriangle,
+  FaCheckCircle,
+  FaArrowUp,
+  FaArrowDown,
+  FaMinus,
+  FaSyncAlt
+} from 'react-icons/fa';
+
+const TIME_RANGES = [
+  { value: '24h', label: 'Last 24 Hours' },
+  { value: '7d', label: 'Last 7 Days' },
+  { value: '30d', label: 'Last 30 Days' },
+];
+
+/**
+ * Analytics Dashboard - Sensor Data Visualization
+ * UC 4: View Sensor Data
+ */
+function Analytics() {
+  const [tanks, setTanks] = useState([]);
+  const [selectedTank, setSelectedTank] = useState(null);
+  const [timeRange, setTimeRange] = useState('24h');
+  const [sensorData, setSensorData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [lastRefresh, setLastRefresh] = useState(new Date());
+
+  // Load tanks on mount
+  useEffect(() => {
+    const loadTanks = async () => {
+      try {
+        const data = await getTanks();
+        setTanks(data || []);
+        if (data && data.length > 0) {
+          setSelectedTank(data[0].id);
+        }
+      } catch (err) {
+        setError('Failed to load tanks');
+        console.error(err);
+      }
+    };
+    loadTanks();
+  }, []);
+
+  // Load sensor data when tank or time range changes
+  useEffect(() => {
+    const loadSensorData = async () => {
+      if (!selectedTank) return;
+      
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const data = await getSensorData(selectedTank, timeRange);
+        setSensorData(data);
+        setLastRefresh(new Date());
+      } catch (err) {
+        setError('Failed to load sensor data');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadSensorData();
+  }, [selectedTank, timeRange]);
+
+  const handleRefresh = async () => {
+    if (!selectedTank) return;
+    setLoading(true);
+    try {
+      const data = await getSensorData(selectedTank, timeRange);
+      setSensorData(data);
+      setLastRefresh(new Date());
+    } catch (err) {
+      setError('Failed to refresh data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getTrendIcon = (trend) => {
+    switch (trend) {
+      case 'rising': return <FaArrowUp className={styles.trendUp} />;
+      case 'falling': return <FaArrowDown className={styles.trendDown} />;
+      default: return <FaMinus className={styles.trendStable} />;
+    }
+  };
+
+  const getStatusClass = (status) => {
+    switch (status) {
+      case 'optimal': return styles.statusOptimal;
+      case 'warning': return styles.statusWarning;
+      case 'critical': return styles.statusCritical;
+      default: return '';
+    }
+  };
+
+  const getTimeRangeLabel = () => {
+    return TIME_RANGES.find(r => r.value === timeRange)?.label || timeRange;
+  };
+
+  if (tanks.length === 0 && !loading) {
+    return (
+      <div className={styles.analyticsContainer}>
+        <div className={styles.emptyState}>
+          <FaChartLine className={styles.emptyIcon} />
+          <h2>No Tanks Available</h2>
+          <p>Add a tank to start viewing sensor data and analytics.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.analyticsContainer}>
+      {/* Header Controls */}
+      <div className={styles.controls}>
+        <div className={styles.controlGroup}>
+          <label>Select Tank</label>
+          <select 
+            value={selectedTank || ''} 
+            onChange={(e) => setSelectedTank(Number(e.target.value))}
+            className={styles.select}
+          >
+            {tanks.map(tank => (
+              <option key={tank.id} value={tank.id}>
+                {tank.name} ({tank.sizeLiters}L)
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        <div className={styles.controlGroup}>
+          <label>Time Range</label>
+          <select 
+            value={timeRange} 
+            onChange={(e) => setTimeRange(e.target.value)}
+            className={styles.select}
+          >
+            {TIME_RANGES.map(range => (
+              <option key={range.value} value={range.value}>
+                {range.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        <button 
+          className={styles.refreshBtn} 
+          onClick={handleRefresh}
+          disabled={loading}
+        >
+          <FaSyncAlt className={loading ? styles.spinning : ''} />
+          Refresh
+        </button>
+      </div>
+      
+      <div className={styles.lastUpdate}>
+        Last updated: {lastRefresh.toLocaleTimeString()}
+      </div>
+
+      {error && (
+        <div className={styles.errorBanner}>
+          <FaExclamationTriangle /> {error}
+        </div>
+      )}
+
+      {loading && !sensorData ? (
+        <div className={styles.loadingState}>
+          <div className={styles.spinner}></div>
+          <p>Loading sensor data...</p>
+        </div>
+      ) : sensorData ? (
+        <>
+          {/* Current Readings Cards */}
+          <div className={styles.currentReadings}>
+            <Card className={`${styles.readingCard} ${getStatusClass(sensorData.currentReadings?.temperature?.status)}`}>
+              <div className={styles.readingIcon}>
+                <FaThermometerHalf />
+              </div>
+              <div className={styles.readingInfo}>
+                <span className={styles.readingLabel}>Temperature</span>
+                <span className={styles.readingValue}>
+                  {sensorData.currentReadings?.temperature?.value?.toFixed(1)}
+                  <span className={styles.unit}>{sensorData.currentReadings?.temperature?.unit}</span>
+                </span>
+              </div>
+              <div className={styles.trend}>
+                {getTrendIcon(sensorData.currentReadings?.temperature?.trend)}
+              </div>
+            </Card>
+            
+            <Card className={`${styles.readingCard} ${getStatusClass(sensorData.currentReadings?.ph?.status)}`}>
+              <div className={styles.readingIcon}>
+                <FaTint />
+              </div>
+              <div className={styles.readingInfo}>
+                <span className={styles.readingLabel}>pH Level</span>
+                <span className={styles.readingValue}>
+                  {sensorData.currentReadings?.ph?.value?.toFixed(1)}
+                </span>
+              </div>
+              <div className={styles.trend}>
+                {getTrendIcon(sensorData.currentReadings?.ph?.trend)}
+              </div>
+            </Card>
+            
+            <Card className={`${styles.readingCard} ${getStatusClass(sensorData.currentReadings?.turbidity?.status)}`}>
+              <div className={styles.readingIcon}>
+                <FaWater />
+              </div>
+              <div className={styles.readingInfo}>
+                <span className={styles.readingLabel}>Turbidity</span>
+                <span className={styles.readingValue}>
+                  {sensorData.currentReadings?.turbidity?.value?.toFixed(1)}
+                  <span className={styles.unit}>{sensorData.currentReadings?.turbidity?.unit}</span>
+                </span>
+              </div>
+              <div className={styles.trend}>
+                {getTrendIcon(sensorData.currentReadings?.turbidity?.trend)}
+              </div>
+            </Card>
+            
+            <Card className={`${styles.readingCard} ${getStatusClass(sensorData.currentReadings?.ammonia?.status)}`}>
+              <div className={styles.readingIcon}>
+                <FaFlask />
+              </div>
+              <div className={styles.readingInfo}>
+                <span className={styles.readingLabel}>Ammonia</span>
+                <span className={styles.readingValue}>
+                  {sensorData.currentReadings?.ammonia?.value?.toFixed(2)}
+                  <span className={styles.unit}>{sensorData.currentReadings?.ammonia?.unit}</span>
+                </span>
+              </div>
+              <div className={styles.trend}>
+                {getTrendIcon(sensorData.currentReadings?.ammonia?.trend)}
+              </div>
+            </Card>
+          </div>
+
+          {/* Charts Grid */}
+          <div className={styles.chartsGrid}>
+            {/* Water Quality Summary */}
+            <Card className={styles.summaryCard}>
+              <h3><FaCheckCircle /> Water Quality Score</h3>
+              <WaterQualitySummary data={sensorData.summary} />
+              <div className={styles.summaryLegend}>
+                <div className={styles.legendItem}>
+                  <span className={styles.legendDot} style={{ background: '#16a34a' }}></span>
+                  Optimal Parameters
+                </div>
+                <div className={styles.legendItem}>
+                  <span className={styles.legendDot} style={{ background: '#ca8a04' }}></span>
+                  Needs Attention
+                </div>
+                <div className={styles.legendItem}>
+                  <span className={styles.legendDot} style={{ background: '#dc2626' }}></span>
+                  Critical
+                </div>
+              </div>
+            </Card>
+
+            {/* Temperature Chart */}
+            <Card className={styles.chartCard}>
+              <h3><FaThermometerHalf /> Temperature</h3>
+              <TemperatureChart data={sensorData.temperature} timeRange={getTimeRangeLabel()} />
+            </Card>
+
+            {/* pH Chart */}
+            <Card className={styles.chartCard}>
+              <h3><FaTint /> pH Level</h3>
+              <PhChart data={sensorData.ph} timeRange={getTimeRangeLabel()} />
+            </Card>
+
+            {/* Turbidity Chart */}
+            <Card className={styles.chartCard}>
+              <h3><FaWater /> Turbidity</h3>
+              <TurbidityChart data={sensorData.turbidity} timeRange={getTimeRangeLabel()} />
+            </Card>
+
+            {/* Ammonia Chart */}
+            <Card className={styles.chartCard}>
+              <h3><FaFlask /> Ammonia Levels</h3>
+              <AmmoniaChart data={sensorData.ammonia} timeRange={getTimeRangeLabel()} />
+            </Card>
+
+            {/* Multi-Parameter Overview */}
+            <Card className={styles.wideCard}>
+              <h3><FaChartLine /> All Parameters Overview</h3>
+              <MultiParameterChart data={sensorData.multiParam} timeRange={getTimeRangeLabel()} />
+            </Card>
+          </div>
+        </>
+      ) : (
+        <div className={styles.noDataState}>
+          <FaExclamationTriangle />
+          <h3>No Data Available</h3>
+          <p>No sensor readings available for the selected time period. Try selecting a different time range.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default Analytics;

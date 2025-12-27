@@ -13,6 +13,7 @@ import {
 import { Line } from 'react-chartjs-2';
 import { getTanks, getSensorData } from '../../services/api';
 import Card from '../../components/common/card/card.jsx';
+import InfoTooltip from '../../components/common/InfoTooltip/InfoTooltip';
 import styles from './TrendsPage.module.scss';
 import { 
   FaChartLine, 
@@ -109,11 +110,64 @@ function TrendsPage() {
     }
   };
 
+  // ============================================
+  // METRIC INFO - Easy to edit! Just change the text below.
+  // To add links: add learnMoreUrl: 'https://...'
+  // ============================================
   const metrics = [
-    { key: 'temperature', label: 'Temperature', unit: '°C', icon: <FaThermometerHalf />, color: '#dc2626', optimal: '24-26°C' },
-    { key: 'ph', label: 'pH Level', unit: '', icon: <FaTint />, color: '#16a34a', optimal: '6.8-7.4' },
-    { key: 'ammonia', label: 'Ammonia', unit: 'ppm', icon: <FaFlask />, color: '#7c3aed', optimal: '< 0.25' },
-    { key: 'turbidity', label: 'Turbidity', unit: 'NTU', icon: <FaWater />, color: '#1277b0', optimal: '< 3' },
+    { 
+      key: 'temperature', 
+      label: 'Temperature', 
+      unit: '°C', 
+      icon: <FaThermometerHalf />, 
+      color: '#dc2626', 
+      optimal: '24-26°C',
+      // Tooltip info (super simple language!)
+      whatIsIt: 'How warm or cold your water is.',
+      whyItMatters: 'Fish are cold-blooded. If water is too hot or cold, they get stressed or sick.',
+      ideal: '24-26°C (75-79°F)',
+      danger: 'Below 22°C or above 28°C',
+      learnMoreUrl: null, // Add a URL here to show "Learn more" link
+    },
+    { 
+      key: 'ph', 
+      label: 'pH Level', 
+      unit: '', 
+      icon: <FaTint />, 
+      color: '#16a34a', 
+      optimal: '6.8-7.4',
+      whatIsIt: 'How acidic or alkaline your water is. 7 = neutral.',
+      whyItMatters: 'Wrong pH hurts fish gills and skin. Each fish likes a specific range.',
+      ideal: '6.8-7.4 for most fish',
+      danger: 'Below 6.5 or above 8.0',
+      learnMoreUrl: null,
+    },
+    { 
+      key: 'ammonia', 
+      label: 'Ammonia', 
+      unit: 'ppm', 
+      icon: <FaFlask />, 
+      color: '#7c3aed', 
+      optimal: '< 0.25',
+      whatIsIt: 'Toxic stuff from fish poop and leftover food.',
+      whyItMatters: 'Even tiny amounts are poisonous! It burns their gills.',
+      ideal: '0 ppm (zero is best!)',
+      danger: 'Above 0.25 ppm - do a water change!',
+      learnMoreUrl: null,
+    },
+    { 
+      key: 'turbidity', 
+      label: 'Turbidity', 
+      unit: 'NTU', 
+      icon: <FaWater />, 
+      color: '#1277b0', 
+      optimal: '< 3',
+      whatIsIt: 'How cloudy or clear your water looks.',
+      whyItMatters: 'Cloudy water = bacteria or dirt. Fish need clean, clear water to thrive.',
+      ideal: 'Under 3 NTU (crystal clear)',
+      danger: 'Above 5 NTU - check your filter!',
+      learnMoreUrl: null,
+    },
   ];
 
   const calculateMovingAverage = (values, window) => {
@@ -307,7 +361,17 @@ function TrendsPage() {
                 {metric.icon}
               </div>
               <div className={styles.cardContent}>
-                <span className={styles.metricLabel}>{metric.label}</span>
+                <div className={styles.metricLabelRow}>
+                  <span className={styles.metricLabel}>{metric.label}</span>
+                  <InfoTooltip 
+                    title={metric.label}
+                    whatIsIt={metric.whatIsIt}
+                    whyItMatters={metric.whyItMatters}
+                    ideal={metric.ideal}
+                    danger={metric.danger}
+                    learnMoreUrl={metric.learnMoreUrl}
+                  />
+                </div>
                 <div className={styles.cardValue}>
                   {currentValue}
                   <span className={styles.unit}>{metric.unit}</span>

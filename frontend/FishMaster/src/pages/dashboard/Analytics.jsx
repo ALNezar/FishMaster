@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getSensorData, getTanks } from '../../services/api.js';
 import Card from '../../components/common/card/card.jsx';
+import InfoTooltip from '../../components/common/InfoTooltip/InfoTooltip';
 import {
   TemperatureChart,
   PhChart,
@@ -29,6 +30,45 @@ const TIME_RANGES = [
   { value: '7d', label: 'Last 7 Days' },
   { value: '30d', label: 'Last 30 Days' },
 ];
+
+// ============================================
+// METRIC INFO - Easy to edit! Change text below.
+// To add links: add learnMoreUrl: 'https://...'
+// ============================================
+const METRIC_INFO = {
+  temperature: {
+    title: 'Temperature',
+    whatIsIt: 'How warm or cold your water is.',
+    whyItMatters: 'Fish are cold-blooded. Wrong temp = stressed or sick fish.',
+    ideal: '24-26°C (75-79°F)',
+    danger: 'Below 22°C or above 28°C',
+    learnMoreUrl: null,
+  },
+  ph: {
+    title: 'pH Level',
+    whatIsIt: 'How acidic or alkaline your water is. 7 = neutral.',
+    whyItMatters: 'Wrong pH hurts fish gills and skin.',
+    ideal: '6.8-7.4 for most fish',
+    danger: 'Below 6.5 or above 8.0',
+    learnMoreUrl: null,
+  },
+  ammonia: {
+    title: 'Ammonia',
+    whatIsIt: 'Toxic stuff from fish poop and leftover food.',
+    whyItMatters: 'Even tiny amounts are poisonous to fish!',
+    ideal: '0 ppm (zero is best!)',
+    danger: 'Above 0.25 ppm - do water change!',
+    learnMoreUrl: null,
+  },
+  turbidity: {
+    title: 'Turbidity',
+    whatIsIt: 'How cloudy or clear your water looks.',
+    whyItMatters: 'Cloudy = bacteria or dirt. Fish need clear water.',
+    ideal: 'Under 3 NTU (crystal clear)',
+    danger: 'Above 5 NTU - check filter!',
+    learnMoreUrl: null,
+  },
+};
 
 /**
  * Analytics Dashboard - Sensor Data Visualization
@@ -198,7 +238,10 @@ function Analytics() {
                 <FaThermometerHalf />
               </div>
               <div className={styles.readingInfo}>
-                <span className={styles.readingLabel}>Temperature</span>
+                <div className={styles.labelRow}>
+                  <span className={styles.readingLabel}>Temperature</span>
+                  <InfoTooltip {...METRIC_INFO.temperature} />
+                </div>
                 <span className={styles.readingValue}>
                   {sensorData.currentReadings?.temperature?.value?.toFixed(1)}
                   <span className={styles.unit}>{sensorData.currentReadings?.temperature?.unit}</span>
@@ -214,7 +257,10 @@ function Analytics() {
                 <FaTint />
               </div>
               <div className={styles.readingInfo}>
-                <span className={styles.readingLabel}>pH Level</span>
+                <div className={styles.labelRow}>
+                  <span className={styles.readingLabel}>pH Level</span>
+                  <InfoTooltip {...METRIC_INFO.ph} />
+                </div>
                 <span className={styles.readingValue}>
                   {sensorData.currentReadings?.ph?.value?.toFixed(1)}
                 </span>
@@ -229,7 +275,10 @@ function Analytics() {
                 <FaWater />
               </div>
               <div className={styles.readingInfo}>
-                <span className={styles.readingLabel}>Turbidity</span>
+                <div className={styles.labelRow}>
+                  <span className={styles.readingLabel}>Turbidity</span>
+                  <InfoTooltip {...METRIC_INFO.turbidity} />
+                </div>
                 <span className={styles.readingValue}>
                   {sensorData.currentReadings?.turbidity?.value?.toFixed(1)}
                   <span className={styles.unit}>{sensorData.currentReadings?.turbidity?.unit}</span>
@@ -245,7 +294,10 @@ function Analytics() {
                 <FaFlask />
               </div>
               <div className={styles.readingInfo}>
-                <span className={styles.readingLabel}>Ammonia</span>
+                <div className={styles.labelRow}>
+                  <span className={styles.readingLabel}>Ammonia</span>
+                  <InfoTooltip {...METRIC_INFO.ammonia} />
+                </div>
                 <span className={styles.readingValue}>
                   {sensorData.currentReadings?.ammonia?.value?.toFixed(2)}
                   <span className={styles.unit}>{sensorData.currentReadings?.ammonia?.unit}</span>

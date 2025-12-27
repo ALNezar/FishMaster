@@ -1,0 +1,144 @@
+$text-dark: #3d3021;
+$text-light: #666;
+$primary: #1277b0;
+
+@keyframes tooltipPop {
+  0% { transform: scale(0.9) translateY(5px); opacity: 0; }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: help;
+  margin-left: 6px;
+}
+
+.icon {
+  font-size: 0.85rem;
+  color: #bbb;
+  transition: all 0.2s;
+  
+  &:hover {
+    color: $primary;
+    transform: scale(1.1);
+  }
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
+  background: white;
+  border: 2px solid $text-dark;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 4px 4px 0 rgba($text-dark, 0.15);
+  z-index: 1000;
+  animation: tooltipPop 0.25s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  @media (max-width: 480px) {
+    position: fixed;
+    bottom: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 300px;
+  }
+  
+  h4 {
+    font-family: 'Special Elite', cursive;
+    font-size: 1.1rem;
+    color: $text-dark;
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed rgba($text-dark, 0.2);
+  }
+}
+
+.tooltipArrow {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-right: 2px solid $text-dark;
+  border-bottom: 2px solid $text-dark;
+  
+  @media (max-width: 480px) {
+    display: none;
+  }
+}
+
+.section {
+  margin-bottom: 0.75rem;
+}
+
+.question {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: $primary;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.section p {
+  font-size: 0.85rem;
+  color: $text-dark;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.ranges {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.8rem;
+  margin-top: 0.75rem;
+}
+
+.good, .bad {
+  padding: 8px 10px;
+  border-radius: 8px;
+  line-height: 1.3;
+  
+  span {
+    font-weight: 600;
+  }
+}
+
+.good {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.bad {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.learnMore {
+  display: block;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed rgba($text-dark, 0.2);
+  font-size: 0.8rem;
+  color: $primary;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+  
+  &:hover {
+    color: darken($primary, 10%);
+    text-decoration: underline;
+  }
+}

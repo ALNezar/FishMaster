@@ -197,6 +197,11 @@ $danger: #dc2626;
   flex-direction: column;
 }
 
+.labelRow {
+  display: flex;
+  align-items: center;
+}
+
 .readingLabel {
   font-size: 0.875rem;
   color: $text-light;

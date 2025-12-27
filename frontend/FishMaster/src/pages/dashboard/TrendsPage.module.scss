@@ -159,13 +159,17 @@ $danger: #dc2626;
   min-width: 0;
 }
 
+.metricLabelRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
 .metricLabel {
   font-size: 0.8rem;
   color: $text-light;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  display: block;
-  margin-bottom: 0.25rem;
 }
 
 .cardValue {

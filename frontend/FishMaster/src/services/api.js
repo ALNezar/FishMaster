@@ -25,8 +25,8 @@ const createHeaders = (includeAuth = true, customHeaders = {}) => {
 const _liveSensorState = {
   temperature: 25.2,
   ph: 7.1,
-  turbidity: 1.8,
-  ammonia: 0.08,
+  turbidity: 3.8,
+  ammonia: 1,
   trend: {
     temperature: 'stable',
     ph: 'rising',

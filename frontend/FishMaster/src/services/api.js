@@ -21,12 +21,50 @@ const createHeaders = (includeAuth = true, customHeaders = {}) => {
   return headers;
 };
 
-// Generate mock sensor data for a given time range
+// --- Live Sensor Data Simulation State ---
+const _liveSensorState = {
+  temperature: 25.2,
+  ph: 7.1,
+  turbidity: 1.8,
+  ammonia: 0.08,
+  trend: {
+    temperature: 'stable',
+    ph: 'rising',
+    turbidity: 'stable',
+    ammonia: 'falling',
+  },
+};
+
+function _jitter(val, min, max, step = 0.2) {
+  const change = (Math.random() - 0.5) * step;
+  let next = val + change;
+  if (next < min) next = min + Math.abs(change);
+  if (next > max) next = max - Math.abs(change);
+  return Number(next.toFixed(2));
+}
+
+function _updateLiveState() {
+  // Simulate trending and random walk
+  // Temperature: stable, but can rise/fall slowly
+  const prev = { ..._liveSensorState };
+  _liveSensorState.temperature = _jitter(_liveSensorState.temperature, 22, 28, 0.25);
+  _liveSensorState.ph = _jitter(_liveSensorState.ph, 6.5, 8.0, 0.05);
+  _liveSensorState.turbidity = _jitter(_liveSensorState.turbidity, 0, 6, 0.15);
+  _liveSensorState.ammonia = _jitter(_liveSensorState.ammonia, 0, 0.4, 0.02);
+
+  // Trend logic
+  _liveSensorState.trend.temperature = _liveSensorState.temperature > prev.temperature ? 'rising' : _liveSensorState.temperature < prev.temperature ? 'falling' : 'stable';
+  _liveSensorState.trend.ph = _liveSensorState.ph > prev.ph ? 'rising' : _liveSensorState.ph < prev.ph ? 'falling' : 'stable';
+  _liveSensorState.trend.turbidity = _liveSensorState.turbidity > prev.turbidity ? 'rising' : _liveSensorState.turbidity < prev.turbidity ? 'falling' : 'stable';
+  _liveSensorState.trend.ammonia = _liveSensorState.ammonia > prev.ammonia ? 'rising' : _liveSensorState.ammonia < prev.ammonia ? 'falling' : 'stable';
+}
+
+// Generate mock sensor data for a given time range, using live state for current values
 const generateMockSensorData = (timeRange, tankId) => {
+  _updateLiveState();
   const now = new Date();
   let labels = [];
   let dataPoints = 0;
-  
   switch (timeRange) {
     case '24h':
       dataPoints = 24;
@@ -55,8 +93,8 @@ const generateMockSensorData = (timeRange, tankId) => {
         labels.push(`${23-i}:00`);
       }
   }
-  
-  // Generate realistic fluctuating data
+
+  // Generate realistic fluctuating data (simulate trend with live state as base)
   const generateValues = (base, variance, min, max) => {
     return Array(dataPoints).fill(0).map((_, i) => {
       const noise = (Math.random() - 0.5) * variance;
@@ -68,23 +106,23 @@ const generateMockSensorData = (timeRange, tankId) => {
   return {
     temperature: {
       labels,
-      values: generateValues(25, 2, 22, 28),
+      values: generateValues(_liveSensorState.temperature, 2, 22, 28),
       target: 25,
       min: 20,
       max: 30,
     },
     ph: {
       labels,
-      values: generateValues(7.2, 0.4, 6.5, 8.0),
+      values: generateValues(_liveSensorState.ph, 0.4, 6.5, 8.0),
       target: 7.0,
     },
     turbidity: {
       labels,
-      values: generateValues(2, 2, 0, 6),
+      values: generateValues(_liveSensorState.turbidity, 2, 0, 6),
     },
     ammonia: {
       labels,
-      values: generateValues(0.1, 0.15, 0, 0.4),
+      values: generateValues(_liveSensorState.ammonia, 0.15, 0, 0.4),
     },
     multiParam: {
       labels,
@@ -98,10 +136,10 @@ const generateMockSensorData = (timeRange, tankId) => {
       critical: 7,
     },
     currentReadings: {
-      temperature: { value: 25.2, unit: '°C', status: 'optimal', trend: 'stable' },
-      ph: { value: 7.1, unit: '', status: 'optimal', trend: 'rising' },
-      turbidity: { value: 1.8, unit: 'NTU', status: 'optimal', trend: 'stable' },
-      ammonia: { value: 0.08, unit: 'ppm', status: 'optimal', trend: 'falling' },
+      temperature: { value: _liveSensorState.temperature, unit: '°C', status: 'optimal', trend: _liveSensorState.trend.temperature },
+      ph: { value: _liveSensorState.ph, unit: '', status: 'optimal', trend: _liveSensorState.trend.ph },
+      turbidity: { value: _liveSensorState.turbidity, unit: 'NTU', status: 'optimal', trend: _liveSensorState.trend.turbidity },
+      ammonia: { value: _liveSensorState.ammonia, unit: 'ppm', status: 'optimal', trend: _liveSensorState.trend.ammonia },
     },
     lastUpdated: now.toISOString(),
   };

@@ -1,3 +1,23 @@
+// --- Tank Health Score Calculation ---
+const PARAM_WEIGHTS = {
+  ph: 1.5,
+  ammonia: 1.2,
+  temperature: 0.8,
+  turbidity: 0.5,
+};
+
+function getTankHealthScore({ ph, ammonia, temperature, turbidity }) {
+  let score = 0;
+  // pH: 6.8 - 7.4 is good
+  if (ph >= 6.8 && ph <= 7.4) score += PARAM_WEIGHTS.ph;
+  // Ammonia: 0 - 0.25 ppm is good
+  if (ammonia >= 0 && ammonia <= 0.25) score += PARAM_WEIGHTS.ammonia;
+  // Temperature: 24 - 26°C is good
+  if (temperature >= 24 && temperature <= 26) score += PARAM_WEIGHTS.temperature;
+  // Turbidity: < 3 NTU is good
+  if (turbidity < 3) score += PARAM_WEIGHTS.turbidity;
+  return score;
+}
 import React, { useState, useEffect } from 'react';
 import { getSensorData, getTanks } from '../../services/api.js';
 import Card from '../../components/common/card/card.jsx';
@@ -66,6 +86,14 @@ const METRIC_INFO = {
     whyItMatters: 'Cloudy = bacteria or dirt. Fish need clear water.',
     ideal: 'Under 3 NTU (crystal clear)',
     danger: 'Above 5 NTU - check filter!',
+    learnMoreUrl: null,
+  },
+  waterQualityScore: {
+    title: 'Water Quality Score',
+    whatIsIt: 'A simple score showing how healthy your tank water is overall.',
+    whyItMatters: 'A high score means your fish are safe and happy. A low score means something needs fixing.',
+    ideal: 'Aim for 70+ (green is great!)',
+    danger: 'Below 50 is risky. Check your water and fix problems.',
     learnMoreUrl: null,
   },
 };
@@ -168,6 +196,22 @@ function Analytics() {
         </div>
       </div>
     );
+  }
+
+  // --- Tank Health Score values ---
+  let tankHealthScore = null, tankHealthMax = 0, tankHealthPercent = 0, tankHealthEmoji = '😃';
+  if (sensorData && sensorData.currentReadings) {
+    const { ph, ammonia, temperature, turbidity } = sensorData.currentReadings;
+    tankHealthScore = getTankHealthScore({
+      ph: ph?.value,
+      ammonia: ammonia?.value,
+      temperature: temperature?.value,
+      turbidity: turbidity?.value,
+    });
+    tankHealthMax = Object.values(PARAM_WEIGHTS).reduce((a, b) => a + b, 0);
+    tankHealthPercent = Math.round((tankHealthScore / tankHealthMax) * 100);
+    if (tankHealthPercent < 80 && tankHealthPercent >= 60) tankHealthEmoji = '😐';
+    else if (tankHealthPercent < 60) tankHealthEmoji = '😟';
   }
 
   return (
@@ -311,10 +355,23 @@ function Analytics() {
 
           {/* Charts Grid */}
           <div className={styles.chartsGrid}>
-            {/* Water Quality Summary */}
+            {/* Tank Health Score */}
             <Card className={styles.summaryCard}>
-              <h3><FaCheckCircle /> Water Quality Score</h3>
-              <WaterQualitySummary data={sensorData.summary} />
+              <div className={styles.labelRow}>
+                <h3><FaCheckCircle /> Tank Health Score</h3>
+                <InfoTooltip
+                  title="Tank Health Score"
+                  whatIsIt="A quick way to see if your tank is safe for fish."
+                  whyItMatters="If this score drops, your fish could be stressed or sick."
+                  ideal="4/4 (100%) means all readings are perfect!"
+                  danger="If below 3/4, check your pH and ammonia first."
+                  learnMoreUrl="https://www.aquariumcoop.com/blogs/aquarium/water-parameters"
+                />
+              </div>
+              <div className={styles.tankHealthScoreRow}>
+                <span style={{ fontSize: '2rem', marginRight: 8 }}>{tankHealthEmoji}</span>
+                <span style={{ fontWeight: 700, fontSize: '1.3rem' }}>{tankHealthScore?.toFixed(1)} / {tankHealthMax} ({tankHealthPercent}%)</span>
+              </div>
               <div className={styles.summaryLegend}>
                 <div className={styles.legendItem}>
                   <span className={styles.legendDot} style={{ background: '#16a34a' }}></span>

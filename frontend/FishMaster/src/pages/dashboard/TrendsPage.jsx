@@ -23,7 +23,8 @@ import {
   FaTint,
   FaFlask,
   FaWater,
-  FaLightbulb
+  FaLightbulb,
+  FaCalendarAlt
 } from 'react-icons/fa';
 
 // Register Chart.js
@@ -47,6 +48,7 @@ function TrendsPage() {
   const [trendData, setTrendData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedMetric, setSelectedMetric] = useState('temperature');
+  const [timeRange, setTimeRange] = useState('30d');
 
   useEffect(() => {
     const loadTanks = async () => {
@@ -67,12 +69,12 @@ function TrendsPage() {
     if (selectedTank) {
       loadTrendData();
     }
-  }, [selectedTank]);
+  }, [selectedTank, timeRange]);
 
   const loadTrendData = async () => {
     setLoading(true);
     try {
-      const data = await getSensorData(selectedTank, '30d');
+      const data = await getSensorData(selectedTank, timeRange);
       setTrendData(data);
     } catch (err) {
       console.error('Failed to load trend data:', err);
@@ -256,7 +258,7 @@ function TrendsPage() {
     <div className={styles.trendsPage}>
       <header className={styles.header}>
         <h1><FaChartLine /> Trends & Analysis</h1>
-        <p>Track parameter changes and understand long-term patterns</p>
+        <p>Track parameter changes over time and understand long-term patterns</p>
       </header>
 
       <div className={styles.controls}>
@@ -270,6 +272,18 @@ function TrendsPage() {
             {tanks.map(tank => (
               <option key={tank.id} value={tank.id}>{tank.name}</option>
             ))}
+          </select>
+        </div>
+        
+        <div className={styles.controlGroup}>
+          <label>Time Period</label>
+          <select 
+            value={timeRange} 
+            onChange={(e) => setTimeRange(e.target.value)}
+            className={styles.select}
+          >
+            <option value="7d">Last 7 Days</option>
+            <option value="30d">Last 30 Days</option>
           </select>
         </div>
       </div>
@@ -313,9 +327,32 @@ function TrendsPage() {
 
       {/* Main Chart */}
       <Card className={styles.chartCard}>
-        <h2>30-Day Trend: {metrics.find(m => m.key === selectedMetric)?.label}</h2>
+        <div className={styles.chartHeader}>
+          <h2>{timeRange === '7d' ? '7-Day' : '30-Day'} Trend: {metrics.find(m => m.key === selectedMetric)?.label}</h2>
+          <div className={styles.chartLegend}>
+            <span className={styles.legendItem}>
+              <span className={styles.legendDot} style={{ backgroundColor: metrics.find(m => m.key === selectedMetric)?.color }}></span>
+              Actual
+            </span>
+            <span className={styles.legendItem}>
+              <span className={styles.legendLine}></span>
+              Moving Average
+            </span>
+          </div>
+        </div>
         <div className={styles.chartContainer}>
-          {getChartData() && <Line data={getChartData()} options={chartOptions} />}
+          {loading ? (
+            <div className={styles.loadingChart}>
+              <div className={styles.spinner}></div>
+              <p>Loading chart...</p>
+            </div>
+          ) : getChartData() ? (
+            <Line data={getChartData()} options={chartOptions} />
+          ) : (
+            <div className={styles.emptyChart}>
+              <p>No data available</p>
+            </div>
+          )}
         </div>
       </Card>
 

@@ -230,8 +230,43 @@ $danger: #dc2626;
     font-family: 'Special Elite', cursive;
     font-size: 1.25rem;
     color: $text-dark;
-    margin: 0 0 1rem;
+    margin: 0;
   }
+}
+
+.chartHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chartLegend {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: $text-light;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legendLine {
+  width: 16px;
+  height: 2px;
+  background: $text-dark;
+  border-style: dashed;
 }
 
 .chartContainer {
@@ -239,6 +274,19 @@ $danger: #dc2626;
   
   @media (max-width: 768px) {
     height: 280px;
+  }
+}
+
+.loadingChart, .emptyChart {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: $text-light;
+  
+  p {
+    margin-top: 1rem;
   }
 }
 
@@ -312,6 +360,11 @@ $danger: #dc2626;
     font-size: 1.5rem;
   }
   
+  .controls {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
   .trendCard {
     padding: 1rem !important;
   }
@@ -324,5 +377,10 @@ $danger: #dc2626;
   
   .cardValue {
     font-size: 1.25rem;
+  }
+  
+  .chartHeader {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

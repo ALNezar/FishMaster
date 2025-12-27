@@ -392,3 +392,134 @@
     min-width: 140px;
   }
 }
+
+// Tank Stocking Warning Banner
+.stockingWarning {
+  display: flex;
+  gap: 15px;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+
+  > svg {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  &.warning {
+    background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+    border-left: 4px solid #ffa000;
+    
+    > svg {
+      color: #ffa000;
+    }
+  }
+
+  &.overstocked {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    border-left: 4px solid #d32f2f;
+    
+    > svg {
+      color: #d32f2f;
+    }
+  }
+}
+
+.warningContent {
+  flex: 1;
+
+  strong {
+    font-size: 1.1rem;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin: 0 0 12px 0;
+    color: #555;
+    line-height: 1.5;
+  }
+}
+
+.warningList {
+  margin: 0 0 15px 0;
+  padding-left: 20px;
+  
+  li {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 4px;
+  }
+}
+
+.capacityBar {
+  background: rgba(0, 0, 0, 0.1);
+  height: 24px;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+
+  span {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #333;
+    z-index: 1;
+    text-shadow: 0 0 2px rgba(255,255,255,0.8);
+  }
+}
+
+.capacityFill {
+  height: 100%;
+  border-radius: 12px;
+  transition: width 0.3s ease;
+  
+  .warning & {
+    background: linear-gradient(90deg, #ffc107, #ff9800);
+  }
+  
+  .overstocked & {
+    background: linear-gradient(90deg, #ff5722, #d32f2f);
+  }
+}
+
+// Add Fish Warning (inline in form)
+.addFishWarning {
+  display: flex;
+  gap: 12px;
+  background: #fff3e0;
+  border: 1px solid #ffb74d;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 12px;
+  align-items: flex-start;
+
+  > svg {
+    color: #f57c00;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  div {
+    flex: 1;
+
+    strong {
+      display: block;
+      color: #e65100;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    small {
+      color: #795548;
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+  }
+}

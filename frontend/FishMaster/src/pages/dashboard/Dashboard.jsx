@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUser, getTanks } from '../../services/api.js';
+import { getCurrentUser, getTanks, getSensorData } from '../../services/api.js';
 import Card from '../../components/common/card/card.jsx';
 import Analytics from './Analytics.jsx';
+import { MultiParameterChart } from '../../components/charts/SensorCharts.jsx';
 import styles from './Dashboard.module.scss';
 import { FaFish, FaTemperatureHigh, FaBell, FaUtensils, FaPlus, FaCheck, FaExclamationTriangle, FaHome, FaChartLine } from 'react-icons/fa';
 import Header from "./header.jsx";
@@ -17,16 +18,41 @@ function Dashboard() {
   const [tanks, setTanks] = useState([]);
   const [loadingTanks, setLoadingTanks] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [quickChartData, setQuickChartData] = useState(null);
+  const [chartTimeRange, setChartTimeRange] = useState('24h');
 
   useEffect(() => {
     // Layout handles auth check, we just load user data for display
     getCurrentUser().then(setUser).catch(() => { });
     
     getTanks()
-      .then(data => setTanks(data || []))
+      .then(data => {
+        setTanks(data || []);
+        // Load sensor data for the first tank
+        if (data && data.length > 0) {
+          loadQuickChartData(data[0].id, '24h');
+        }
+      })
       .catch(err => console.error('Failed to load tanks:', err))
       .finally(() => setLoadingTanks(false));
   }, []);
+
+  const loadQuickChartData = async (tankId, range) => {
+    try {
+      const data = await getSensorData(tankId, range);
+      setQuickChartData(data);
+    } catch (err) {
+      console.error('Failed to load sensor data:', err);
+    }
+  };
+
+  const handleTimeRangeChange = (e) => {
+    const newRange = e.target.value;
+    setChartTimeRange(newRange);
+    if (tanks.length > 0) {
+      loadQuickChartData(tanks[0].id, newRange);
+    }
+  };
 
   const renderOverview = () => (
     <div className={styles.grid}>
@@ -112,21 +138,31 @@ function Dashboard() {
       <Card className={`${styles.card} ${styles.chartCard}`}>
         <div className={styles.cardHeader}>
           <h3><FaTemperatureHigh /> Water Quality Trends</h3>
-          <select className={styles.timeSelect}>
-            <option>Last 24 Hours</option>
-            <option>Last Week</option>
+          <select 
+            className={styles.timeSelect}
+            value={chartTimeRange}
+            onChange={handleTimeRangeChange}
+          >
+            <option value="24h">Last 24 Hours</option>
+            <option value="7d">Last Week</option>
+            <option value="30d">Last Month</option>
           </select>
         </div>
-        <div className={styles.chartPlaceholder}>
-          {/* Placeholder for a chart library like Recharts */}
-          <div className={styles.chartBar} style={{ height: '60%' }}></div>
-          <div className={styles.chartBar} style={{ height: '70%' }}></div>
-          <div className={styles.chartBar} style={{ height: '50%' }}></div>
-          <div className={styles.chartBar} style={{ height: '80%' }}></div>
-          <div className={styles.chartBar} style={{ height: '65%' }}></div>
-          <div className={styles.chartBar} style={{ height: '75%' }}></div>
-          <div className={styles.chartBar} style={{ height: '70%' }}></div>
-          <p className={styles.chartLabel}>Temperature Stability</p>
+        <div className={styles.chartContainer}>
+          {tanks.length === 0 ? (
+            <div className={styles.emptyChart}>
+              <p>Add a tank to see water quality trends</p>
+            </div>
+          ) : quickChartData ? (
+            <MultiParameterChart 
+              data={quickChartData} 
+              timeRange={chartTimeRange === '24h' ? 'Last 24 Hours' : chartTimeRange === '7d' ? 'Last 7 Days' : 'Last 30 Days'} 
+            />
+          ) : (
+            <div className={styles.loadingChart}>
+              <p>Loading chart data...</p>
+            </div>
+          )}
         </div>
       </Card>
 

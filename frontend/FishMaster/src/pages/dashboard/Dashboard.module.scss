@@ -425,7 +425,29 @@ $danger: #dc2626;
   }
 }
 
-// Chart Placeholder
+// Chart Container (real charts)
+.chartContainer {
+  height: 280px;
+  position: relative;
+  
+  @media (max-width: 600px) {
+    height: 220px;
+  }
+}
+
+.emptyChart, .loadingChart {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px dashed #cbd5e1;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+// Chart Placeholder (legacy)
 .chartPlaceholder {
   height: 200px;
   display: flex;

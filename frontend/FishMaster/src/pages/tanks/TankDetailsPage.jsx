@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Card from '../../components/common/card/card';
 import Button from '../../components/common/button/button';
 import api, { getFishTypes, addFishToTank, removeFishFromTank } from '../../services/api';
 import styles from './TankDetailsPage.module.scss';
-import { FaFish, FaPlus, FaTrash, FaEdit, FaTimes, FaThermometerHalf, FaTint } from 'react-icons/fa';
+import { FaFish, FaPlus, FaTrash, FaEdit, FaTimes, FaThermometerHalf, FaTint, FaExclamationTriangle } from 'react-icons/fa';
 
 const TankDetailsPage = () => {
     const { id } = useParams();
@@ -108,6 +108,74 @@ const TankDetailsPage = () => {
         return fishTypes.find(ft => ft.id === parseInt(newFish.fishTypeId));
     };
 
+    // Calculate tank stocking status based on fish requirements
+    const stockingStatus = useMemo(() => {
+        if (!tank || !tank.fish || tank.fish.length === 0) {
+            return { status: 'empty', percentage: 0, warnings: [], totalRequired: 0 };
+        }
+
+        // Group fish by species and calculate requirements
+        const fishBySpecies = {};
+        tank.fish.forEach(fish => {
+            const speciesName = fish.fishType?.name || 'Unknown';
+            if (!fishBySpecies[speciesName]) {
+                fishBySpecies[speciesName] = {
+                    count: 0,
+                    minTankSize: fish.fishType?.minTankSize || 10,
+                    name: speciesName
+                };
+            }
+            fishBySpecies[speciesName].count++;
+        });
+
+        // Calculate total required space (rough estimate: minTankSize for first fish, +50% for each additional)
+        let totalRequired = 0;
+        const warnings = [];
+
+        Object.values(fishBySpecies).forEach(species => {
+            const baseSize = species.minTankSize;
+            const additionalFish = Math.max(0, species.count - 1);
+            const speciesRequirement = baseSize + (additionalFish * baseSize * 0.5);
+            totalRequired += speciesRequirement;
+
+            if (speciesRequirement > tank.sizeLiters) {
+                warnings.push({
+                    species: species.name,
+                    count: species.count,
+                    required: Math.ceil(speciesRequirement),
+                    minPerFish: species.minTankSize
+                });
+            }
+        });
+
+        const percentage = Math.round((totalRequired / tank.sizeLiters) * 100);
+        let status = 'good';
+        if (percentage > 100) status = 'overstocked';
+        else if (percentage > 80) status = 'warning';
+
+        return { status, percentage, warnings, totalRequired: Math.ceil(totalRequired) };
+    }, [tank]);
+
+    // Check if adding a new fish would cause overstocking
+    const getAddFishWarning = () => {
+        const selectedType = getSelectedFishType();
+        if (!selectedType || !tank) return null;
+
+        const currentRequired = stockingStatus.totalRequired;
+        const additionalRequired = selectedType.minTankSize * 0.5; // Additional fish needs ~50% of base
+        const newTotal = currentRequired + (stockingStatus.percentage === 0 ? selectedType.minTankSize : additionalRequired);
+        
+        if (newTotal > tank.sizeLiters) {
+            return {
+                message: `Adding this ${selectedType.name} may overstock your tank!`,
+                required: Math.ceil(newTotal),
+                available: tank.sizeLiters,
+                deficit: Math.ceil(newTotal - tank.sizeLiters)
+            };
+        }
+        return null;
+    };
+
     if (loading) return <div className={styles.loading}>Loading tank...</div>;
     if (!tank) return <div className={styles.error}>Tank not found.</div>;
 
@@ -129,6 +197,40 @@ const TankDetailsPage = () => {
             </div>
 
             {error && <div className={styles.error}>{error}</div>}
+
+            {/* Tank Capacity Warning Banner */}
+            {stockingStatus.status !== 'empty' && stockingStatus.status !== 'good' && (
+                <div className={`${styles.stockingWarning} ${styles[stockingStatus.status]}`}>
+                    <FaExclamationTriangle />
+                    <div className={styles.warningContent}>
+                        <strong>
+                            {stockingStatus.status === 'overstocked' 
+                                ? '⚠️ Tank Overstocked!' 
+                                : '⚡ Tank Nearly Full'}
+                        </strong>
+                        <p>
+                            Your fish need approximately <strong>{stockingStatus.totalRequired}L</strong> but your tank is only <strong>{tank.sizeLiters}L</strong>.
+                            {stockingStatus.status === 'overstocked' && ' Consider upgrading to a larger tank or rehoming some fish.'}
+                        </p>
+                        {stockingStatus.warnings.length > 0 && (
+                            <ul className={styles.warningList}>
+                                {stockingStatus.warnings.map((w, i) => (
+                                    <li key={i}>
+                                        {w.count}x {w.species} need ~{w.required}L (min {w.minPerFish}L per fish)
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                        <div className={styles.capacityBar}>
+                            <div 
+                                className={styles.capacityFill} 
+                                style={{ width: `${Math.min(stockingStatus.percentage, 100)}%` }}
+                            />
+                            <span>{stockingStatus.percentage}% capacity</span>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {isEditing && (
                 <Card className={styles.editCard}>
@@ -245,6 +347,21 @@ const TankDetailsPage = () => {
                                             <span>Temp: <strong>{getSelectedFishType().temperatureMin}-{getSelectedFishType().temperatureMax}°C</strong></span>
                                             <span>pH: <strong>{getSelectedFishType().phMin}-{getSelectedFishType().phMax}</strong></span>
                                         </div>
+                                        
+                                        {/* Add Fish Warning */}
+                                        {getAddFishWarning() && (
+                                            <div className={styles.addFishWarning}>
+                                                <FaExclamationTriangle />
+                                                <div>
+                                                    <strong>{getAddFishWarning().message}</strong>
+                                                    <small>
+                                                        Estimated need: {getAddFishWarning().required}L | 
+                                                        Tank size: {getAddFishWarning().available}L | 
+                                                        Shortage: {getAddFishWarning().deficit}L
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                                 

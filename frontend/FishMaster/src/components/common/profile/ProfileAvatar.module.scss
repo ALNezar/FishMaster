@@ -1,0 +1,154 @@
+$text-dark: #3d3021;
+$bg-cream: #f5f1e3;
+$primary: #1277b0;
+$danger: #dc2626;
+
+@keyframes bubblePop {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.15); }
+  75% { transform: scale(0.95); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes dropdownSlide {
+  0% { transform: scale(0.8) translateY(-10px); opacity: 0; }
+  50% { transform: scale(1.02) translateY(2px); }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.container {
+  position: relative;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $primary, darken($primary, 10%));
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba($text-dark, 0.2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba($text-dark, 0.3);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+  
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  span {
+    color: white;
+    font-weight: 700;
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.5px;
+  }
+}
+
+.dropdown {
+  position: absolute;
+  top: 54px;
+  right: 0;
+  background: white;
+  border-radius: 16px;
+  border: 2px solid $text-dark;
+  box-shadow: 4px 4px 0 $text-dark;
+  min-width: 200px;
+  padding: 12px 0;
+  z-index: 1000;
+  animation: dropdownSlide 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    right: 16px;
+    width: 14px;
+    height: 14px;
+    background: white;
+    border-left: 2px solid $text-dark;
+    border-top: 2px solid $text-dark;
+    transform: rotate(45deg);
+  }
+}
+
+.userInfo {
+  padding: 8px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.userName {
+  font-family: 'Special Elite', cursive;
+  font-size: 1.1rem;
+  color: $text-dark;
+}
+
+.userEmail {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.divider {
+  height: 1px;
+  background: rgba($text-dark, 0.1);
+  margin: 8px 0;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  color: $text-dark;
+  text-align: left;
+  transition: all 0.2s;
+  animation: bubblePop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  opacity: 0;
+  
+  svg {
+    font-size: 1.1rem;
+    color: #666;
+    transition: color 0.2s;
+  }
+  
+  &:hover {
+    background: rgba($primary, 0.08);
+    
+    svg {
+      color: $primary;
+    }
+  }
+  
+  &.logout {
+    color: $danger;
+    
+    svg {
+      color: $danger;
+    }
+    
+    &:hover {
+      background: rgba($danger, 0.08);
+    }
+  }
+}

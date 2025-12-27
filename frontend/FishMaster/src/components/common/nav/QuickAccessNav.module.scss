@@ -1,0 +1,201 @@
+$text-dark: #3d3021;
+$text-light: #666;
+$bg-cream: #f5f1e3;
+$primary: #1277b0;
+$active-yellow: #CCC20C;
+
+@keyframes bubblePop {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.15); }
+  75% { transform: scale(0.95); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideDown {
+  0% { transform: translateY(-10px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.quickAccessNav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.mainTabs {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba($text-dark, 0.05);
+  padding: 0.5rem;
+  border-radius: 16px;
+  width: fit-content;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    &::-webkit-scrollbar { display: none; }
+  }
+}
+
+.tabButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Special Elite', cursive;
+  font-size: 0.95rem;
+  color: $text-light;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  &:hover {
+    background: rgba(white, 0.6);
+    color: $text-dark;
+    transform: translateY(-2px);
+  }
+  
+  &.activeTab {
+    background: white;
+    color: $text-dark;
+    box-shadow: 0 2px 8px rgba($text-dark, 0.12);
+    border: 2px solid $active-yellow;
+    
+    .tabIcon {
+      color: $active-yellow;
+    }
+  }
+  
+  @media (max-width: 600px) {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+}
+
+.tabIcon {
+  font-size: 1.1rem;
+  transition: color 0.2s;
+}
+
+.tabLabel {
+  @media (max-width: 480px) {
+    display: none;
+  }
+}
+
+// Sub tabs with bubbly animation
+.subTabs {
+  display: flex;
+  gap: 0.4rem;
+  padding-left: 0.5rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+.subTabButton {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 2px solid transparent;
+  border-radius: 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  color: $text-light;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba($text-dark, 0.08);
+  
+  // Bubbly pop-in animation
+  animation: bubblePop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  opacity: 0;
+  transform: scale(0);
+  
+  &:hover {
+    background: rgba($primary, 0.08);
+    color: $primary;
+    transform: scale(1.05);
+    border-color: rgba($primary, 0.2);
+  }
+  
+  &.activeSubTab {
+    background: $primary;
+    color: white;
+    border-color: $primary;
+    box-shadow: 0 3px 8px rgba($primary, 0.3);
+    
+    .subTabIcon {
+      color: white;
+    }
+  }
+  
+  @media (max-width: 600px) {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+}
+
+.subTabIcon {
+  font-size: 1rem;
+  color: $text-light;
+  transition: color 0.2s;
+}
+
+// Mobile bottom nav (for tablet/mobile)
+@media (max-width: 768px) {
+  .quickAccessNav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 2px solid $text-dark;
+    padding: 0;
+    margin: 0;
+    z-index: 100;
+    flex-direction: column-reverse;
+    gap: 0;
+  }
+  
+  .mainTabs {
+    background: transparent;
+    border-radius: 0;
+    padding: 0.5rem;
+    justify-content: space-around;
+  }
+  
+  .tabButton {
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    font-size: 0.7rem;
+    border-radius: 8px;
+    
+    &.activeTab {
+      border-width: 1px;
+    }
+  }
+  
+  .tabIcon {
+    font-size: 1.3rem;
+  }
+  
+  .tabLabel {
+    display: block;
+  }
+  
+  .subTabs {
+    padding: 0.5rem;
+    border-bottom: 1px solid rgba($text-dark, 0.1);
+    justify-content: center;
+    background: $bg-cream;
+  }
+}

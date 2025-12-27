@@ -107,122 +107,51 @@ const generateMockSensorData = (timeRange, tankId) => {
   };
 };
 
-// Mock fish types data
-const mockFishTypes = [
-  { id: 1, name: 'Goldfish', careLevel: 'Easy', minTankSize: 40, temperatureMin: 18, temperatureMax: 24, phMin: 6.5, phMax: 7.5 },
-  { id: 2, name: 'Betta', careLevel: 'Medium', minTankSize: 10, temperatureMin: 24, temperatureMax: 28, phMin: 6.5, phMax: 7.5 },
-  { id: 3, name: 'Guppy', careLevel: 'Easy', minTankSize: 20, temperatureMin: 22, temperatureMax: 28, phMin: 6.8, phMax: 7.8 },
-  { id: 4, name: 'Neon Tetra', careLevel: 'Easy', minTankSize: 40, temperatureMin: 20, temperatureMax: 26, phMin: 6.0, phMax: 7.0 },
-  { id: 5, name: 'Corydoras', careLevel: 'Easy', minTankSize: 40, temperatureMin: 22, temperatureMax: 26, phMin: 6.0, phMax: 8.0 },
-  { id: 6, name: 'Angelfish', careLevel: 'Medium', minTankSize: 80, temperatureMin: 24, temperatureMax: 28, phMin: 6.0, phMax: 7.5 },
-  { id: 7, name: 'Molly', careLevel: 'Easy', minTankSize: 40, temperatureMin: 22, temperatureMax: 28, phMin: 7.0, phMax: 8.5 },
-  { id: 8, name: 'Platy', careLevel: 'Easy', minTankSize: 40, temperatureMin: 20, temperatureMax: 26, phMin: 7.0, phMax: 8.2 },
-  { id: 9, name: 'Dwarf Gourami', careLevel: 'Medium', minTankSize: 40, temperatureMin: 22, temperatureMax: 28, phMin: 6.0, phMax: 7.5 },
-  { id: 10, name: 'Cherry Shrimp', careLevel: 'Easy', minTankSize: 10, temperatureMin: 18, temperatureMax: 28, phMin: 6.5, phMax: 8.0 },
-];
-
-// In-memory mock tanks for DEV_MODE
-let mockTanks = [
-  { 
-    id: 1, 
-    name: 'Living Room Tank', 
-    sizeLiters: 120, 
-    fish: [
-      { id: 1, name: 'Goldie', fishType: mockFishTypes[0] }, 
-      { id: 2, name: 'Finn', fishType: mockFishTypes[2] }
-    ], 
-    waterParameters: { targetPh: 7.0, targetTemperature: 25, ph: 7.1, temperature: 25 } 
-  },
-  { 
-    id: 2, 
-    name: 'Betta Bowl', 
-    sizeLiters: 20, 
-    fish: [
-      { id: 3, name: 'Blue', fishType: mockFishTypes[1] }
-    ], 
-    waterParameters: { targetPh: 7.2, targetTemperature: 26, ph: 7.0, temperature: 26 } 
-  }
-];
-let nextFishId = 4;
-let nextTankId = 3;
-
 const apiRequest = async (endpoint, options = {}) => {
   if (DEV_MODE) {
-    // Handle POST/PUT/DELETE for fish
-    const fishAddMatch = endpoint.match(/^\/tanks\/(\d+)\/fish$/);
-    const fishDeleteMatch = endpoint.match(/^\/tanks\/(\d+)\/fish\/(\d+)$/);
-    
-    if (fishAddMatch && options.method === 'POST') {
-      const tankId = parseInt(fishAddMatch[1]);
-      const tank = mockTanks.find(t => t.id === tankId);
-      if (tank) {
-        const fishData = JSON.parse(options.body);
-        const fishType = mockFishTypes.find(ft => ft.id === fishData.fishTypeId);
-        const newFish = {
-          id: nextFishId++,
-          name: fishData.name,
-          fishType: fishType || null
-        };
-        tank.fish.push(newFish);
-        return newFish;
-      }
+    // Handle sensor data endpoints first (before switch)
+    const sensorMatch = endpoint.match(/^\/tanks\/(\d+)\/sensors/);
+    if (sensorMatch) {
+      const timeRangeMatch = endpoint.match(/timeRange=(\w+)/);
+      const timeRange = timeRangeMatch ? timeRangeMatch[1] : '24h';
+      return generateMockSensorData(timeRange, sensorMatch[1]);
     }
-    
-    if (fishDeleteMatch && options.method === 'DELETE') {
-      const tankId = parseInt(fishDeleteMatch[1]);
-      const fishId = parseInt(fishDeleteMatch[2]);
-      const tank = mockTanks.find(t => t.id === tankId);
-      if (tank) {
-        tank.fish = tank.fish.filter(f => f.id !== fishId);
-        return null;
-      }
-    }
-    
-    // Handle tank creation
-    if (endpoint === '/tanks' && options.method === 'POST') {
-      const tankData = JSON.parse(options.body);
-      const newTank = {
-        id: nextTankId++,
-        name: tankData.name,
-        sizeLiters: parseInt(tankData.sizeLiters),
-        fish: [],
-        waterParameters: { targetPh: 7.0, targetTemperature: 25, ph: 7.0, temperature: 25 }
+
+    // Handle tank detail endpoint
+    if (endpoint.match(/^\/tanks\/\d+$/)) {
+      const tankId = parseInt(endpoint.split('/')[2]);
+      return { 
+        id: tankId, 
+        name: tankId === 1 ? 'Living Room Tank' : 'Betta Bowl', 
+        sizeLiters: tankId === 1 ? 120 : 20, 
+        fish: tankId === 1 
+          ? [{ id: 1, name: 'Goldie', fishType: { name: 'Goldfish', careLevel: 'Easy' } }, { id: 2, name: 'Finn', fishType: { name: 'Guppy', careLevel: 'Easy' } }] 
+          : [{ id: 3, name: 'Blue', fishType: { name: 'Betta', careLevel: 'Medium' } }], 
+        waterParameters: { targetPh: 7.0, targetTemperature: 25, ph: 7.1, temperature: 25.2 } 
       };
-      mockTanks.push(newTank);
-      return newTank;
     }
-    
-    // Handle tank deletion
-    const tankDeleteMatch = endpoint.match(/^\/tanks\/(\d+)$/);
-    if (tankDeleteMatch && options.method === 'DELETE') {
-      const tankId = parseInt(tankDeleteMatch[1]);
-      mockTanks = mockTanks.filter(t => t.id !== tankId);
-      return null;
-    }
-    
+
     switch (endpoint) {
       case '/users/me':
         return { id: 1, username: 'Dev User', email: 'dev@fishmaster.app' };
       case '/api/onboarding/fish-types':
-        return mockFishTypes;
+        return [
+          { id: 1, name: 'Goldfish', careLevel: 'Easy', minTankSize: 75, temperatureMin: 18, temperatureMax: 24, phMin: 6.5, phMax: 7.5 },
+          { id: 2, name: 'Betta', careLevel: 'Easy', minTankSize: 10, temperatureMin: 24, temperatureMax: 28, phMin: 6.5, phMax: 7.5 },
+          { id: 3, name: 'Guppy', careLevel: 'Easy', minTankSize: 20, temperatureMin: 22, temperatureMax: 28, phMin: 6.8, phMax: 7.8 },
+          { id: 4, name: 'Neon Tetra', careLevel: 'Moderate', minTankSize: 40, temperatureMin: 20, temperatureMax: 26, phMin: 6.0, phMax: 7.0 },
+          { id: 5, name: 'Angelfish', careLevel: 'Moderate', minTankSize: 100, temperatureMin: 24, temperatureMax: 28, phMin: 6.0, phMax: 7.5 },
+        ];
       case '/api/onboarding/status':
         return { completed: true };
       case '/api/onboarding/complete':
         return { success: true };
       case '/tanks':
-        return mockTanks;
+        return [
+          { id: 1, name: 'Living Room Tank', sizeLiters: 120, fish: [{ id: 1, name: 'Goldie' }, { id: 2, name: 'Finn' }], waterParameters: { targetPh: 7.0, targetTemperature: 25 } },
+          { id: 2, name: 'Betta Bowl', sizeLiters: 20, fish: [{ id: 3, name: 'Blue' }], waterParameters: { targetPh: 7.2, targetTemperature: 26 } }
+        ];
       default:
-        // Handle dynamic routes for mocks
-        const tankMatch = endpoint.match(/^\/tanks\/(\d+)$/);
-        if (tankMatch) {
-          const tankId = parseInt(tankMatch[1]);
-          return mockTanks.find(t => t.id === tankId) || mockTanks[0];
-        }
-        // Handle sensor data endpoints
-        const sensorMatch = endpoint.match(/^\/tanks\/(\d+)\/sensors\?timeRange=(\w+)$/);
-        if (sensorMatch) {
-          return generateMockSensorData(sensorMatch[2], sensorMatch[1]);
-        }
         return {}; // fallback
     }
   }

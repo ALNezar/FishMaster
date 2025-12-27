@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import NavBar from '../common/nav/NavBar';
+import QuickAccessNav from '../common/nav/QuickAccessNav';
+import ProfileAvatar from '../common/profile/ProfileAvatar';
 import { isAuthenticated, getCurrentUser, logout } from '../../services/api';
 import styles from './DashboardLayout.module.scss';
 import Wave from 'react-wavify';
@@ -8,6 +9,7 @@ import Wave from 'react-wavify';
 export default function DashboardLayout() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -16,7 +18,8 @@ export default function DashboardLayout() {
                 return;
             }
             try {
-                await getCurrentUser();
+                const userData = await getCurrentUser();
+                setUser(userData);
                 setLoading(false);
             } catch (err) {
                 console.error('Auth check failed:', err);
@@ -34,12 +37,30 @@ export default function DashboardLayout() {
     }, [navigate]);
 
     if (loading) {
-        return <div className={styles.loading}>Loading...</div>;
+        return (
+            <div className={styles.loadingContainer}>
+                <div className={styles.loader}>🐠</div>
+                <p>Loading...</p>
+            </div>
+        );
     }
 
     return (
         <div className={styles.layout}>
-            <NavBar />
+            {/* Top Header with Logo and Profile Avatar */}
+            <header className={styles.topHeader}>
+                <div className={styles.logoArea}>
+                    <span className={styles.logo}>🐟 FishMaster</span>
+                </div>
+                <div className={styles.headerRight}>
+                    <ProfileAvatar user={user} />
+                </div>
+            </header>
+
+            {/* Quick Access Navigation */}
+            <div className={styles.navContainer}>
+                <QuickAccessNav />
+            </div>
 
             {/* Shared Background Wave for all dashboard pages */}
             <div className={styles.waveBackground}>
@@ -68,7 +89,7 @@ export default function DashboardLayout() {
             </div>
 
             <main className={styles.content}>
-                <Outlet />
+                <Outlet context={{ user }} />
             </main>
         </div>
     );

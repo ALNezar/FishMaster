@@ -54,7 +54,8 @@ $primary: #1277b0;
   padding: 1rem 2rem 0;
   
   @media (max-width: 768px) {
-    display: none; // Nav moves to bottom on mobile
+    padding: 0;
+    // QuickAccessNav handles its own fixed positioning on mobile
   }
 }
 

@@ -1,45 +1,126 @@
+// ============================================
+// Design Tokens
+// ============================================
+@use "sass:color";
+
 $text-dark: #3d3021;
 $bg-cream: #f5f1e3;
 $primary: #1277b0;
 $danger: #dc2626;
+$text-muted: #666;
+$white: #ffffff;
 
+// Derived colors (using modern color module)
+$primary-dark: color.adjust($primary, $lightness: -12%);
+$text-darker: color.adjust($text-dark, $lightness: -10%);
+$danger-dark: color.adjust($danger, $lightness: -10%);
+
+// Shadows
+$shadow-sm: 0 2px 8px rgba($text-dark, 0.15);
+$shadow-md: 0 4px 12px rgba($text-dark, 0.25);
+$shadow-brutal: 4px 4px 0 $text-dark;
+
+// Transitions
+$ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+$ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+// Spacing
+$spacing-xs: 8px;
+$spacing-sm: 12px;
+$spacing-md: 16px;
+
+
+// ============================================
+// Animations
+// ============================================
 @keyframes bubblePop {
-  0% { transform: scale(0); opacity: 0; }
-  50% { transform: scale(1.15); }
-  75% { transform: scale(0.95); }
-  100% { transform: scale(1); opacity: 1; }
+  0% { 
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% { 
+    transform: scale(1.1);
+  }
+  100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes dropdownSlide {
-  0% { transform: scale(0.8) translateY(-10px); opacity: 0; }
-  50% { transform: scale(1.02) translateY(2px); }
-  100% { transform: scale(1) translateY(0); opacity: 1; }
+  0% { 
+    transform: scale(0.92) translateY(-12px);
+    opacity: 0;
+  }
+  100% { 
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
 }
 
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba($primary, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba($primary, 0);
+  }
+}
+
+
+// ============================================
+// Components
+// ============================================
 .container {
   position: relative;
+  display: inline-block;
 }
 
 .avatar {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, $primary, darken($primary, 10%));
-  border: 3px solid white;
-  box-shadow: 0 2px 8px rgba($text-dark, 0.2);
+  background: linear-gradient(135deg, $primary, $primary-dark);
+  border: 3px solid $white;
+  box-shadow: $shadow-sm;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transition: all 0.3s $ease-bounce;
+  position: relative;
+  overflow: hidden;
+  
+  // Hover glow effect
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba($primary, 0.3), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
   
   &:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba($text-dark, 0.3);
+    transform: scale(1.08) rotate(3deg);
+    box-shadow: $shadow-md;
+    
+    &::after {
+      opacity: 1;
+    }
   }
   
   &:active {
-    transform: scale(0.95);
+    transform: scale(0.96);
+    transition-duration: 0.1s;
+  }
+  
+  // Focus state for accessibility
+  &:focus-visible {
+    outline: 2px solid $primary;
+    outline-offset: 2px;
+    animation: pulse 1.5s infinite;
   }
   
   img {
@@ -47,108 +128,215 @@ $danger: #dc2626;
     height: 100%;
     border-radius: 50%;
     object-fit: cover;
+    position: relative;
+    z-index: 1;
   }
   
   span {
-    color: white;
+    color: $white;
     font-weight: 700;
     font-size: 15px;
     font-family: 'DM Sans', sans-serif;
     letter-spacing: 0.5px;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
   }
 }
 
 .dropdown {
   position: absolute;
-  top: 54px;
+  top: calc(100% + 10px);
   right: 0;
-  background: white;
+  background: $white;
   border-radius: 16px;
   border: 2px solid $text-dark;
-  box-shadow: 4px 4px 0 $text-dark;
-  min-width: 200px;
-  padding: 12px 0;
+  box-shadow: $shadow-brutal;
+  min-width: 220px;
+  padding: $spacing-sm 0;
   z-index: 1000;
-  animation: dropdownSlide 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+  animation: dropdownSlide 0.3s $ease-smooth forwards;
+  transform-origin: top right;
   
+  // Arrow pointer
   &::before {
     content: '';
     position: absolute;
-    top: -8px;
-    right: 16px;
-    width: 14px;
-    height: 14px;
-    background: white;
+    top: -9px;
+    right: $spacing-md;
+    width: 16px;
+    height: 16px;
+    background: $white;
     border-left: 2px solid $text-dark;
     border-top: 2px solid $text-dark;
     transform: rotate(45deg);
+    z-index: -1;
+  }
+  
+  // Subtle inner glow
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    background: linear-gradient(
+      180deg,
+      rgba($primary, 0.02) 0%,
+      transparent 50%
+    );
+    pointer-events: none;
   }
 }
 
 .userInfo {
-  padding: 8px 16px 12px;
+  padding: $spacing-xs $spacing-md $spacing-sm;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .userName {
   font-family: 'Special Elite', cursive;
   font-size: 1.1rem;
+  font-weight: 700;
   color: $text-dark;
+  line-height: 1.2;
 }
 
 .userEmail {
-  font-size: 0.8rem;
-  color: #666;
+  font-size: 0.85rem;
+  color: $text-muted;
+  font-family: 'DM Sans', sans-serif;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .divider {
   height: 1px;
-  background: rgba($text-dark, 0.1);
-  margin: 8px 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba($text-dark, 0.15) 20%,
+    rgba($text-dark, 0.15) 80%,
+    transparent
+  );
+  margin: $spacing-xs 0;
 }
 
 .menuItem {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: $spacing-sm;
   width: 100%;
-  padding: 12px 16px;
+  padding: $spacing-sm $spacing-md;
   background: none;
   border: none;
   cursor: pointer;
   font-family: 'DM Sans', sans-serif;
   font-size: 0.95rem;
+  font-weight: 500;
   color: $text-dark;
   text-align: left;
-  transition: all 0.2s;
-  animation: bubblePop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-  opacity: 0;
+  transition: all 0.2s $ease-smooth;
+  position: relative;
+  overflow: hidden;
   
-  svg {
-    font-size: 1.1rem;
-    color: #666;
-    transition: color 0.2s;
-  }
-  
-  &:hover {
-    background: rgba($primary, 0.08);
-    
-    svg {
-      color: $primary;
+  // Staggered animation for each item
+  @for $i from 1 through 5 {
+    &:nth-child(#{$i}) {
+      animation: bubblePop 0.3s $ease-bounce forwards;
+      animation-delay: #{$i * 0.05}s;
+      opacity: 0;
     }
   }
   
+  // Hover background effect
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 100%;
+    background: rgba($primary, 0.08);
+    transition: width 0.3s $ease-smooth;
+    z-index: -1;
+  }
+  
+  svg {
+    font-size: 1.15rem;
+    color: $text-muted;
+    transition: all 0.2s $ease-smooth;
+    flex-shrink: 0;
+  }
+  
+  &:hover {
+    color: $text-darker;
+    padding-left: 20px;
+    
+    &::before {
+      width: 100%;
+    }
+    
+    svg {
+      color: $primary;
+      transform: scale(1.1) rotate(5deg);
+    }
+  }
+  
+  &:active {
+    transform: scale(0.98);
+  }
+  
+  // Logout variant
   &.logout {
     color: $danger;
+    margin-top: 4px;
     
     svg {
       color: $danger;
     }
     
-    &:hover {
+    &::before {
       background: rgba($danger, 0.08);
+    }
+    
+    &:hover {
+      color: $danger-dark;
+      
+      svg {
+        color: $danger-dark;
+        transform: scale(1.1) translateX(2px);
+      }
+    }
+  }
+  
+  // Focus state for accessibility
+  &:focus-visible {
+    outline: 2px solid $primary;
+    outline-offset: -2px;
+    border-radius: 4px;
+  }
+}
+
+
+// ============================================
+// Responsive Adjustments
+// ============================================
+@media (max-width: 768px) {
+  .dropdown {
+    min-width: 200px;
+    right: -8px;
+  }
+  
+  .avatar {
+    width: 40px;
+    height: 40px;
+    
+    span {
+      font-size: 14px;
     }
   }
 }

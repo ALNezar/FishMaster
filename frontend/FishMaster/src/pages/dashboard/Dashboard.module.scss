@@ -224,6 +224,58 @@ $danger: #dc2626;
 }
 
 
+// Quick health card
+.healthCard {
+  grid-column: span 4;
+
+  @media (max-width: 1024px) {
+    grid-column: span 12;
+  }
+}
+
+.healthScoreRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.healthEmoji {
+  font-size: 2rem;
+}
+
+.healthValue {
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.healthPercent {
+  font-size: 0.9rem;
+  color: $text-light;
+}
+
+.healthDetails {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  color: $text-light;
+  font-size: 0.95rem;
+  flex-wrap: wrap;
+}
+
+.healthActions {
+  margin-top: 0.75rem;
+}
+
+.viewDetailsBtn {
+  background: $primary;
+  color: white;
+  border: none;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+
 // Badges
 .badgeSuccess {
   background: #DCFCE7;

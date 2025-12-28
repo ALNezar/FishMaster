@@ -25,10 +25,10 @@ export default function Profile() {
             const userData = await getCurrentUser();
             setUser(userData);
             setFormData({
-                name: userData.name || '',
+                name: userData.name || userData.username || '',
                 contactNumber: userData.contactNumber || '',
-                emailNotifications: userData.emailNotifications,
-                smsNotifications: userData.smsNotifications
+                emailNotifications: typeof userData.emailNotifications === 'boolean' ? userData.emailNotifications : false,
+                smsNotifications: typeof userData.smsNotifications === 'boolean' ? userData.smsNotifications : false
             });
         } catch (err) {
             console.error('Failed to load profile:', err);
@@ -91,7 +91,7 @@ export default function Profile() {
                             <div className={styles.infoGrid}>
                                 <div className={styles.infoItem}>
                                     <label>Name</label>
-                                    <p>{user?.name}</p>
+                                    <p>{user?.name || user?.username}</p>
                                 </div>
                                 <div className={styles.infoItem}>
                                     <label>Email</label>

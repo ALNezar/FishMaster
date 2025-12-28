@@ -52,7 +52,7 @@ export default function Header({ user }) {
                         />
                     </h1>
                     <p>
-                        Here's what's happening in your aquariums today
+                        Here's what's happening in your aquariums today    
                         <span className={styles.shyFace}>
                         </span>.
                     </p>

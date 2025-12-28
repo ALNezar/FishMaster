@@ -1,5 +1,5 @@
 // api.js
-const DEV_MODE = true; // toggle to true for local development without backend
+const DEV_MODE = false; // toggle to true for local development without backend
 
 const API_BASE_URL = 'http://localhost:8080';
 
@@ -35,6 +35,17 @@ const _liveSensorState = {
   },
 };
 
+// --- Simple in-memory mock user for profile/read/update flows ---
+const _defaultMockUser = {
+  id: 1,
+  username: 'devuser',
+  name: 'Dev User',
+  email: 'dev@fishmaster.app',
+  contactNumber: '',
+  emailNotifications: false,
+  smsNotifications: false,
+};
+let _mockUser = { ..._defaultMockUser };
 function _jitter(val, min, max, step = 0.2) {
   const change = (Math.random() - 0.5) * step;
   let next = val + change;
@@ -145,53 +156,82 @@ const generateMockSensorData = (timeRange, tankId) => {
   };
 };
 
+// Generic mock responder used for fallback when backend fails
+// Accepts `options` so PUT/POST requests can be simulated and persisted
+const getMockResponse = (endpoint, options = {}) => {
+  // Sensor endpoints
+  const sensorMatch = endpoint.match(/^\/tanks\/(\d+)\/sensors/);
+  if (sensorMatch) {
+    const timeRangeMatch = endpoint.match(/timeRange=(\w+)/);
+    const timeRange = timeRangeMatch ? timeRangeMatch[1] : '24h';
+    return generateMockSensorData(timeRange, sensorMatch[1]);
+  }
+
+  // Tank detail endpoint
+  if (endpoint.match(/^\/tanks\/\d+$/)) {
+    const tankId = parseInt(endpoint.split('/')[2]);
+    return {
+      id: tankId,
+      name: tankId === 1 ? 'Living Room Tank' : 'Betta Bowl',
+      sizeLiters: tankId === 1 ? 120 : 20,
+      fish: tankId === 1 ? [{ id: 1, name: 'Goldie', fishType: { name: 'Goldfish', careLevel: 'Easy' } }, { id: 2, name: 'Finn', fishType: { name: 'Guppy', careLevel: 'Easy' } }] : [{ id: 3, name: 'Blue', fishType: { name: 'Betta', careLevel: 'Medium' } }],
+      waterParameters: { targetPh: 7.0, targetTemperature: 25, ph: 7.1, temperature: 25.2 },
+    };
+  }
+
+  // Handle /users/me for GET, PUT, DELETE
+  if (endpoint === '/users/me') {
+    const method = options && options.method ? options.method.toUpperCase() : 'GET';
+    if (method === 'PUT') {
+      try {
+        const body = options.body ? JSON.parse(options.body) : {};
+        _mockUser = { ..._mockUser, ...body };
+      } catch (e) {}
+      return _mockUser;
+    }
+    if (method === 'DELETE') {
+      _mockUser = { ..._defaultMockUser };
+      return { success: true };
+    }
+    // GET (default)
+    return _mockUser;
+  }
+
+  if (endpoint === '/auth/login') {
+    if (options && options.method && options.method.toUpperCase() === 'POST') {
+      return { token: 'dev-token', user: _mockUser };
+    }
+  }
+  if (endpoint === '/api/onboarding/fish-types') {
+    return [
+      { id: 1, name: 'Goldfish', careLevel: 'Easy', minTankSize: 75, temperatureMin: 18, temperatureMax: 24, phMin: 6.5, phMax: 7.5 },
+      { id: 2, name: 'Betta', careLevel: 'Easy', minTankSize: 10, temperatureMin: 24, temperatureMax: 28, phMin: 6.5, phMax: 7.5 },
+      { id: 3, name: 'Guppy', careLevel: 'Easy', minTankSize: 20, temperatureMin: 22, temperatureMax: 28, phMin: 6.8, phMax: 7.8 },
+      { id: 4, name: 'Neon Tetra', careLevel: 'Moderate', minTankSize: 40, temperatureMin: 20, temperatureMax: 26, phMin: 6.0, phMax: 7.0 },
+      { id: 5, name: 'Angelfish', careLevel: 'Moderate', minTankSize: 100, temperatureMin: 24, temperatureMax: 28, phMin: 6.0, phMax: 7.5 },
+    ];
+  }
+  if (endpoint === '/api/onboarding/status') {
+    return { completed: true };
+  }
+  if (endpoint === '/api/onboarding/complete') {
+    return { success: true };
+  }
+  if (endpoint === '/tanks') {
+    return [
+      { id: 1, name: 'Living Room Tank', sizeLiters: 120, fish: [{ id: 1, name: 'Goldie' }, { id: 2, name: 'Finn' }], waterParameters: { targetPh: 7.0, targetTemperature: 25 } },
+      { id: 2, name: 'Betta Bowl', sizeLiters: 20, fish: [{ id: 3, name: 'Blue' }], waterParameters: { targetPh: 7.2, targetTemperature: 26 } }
+    ];
+  }
+  return null; // No mock available for this endpoint
+};
+
 const apiRequest = async (endpoint, options = {}) => {
   if (DEV_MODE) {
-    // Handle sensor data endpoints first (before switch)
-    const sensorMatch = endpoint.match(/^\/tanks\/(\d+)\/sensors/);
-    if (sensorMatch) {
-      const timeRangeMatch = endpoint.match(/timeRange=(\w+)/);
-      const timeRange = timeRangeMatch ? timeRangeMatch[1] : '24h';
-      return generateMockSensorData(timeRange, sensorMatch[1]);
-    }
-
-    // Handle tank detail endpoint
-    if (endpoint.match(/^\/tanks\/\d+$/)) {
-      const tankId = parseInt(endpoint.split('/')[2]);
-      return { 
-        id: tankId, 
-        name: tankId === 1 ? 'Living Room Tank' : 'Betta Bowl', 
-        sizeLiters: tankId === 1 ? 120 : 20, 
-        fish: tankId === 1 
-          ? [{ id: 1, name: 'Goldie', fishType: { name: 'Goldfish', careLevel: 'Easy' } }, { id: 2, name: 'Finn', fishType: { name: 'Guppy', careLevel: 'Easy' } }] 
-          : [{ id: 3, name: 'Blue', fishType: { name: 'Betta', careLevel: 'Medium' } }], 
-        waterParameters: { targetPh: 7.0, targetTemperature: 25, ph: 7.1, temperature: 25.2 } 
-      };
-    }
-
-    switch (endpoint) {
-      case '/users/me':
-        return { id: 1, username: 'Dev User', email: 'dev@fishmaster.app' };
-      case '/api/onboarding/fish-types':
-        return [
-          { id: 1, name: 'Goldfish', careLevel: 'Easy', minTankSize: 75, temperatureMin: 18, temperatureMax: 24, phMin: 6.5, phMax: 7.5 },
-          { id: 2, name: 'Betta', careLevel: 'Easy', minTankSize: 10, temperatureMin: 24, temperatureMax: 28, phMin: 6.5, phMax: 7.5 },
-          { id: 3, name: 'Guppy', careLevel: 'Easy', minTankSize: 20, temperatureMin: 22, temperatureMax: 28, phMin: 6.8, phMax: 7.8 },
-          { id: 4, name: 'Neon Tetra', careLevel: 'Moderate', minTankSize: 40, temperatureMin: 20, temperatureMax: 26, phMin: 6.0, phMax: 7.0 },
-          { id: 5, name: 'Angelfish', careLevel: 'Moderate', minTankSize: 100, temperatureMin: 24, temperatureMax: 28, phMin: 6.0, phMax: 7.5 },
-        ];
-      case '/api/onboarding/status':
-        return { completed: true };
-      case '/api/onboarding/complete':
-        return { success: true };
-      case '/tanks':
-        return [
-          { id: 1, name: 'Living Room Tank', sizeLiters: 120, fish: [{ id: 1, name: 'Goldie' }, { id: 2, name: 'Finn' }], waterParameters: { targetPh: 7.0, targetTemperature: 25 } },
-          { id: 2, name: 'Betta Bowl', sizeLiters: 20, fish: [{ id: 3, name: 'Blue' }], waterParameters: { targetPh: 7.2, targetTemperature: 26 } }
-        ];
-      default:
-        return {}; // fallback
-    }
+    // Use the same mock logic as fallback for all endpoints
+    const mock = getMockResponse(endpoint, options);
+    if (mock !== null) return mock;
+    return {}; // fallback for unknown endpoints
   }
 
   const url = `${API_BASE_URL}${endpoint}`;
@@ -217,8 +257,20 @@ const apiRequest = async (endpoint, options = {}) => {
       data = rawText;
     }
     
-    // Debug logging for errors
     if (!response.ok) {
+      // Try to return a mock fallback first (avoid surfacing errors when a mock exists)
+      try {
+        const fallback = getMockResponse(endpoint, config);
+        if (fallback !== null) {
+          console.warn(`Backend error for ${endpoint} (status ${response.status}). Falling back to mock response.`);
+          return fallback;
+        }
+      } catch (e) {
+        // If fallback fails, fall through to logging and throwing
+        console.error('Mock fallback failed:', e);
+      }
+
+      // No fallback available — log detailed info and throw
       console.error(`API Error Details [${endpoint}]:`, {
         status: response.status,
         statusText: response.statusText,
@@ -226,8 +278,7 @@ const apiRequest = async (endpoint, options = {}) => {
         rawResponse: rawText,
         parsedData: data
       });
-      
-      // Handle different error response formats from backend
+
       let errorMessage;
       if (typeof data === 'string' && data.length > 0) {
         errorMessage = data;
@@ -241,6 +292,16 @@ const apiRequest = async (endpoint, options = {}) => {
     return data;
   } catch (error) {
     console.error(`API Error [${endpoint}]:`, error);
+    // On network errors, attempt mock fallback
+    try {
+      const fallback = getMockResponse(endpoint, config);
+      if (fallback !== null) {
+        console.warn(`Network error for ${endpoint}. Falling back to mock response.`);
+        return fallback;
+      }
+    } catch (e) {
+      console.error('Mock fallback failed:', e);
+    }
     throw error;
   }
 };

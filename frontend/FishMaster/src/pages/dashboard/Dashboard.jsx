@@ -19,6 +19,23 @@ function Dashboard() {
   const [quickChartData, setQuickChartData] = useState(null);
   const [chartTimeRange, setChartTimeRange] = useState('24h');
 
+  // --- Tank Health Score helpers (mirrors Analytics) ---
+  const PARAM_WEIGHTS = {
+    ph: 1.5,
+    ammonia: 1.2,
+    temperature: 0.8,
+    turbidity: 0.5,
+  };
+
+  const getTankHealthScore = ({ ph, ammonia, temperature, turbidity }) => {
+    let score = 0;
+    if (ph >= 6.8 && ph <= 7.4) score += PARAM_WEIGHTS.ph;
+    if (ammonia >= 0 && ammonia <= 0.25) score += PARAM_WEIGHTS.ammonia;
+    if (temperature >= 24 && temperature <= 26) score += PARAM_WEIGHTS.temperature;
+    if (turbidity < 3) score += PARAM_WEIGHTS.turbidity;
+    return score;
+  };
+
   useEffect(() => {
     // Layout handles auth check, we just load user data for display
     getCurrentUser().then(setUser).catch(() => { });
@@ -137,10 +154,61 @@ function Dashboard() {
           </ul>
         </Card>
 
+        {/* Quick Tank Health Score (Quick Access to Analytics) */}
+        <Card className={`${styles.card} ${styles.healthCard}`}>
+          <div className={styles.cardHeader}>
+            <h3><FaCheck /> Tank Health Score</h3>
+          </div>
+
+          {quickChartData && quickChartData.currentReadings ? (
+            (() => {
+              const cr = quickChartData.currentReadings;
+              const rawScore = getTankHealthScore({
+                ph: cr.ph?.value,
+                ammonia: cr.ammonia?.value,
+                temperature: cr.temperature?.value,
+                turbidity: cr.turbidity?.value,
+              });
+              const maxScore = Object.values(PARAM_WEIGHTS).reduce((a, b) => a + b, 0);
+              const percent = Math.round((rawScore / maxScore) * 100);
+              let emoji = '😃';
+              if (percent < 80 && percent >= 60) emoji = '😐';
+              else if (percent < 60) emoji = '😟';
+
+              return (
+                <div>
+                  <div className={styles.healthScoreRow}>
+                    <div className={styles.healthEmoji}>{emoji}</div>
+                    <div>
+                      <div className={styles.healthValue}>{rawScore.toFixed(1)} / {maxScore}</div>
+                      <div className={styles.healthPercent}>{percent}%</div>
+                    </div>
+                  </div>
+
+                  <div className={styles.healthDetails}>
+                    <div>Temp: {cr.temperature?.value?.toFixed(1)}°C</div>
+                    <div>pH: {cr.ph?.value?.toFixed(1)}</div>
+                    <div>Turbidity: {cr.turbidity?.value?.toFixed(1)} NTU</div>
+                    <div>Ammonia: {cr.ammonia?.value?.toFixed(2)} ppm</div>
+                  </div>
+
+                  <div className={styles.healthActions}>
+                    <button className={styles.viewDetailsBtn} onClick={() => navigate('/analytics')}>View Details</button>
+                  </div>
+                </div>
+              );
+            })()
+          ) : (
+            <div className={styles.emptyState}>
+              <p>Add a tank or select one to see the Tank Health Score</p>
+            </div>
+          )}
+        </Card>
+
         {/* Water Quality Overview */}
         <Card className={`${styles.card} ${styles.chartCard}`}>
           <div className={styles.cardHeader}>
-            <h3><FaTemperatureHigh /> Water Quality Trends</h3>
+            <h3><FaTemperatureHigh /> Tank Health Score</h3>
             <select 
               className={styles.timeSelect}
               value={chartTimeRange}
@@ -154,7 +222,7 @@ function Dashboard() {
           <div className={styles.chartContainer}>
             {tanks.length === 0 ? (
               <div className={styles.emptyChart}>
-                <p>Add a tank to see water quality trends</p>
+                <p>Add a tank to see your tank health score</p>
               </div>
             ) : quickChartData ? (
               <MultiParameterChart 

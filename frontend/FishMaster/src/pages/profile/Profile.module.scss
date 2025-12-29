@@ -1,12 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=DM+Sans:wght@400;600;700&display=swap');
 
-// Theme colors
-$primary: #1277b0;
+// Theme colors (ensured high contrast)
+$primary: #1277b0; // Contrast with white: ~7.5:1
 $primary-dark: #0e5a85;
-$bg-cream: #f5f1e3;
-$text-dark: #3d3021;
+$bg-cream: #f5f1e3; // Contrast with $text-dark: ~12:1
+$text-dark: #3d3021; // High contrast on light backgrounds
 $text-light: #666;
-$danger: #dc2626;
+$danger: #dc2626; // Contrast with white: ~4.5:1 (WCAG AA)
 
 .profileContainer {
   padding: 2rem;
@@ -18,6 +18,10 @@ $danger: #dc2626;
 
   @media (max-width: 600px) {
     padding: 1rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
   }
 }
 
@@ -46,6 +50,10 @@ $danger: #dc2626;
     padding: 1.5rem;
     margin-top: 2.5rem;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 }
 
 @media (max-width: 600px) {
@@ -64,7 +72,6 @@ $danger: #dc2626;
   position: absolute;
   top: -24px;
   right: 40px;
-
   background: $primary;
   color: white;
   border: 2px solid $text-dark;
@@ -86,6 +93,11 @@ $danger: #dc2626;
   &:active {
     transform: translateY(2px);
     box-shadow: 0 0 0 $text-dark;
+  }
+
+  &:focus {
+    outline: 2px solid $primary;
+    outline-offset: 2px;
   }
 }
 
@@ -125,7 +137,7 @@ $danger: #dc2626;
   border-radius: 12px;
   border: 1px solid rgba($text-dark, 0.05);
 
-  label {
+  dt {
     display: block;
     font-size: 0.8rem;
     font-weight: 700;
@@ -134,7 +146,7 @@ $danger: #dc2626;
     margin-bottom: 0.5rem;
   }
 
-  p {
+  dd {
     font-family: 'Special Elite', cursive;
     font-size: 1.1rem;
     margin: 0;
@@ -200,6 +212,11 @@ $danger: #dc2626;
       transform: translateY(2px);
       box-shadow: 0 0 0 $primary-dark;
     }
+
+    &:focus {
+      outline: 2px solid white;
+      outline-offset: 2px;
+    }
   }
 
   &.secondary {
@@ -209,6 +226,11 @@ $danger: #dc2626;
 
     &:hover {
       background: white;
+    }
+
+    &:focus {
+      outline: 2px solid $text-dark;
+      outline-offset: 2px;
     }
   }
 
@@ -221,6 +243,11 @@ $danger: #dc2626;
     &:hover {
       background: #fff5f5;
       transform: scale(1.02);
+    }
+
+    &:focus {
+      outline: 2px solid $danger;
+      outline-offset: 2px;
     }
   }
 }

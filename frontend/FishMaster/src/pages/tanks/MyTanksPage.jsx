@@ -46,12 +46,10 @@ const MyTanksPage = () => {
         e.preventDefault();
         try {
             if (!newTank.name || !newTank.sizeLiters) return;
-
             await api.apiRequest('/tanks', {
                 method: 'POST',
                 body: JSON.stringify(newTank)
             });
-
             setNewTank({ name: '', sizeLiters: '' });
             setShowAddForm(false);
             fetchTanks();
@@ -63,7 +61,6 @@ const MyTanksPage = () => {
     const handleDeleteTank = async (id, e) => {
         e.stopPropagation(); // prevent navigation
         if (!window.confirm('Are you sure you want to delete this tank?')) return;
-
         try {
             await api.apiRequest(`/tanks/${id}`, { method: 'DELETE' });
             fetchTanks();
@@ -75,10 +72,11 @@ const MyTanksPage = () => {
     // Helper to pick a deterministic image for a tank ID
     const getTankImage = (id) => {
         if (!id) return AQUARIUM_IMAGES[0];
-        // Simple hash function to get a number from the ID string
+        // Convert id to string and create hash
+        const idString = String(id);
         let hash = 0;
-        for (let i = 0; i < id.length; i++) {
-            hash = id.charCodeAt(i) + ((hash << 5) - hash);
+        for (let i = 0; i < idString.length; i++) {
+            hash = idString.charCodeAt(i) + ((hash << 5) - hash);
         }
         const index = Math.abs(hash) % AQUARIUM_IMAGES.length;
         return AQUARIUM_IMAGES[index];

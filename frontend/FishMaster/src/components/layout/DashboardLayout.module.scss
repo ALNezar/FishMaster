@@ -1,14 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Special+Elite&display=swap');
+
 $text-dark: #3d3021;
 $bg-cream: #f5f1e3;
 $primary: #1277b0;
+$primary-dark: #0e5a85;
 
 .layout {
   min-height: 100vh;
-  position: relative;
   background-color: $bg-cream;
-  overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow-x: hidden;
 }
 
 // Top Header
@@ -17,12 +20,11 @@ $primary: #1277b0;
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  background: white;
-  border-bottom: 2px solid $text-dark;
   position: sticky;
   top: 0;
-  z-index: 50;
-  
+  z-index: 100;
+  box-shadow: 0 4px 8px rgba($text-dark, 0.08);
+
   @media (max-width: 600px) {
     padding: 0.75rem 1rem;
   }
@@ -35,11 +37,13 @@ $primary: #1277b0;
 
 .logo {
   font-family: 'Special Elite', cursive;
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   color: $text-dark;
-  
+  margin: 0;
+  font-weight: normal;
+
   @media (max-width: 600px) {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
   }
 }
 
@@ -52,14 +56,14 @@ $primary: #1277b0;
 // Navigation Container
 .navContainer {
   padding: 1rem 2rem 0;
-  
+  z-index: 90;
+
   @media (max-width: 768px) {
     padding: 0;
-    // QuickAccessNav handles its own fixed positioning on mobile
   }
 }
 
-// Loading state
+// Loading State
 .loadingContainer {
   display: flex;
   flex-direction: column;
@@ -67,58 +71,64 @@ $primary: #1277b0;
   justify-content: center;
   min-height: 100vh;
   background: $bg-cream;
-  
+  gap: 1.5rem;
+
   p {
     font-family: 'Special Elite', cursive;
+    font-size: 1.4rem;
     color: $text-dark;
-    margin-top: 1rem;
+    margin: 0;
   }
 }
 
 .loader {
-  font-size: 3rem;
-  animation: swim 1s ease-in-out infinite;
+  font-size: 4.5rem;
+  animation: swim 2s ease-in-out infinite;
 }
 
 @keyframes swim {
-  0%, 100% { transform: translateX(-5px) rotate(-5deg); }
-  50% { transform: translateX(5px) rotate(5deg); }
+  0%, 100% {
+    transform: translateX(-10px) rotate(-8deg);
+  }
+  50% {
+    transform: translateX(10px) rotate(8deg);
+  }
 }
 
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-family: 'Special Elite', cursive;
-  font-size: 1.5rem;
-  color: $primary;
-}
-
+// Wave Background (decorative)
 .waveBackground {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 122px;
+  height: 180px;
+  pointer-events: none;
   z-index: 0;
-  opacity: 1;
+  overflow: hidden;
+
+  :global(svg) {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 200px;
+  }
 }
 
+// Main Content Area
 .content {
   position: relative;
   z-index: 1;
-  padding: 1rem 2rem 2rem;
+  padding: 1.5rem 2rem 8rem; // Extra bottom padding to clear waves + mobile nav
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
   flex: 1;
-  
+
   @media (max-width: 768px) {
-    padding: 1rem 1rem 6rem; // Extra bottom padding for fixed nav
+    padding: 1rem 1rem 7rem;
   }
 
   @media (max-width: 480px) {
-    padding: 0.75rem 0.75rem 6rem;
+    padding: 0.75rem 0.75rem 7rem;
   }
 }

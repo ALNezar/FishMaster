@@ -14,6 +14,7 @@ import PlaceholderPage from './pages/PlaceholderPage.jsx';
 import HistoryPage from './pages/dashboard/HistoryPage.jsx';
 import TrendsPage from './pages/dashboard/TrendsPage.jsx';
 import DataPage from './pages/dashboard/DataPage.jsx';
+import AlertConfigPage from './pages/alerts/AlertConfigPage.jsx';
 
 // Layouts
 import MyTanksPage from './pages/tanks/MyTanksPage.jsx';
@@ -44,7 +45,7 @@ function App() {
         <Route path="/data" element={<DataPage />} />
         <Route path="/trends" element={<TrendsPage />} />
         <Route path="/analytics" element={<DataPage />} />
-        <Route path="/alerts" element={<PlaceholderPage title="Alert Rules" />} />
+        <Route path="/alerts" element={<AlertConfigPage />} />
         <Route path="/notifications" element={<PlaceholderPage title="Notifications" />} />
         <Route path="/education" element={<PlaceholderPage title="Learn & Care" />} />
         <Route path="/device" element={<PlaceholderPage title="Device Setup" />} />

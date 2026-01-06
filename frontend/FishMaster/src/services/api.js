@@ -165,6 +165,39 @@ let _mockTanks = [
 ];
 let _nextFishId = 4;
 
+// In-memory mock alert thresholds per tank
+let _mockAlertThresholds = {
+  1: {
+    globalAlertsEnabled: true,
+    emailAlertsEnabled: true,
+    inAppAlertsEnabled: true,
+    temperature: { enabled: true, min: 22, max: 28 },
+    ph: { enabled: true, min: 6.5, max: 7.5 },
+    turbidity: { enabled: true, max: 5 },
+    ammonia: { enabled: true, max: 0.25 },
+  },
+  2: {
+    globalAlertsEnabled: true,
+    emailAlertsEnabled: false,
+    inAppAlertsEnabled: true,
+    temperature: { enabled: true, min: 24, max: 28 },
+    ph: { enabled: true, min: 6.5, max: 7.5 },
+    turbidity: { enabled: false, max: 5 },
+    ammonia: { enabled: true, max: 0.25 },
+  },
+};
+
+// Default thresholds for new tanks
+const _defaultThresholds = {
+  globalAlertsEnabled: true,
+  emailAlertsEnabled: true,
+  inAppAlertsEnabled: true,
+  temperature: { enabled: true, min: 22, max: 28 },
+  ph: { enabled: true, min: 6.5, max: 7.5 },
+  turbidity: { enabled: true, max: 5 },
+  ammonia: { enabled: true, max: 0.25 },
+};
+
 function _jitter(val, min, max, step = 0.2) {
   const change = (Math.random() - 0.5) * step;
   let next = val + change;
@@ -463,6 +496,32 @@ const getMockResponse = (endpoint, options = {}) => {
     return _mockTanks;
   }
 
+  // Alert thresholds - GET /tanks/:id/thresholds
+  const getThresholdsMatch = endpoint.match(/^\/tanks\/(\d+)\/thresholds$/);
+  if (getThresholdsMatch && method === 'GET') {
+    const tankId = parseInt(getThresholdsMatch[1]);
+    console.log(`Getting thresholds for tank ${tankId}`);
+    if (_mockAlertThresholds[tankId]) {
+      return { ...(_mockAlertThresholds[tankId]) };
+    }
+    // Return defaults for tanks without saved thresholds
+    return { ..._defaultThresholds };
+  }
+
+  // Alert thresholds - PUT /tanks/:id/thresholds
+  if (getThresholdsMatch && method === 'PUT') {
+    const tankId = parseInt(getThresholdsMatch[1]);
+    try {
+      const data = options.body ? JSON.parse(options.body) : {};
+      _mockAlertThresholds[tankId] = { ...data };
+      console.log(`Saved thresholds for tank ${tankId}:`, data);
+      return { success: true, ...data };
+    } catch (e) {
+      console.error('Failed to save thresholds:', e);
+      return { error: 'Invalid threshold data' };
+    }
+  }
+
   return null;
 };
 
@@ -616,6 +675,10 @@ export const updateFish = async (tankId, fishId, fishData) => apiRequest(`/tanks
 
 export const getSensorData = async (tankId, timeRange = '24h') => apiRequest(`/tanks/${tankId}/sensors?timeRange=${timeRange}`);
 
+// Alert threshold endpoints
+export const getAlertThresholds = async (tankId) => apiRequest(`/tanks/${tankId}/thresholds`);
+export const updateAlertThresholds = async (tankId, data) => apiRequest(`/tanks/${tankId}/thresholds`, { method: 'PUT', body: JSON.stringify(data) });
+
 export { apiRequest };
 
-export default { signup, verifyEmail, resendVerificationCode, login, logout, getFishTypes, getOnboardingStatus, completeOnboarding, getCurrentUser, updateProfile, deleteAccount, isAuthenticated, setToken, removeToken, getTanks, getTank, createTank, updateTank, deleteTank, addFishToTank, removeFishFromTank, updateFish, getSensorData, apiRequest };
+export default { signup, verifyEmail, resendVerificationCode, login, logout, getFishTypes, getOnboardingStatus, completeOnboarding, getCurrentUser, updateProfile, deleteAccount, isAuthenticated, setToken, removeToken, getTanks, getTank, createTank, updateTank, deleteTank, addFishToTank, removeFishFromTank, updateFish, getSensorData, getAlertThresholds, updateAlertThresholds, apiRequest };

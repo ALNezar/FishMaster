@@ -7,16 +7,17 @@ import Wave from 'react-wavify';
 
 // High-quality aquarium images from Unsplash
 const AQUARIUM_IMAGES = [
-    'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?q=80&w=800&auto=format&fit=crop', // Fish & coral
-    'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=800&auto=format&fit=crop', // Blue tank
-    'https://images.unsplash.com/photo-1546026423-cc4642628d2b?q=80&w=800&auto=format&fit=crop', // Planted tank
-    'https://images.unsplash.com/photo-1535591273668-578e31182c4f?q=80&w=800&auto=format&fit=crop', // Clownfish
-    'https://images.unsplash.com/photo-1516934024742-b461fba47600?q=80&w=800&auto=format&fit=crop', // Goldfish
-    'https://images.unsplash.com/photo-1621236162359-5b682b13735f?q=80&w=800&auto=format&fit=crop', // Aquascape
-    'https://images.unsplash.com/photo-1520315342629-6ea920342047?q=80&w=800&auto=format&fit=crop', // Jellyfish
-    'https://images.unsplash.com/photo-1571752726703-426e92546a67?q=80&w=800&auto=format&fit=crop', // Betta
+    'https://images.unsplash.com/photo-1418065460487-3e41a6c84dc5?q=80&w=800&auto=format&fit=crop', // Stunning coral reef with tropical fish
+    'https://images.unsplash.com/photo-1559827260-dc66d52bef19?q=80&w=800&auto=format&fit=crop', // Vibrant planted aquarium
+    'https://images.unsplash.com/photo-1591672299888-e16a08b6c0e3?q=80&w=800&auto=format&fit=crop', // Beautiful aquascape with rocks
+    'https://images.unsplash.com/photo-1520990504307-e2ef0da8e33c?q=80&w=800&auto=format&fit=crop', // Colorful tropical fish school
+    'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=800&auto=format&fit=crop', // Crystal clear blue tank
+    'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?q=80&w=800&auto=format&fit=crop', // Lush planted tank with tetras
+    'https://images.unsplash.com/photo-1560090995-01632a28895b?q=80&w=800&auto=format&fit=crop', // Vibrant reef aquarium
+    'https://images.unsplash.com/photo-1535591273668-578e31182c4f?q=80&w=800&auto=format&fit=crop', // Clownfish in anemone
+    'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?q=80&w=800&auto=format&fit=crop', // Colorful coral reef scene
+    'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=800&auto=format&fit=crop', // Dramatic underwater scene
 ];
-
 const MyTanksPage = () => {
     const navigate = useNavigate();
     const [tanks, setTanks] = useState([]);
@@ -175,7 +176,7 @@ const MyTanksPage = () => {
                                     onClick={(e) => handleDeleteTank(tank.id, e)}
                                     title="Delete Tank"
                                 >
-                                    ×
+                                   
                                 </button>
                             </div>
                         ))

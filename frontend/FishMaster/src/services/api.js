@@ -1,5 +1,5 @@
 // api.js
-const DEV_MODE = false; // toggle to true for local development without backend
+const DEV_MODE = true; // toggle to true for local development without backend
 
 const API_BASE_URL = 'http://localhost:8080';
 

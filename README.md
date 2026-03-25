@@ -64,11 +64,21 @@ The system is designed to work whether or not there is an internet connection.
 ### System Modules
 
 #### Hardware (ESP32)
-| Part | Function |
-| :--- | :--- |
-| Sensors | Collects water temperature, pH, and clarity data. |
-| Servo | Moves the feeder to dispense food. |
-| Display | Shows live data locally on the tank. |
+## Hardware & Parts List
+
+| Component | Model / Details | Qty | Purpose |
+|-----------|----------------|-----|---------|
+| ESP32 | ESP32-DevKitC-32E (38-pin, CP2102) | 1 | Main microcontroller |
+| pH Sensor | PH 0-14 Liquid Monitoring Sensor (Arduino-compatible) | 1 | Water pH detection |
+| Turbidity Sensor | FARDUINO Water Turbidity Module (Full Set) | 1 | Water clarity detection |
+| Temperature Sensor | DS18B20 Waterproof Probe | 1 | Water temperature |
+| TFT LCD Display | 2.8" ILI9341 SPI Touch Panel 240x320 | 1 | Local display |
+| Servo Motor | SG90 180° | 1 | Auto feeder mechanism |
+| Breadboard | MB-102 830-point Solderless | 1 | Prototyping |
+| Dupont Wires | M-F 10cm, M-M 10cm, F-F 30cm (40pcs each) | 3 sets | Connections |
+| Resistors | 4.7kΩ 0.25W 5% | 50pcs | Pull-up for DS18B20 |
+| Multimeter | HABOTEST HT109L | 1 | Testing & debugging |
+| USB Cable | Micro USB 30cm | 1 | ESP32 power/programming |
 
 #### Software (Web)
 | Part | Function |

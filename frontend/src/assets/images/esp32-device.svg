@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280" fill="none">
+  <!-- Main PCB Board -->
+  <rect x="20" y="40" width="160" height="200" rx="8" fill="#1a5c3a" stroke="#0d3d26" stroke-width="2"/>
+  
+  <!-- PCB Texture Lines -->
+  <g stroke="#2a7c52" stroke-width="0.5" opacity="0.6">
+    <line x1="30" y1="60" x2="170" y2="60"/>
+    <line x1="30" y1="80" x2="170" y2="80"/>
+    <line x1="30" y1="100" x2="170" y2="100"/>
+    <line x1="30" y1="200" x2="170" y2="200"/>
+    <line x1="30" y1="220" x2="170" y2="220"/>
+    <line x1="50" y1="50" x2="50" y2="230"/>
+    <line x1="100" y1="50" x2="100" y2="230"/>
+    <line x1="150" y1="50" x2="150" y2="230"/>
+  </g>
+  
+  <!-- ESP32 Chip (Main Processor) -->
+  <rect x="55" y="90" width="90" height="70" rx="4" fill="#2c2c2c" stroke="#1a1a1a" stroke-width="1"/>
+  
+  <!-- Chip Label -->
+  <text x="100" y="120" text-anchor="middle" fill="#c0c0c0" font-family="monospace" font-size="10" font-weight="bold">ESP32</text>
+  <text x="100" y="135" text-anchor="middle" fill="#888" font-family="monospace" font-size="7">WROOM-32</text>
+  <text x="100" y="148" text-anchor="middle" fill="#666" font-family="monospace" font-size="6">240MHz</text>
+  
+  <!-- Chip Pins Left -->
+  <g fill="#c4a000">
+    <rect x="48" y="95" width="8" height="3"/>
+    <rect x="48" y="102" width="8" height="3"/>
+    <rect x="48" y="109" width="8" height="3"/>
+    <rect x="48" y="116" width="8" height="3"/>
+    <rect x="48" y="123" width="8" height="3"/>
+    <rect x="48" y="130" width="8" height="3"/>
+    <rect x="48" y="137" width="8" height="3"/>
+    <rect x="48" y="144" width="8" height="3"/>
+    <rect x="48" y="151" width="8" height="3"/>
+  </g>
+  
+  <!-- Chip Pins Right -->
+  <g fill="#c4a000">
+    <rect x="144" y="95" width="8" height="3"/>
+    <rect x="144" y="102" width="8" height="3"/>
+    <rect x="144" y="109" width="8" height="3"/>
+    <rect x="144" y="116" width="8" height="3"/>
+    <rect x="144" y="123" width="8" height="3"/>
+    <rect x="144" y="130" width="8" height="3"/>
+    <rect x="144" y="137" width="8" height="3"/>
+    <rect x="144" y="144" width="8" height="3"/>
+    <rect x="144" y="151" width="8" height="3"/>
+  </g>
+  
+  <!-- WiFi Antenna Area -->
+  <rect x="65" y="45" width="70" height="35" rx="2" fill="#1e4d30" stroke="#0d3d26" stroke-width="1"/>
+  <text x="100" y="67" text-anchor="middle" fill="#4a9" font-family="monospace" font-size="8">ANTENNA</text>
+  
+  <!-- WiFi Signal Icon -->
+  <g transform="translate(90, 52)" stroke="#4ecdc4" fill="none" stroke-width="2">
+    <path d="M10 12 L10 12" stroke-linecap="round"/>
+    <path d="M5 9 Q10 4 15 9" stroke-linecap="round"/>
+    <path d="M0 6 Q10 -2 20 6" stroke-linecap="round"/>
+  </g>
+  
+  <!-- USB-C Port -->
+  <rect x="75" y="230" width="50" height="12" rx="3" fill="#404040" stroke="#2a2a2a" stroke-width="1"/>
+  <rect x="85" y="232" width="30" height="8" rx="2" fill="#1a1a1a"/>
+  <text x="100" y="255" text-anchor="middle" fill="#666" font-family="monospace" font-size="6">USB-C</text>
+  
+  <!-- Status LEDs -->
+  <circle cx="40" y="180" r="4" fill="#22c55e">
+    <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <text x="40" y="192" text-anchor="middle" fill="#888" font-family="monospace" font-size="5">PWR</text>
+  
+  <circle cx="60" cy="180" r="4" fill="#3b82f6">
+    <animate attributeName="opacity" values="1;0.4;1" dur="1s" repeatCount="indefinite"/>
+  </circle>
+  <text x="60" y="192" text-anchor="middle" fill="#888" font-family="monospace" font-size="5">TX</text>
+  
+  <circle cx="80" cy="180" r="4" fill="#f59e0b">
+    <animate attributeName="opacity" values="0.4;1;0.4" dur="1s" repeatCount="indefinite"/>
+  </circle>
+  <text x="80" y="192" text-anchor="middle" fill="#888" font-family="monospace" font-size="5">RX</text>
+  
+  <!-- Reset Button -->
+  <rect x="140" y="175" width="20" height="10" rx="2" fill="#404040" stroke="#2a2a2a" stroke-width="1"/>
+  <text x="150" y="195" text-anchor="middle" fill="#888" font-family="monospace" font-size="5">RST</text>
+  
+  <!-- Boot Button -->
+  <rect x="140" y="200" width="20" height="10" rx="2" fill="#404040" stroke="#2a2a2a" stroke-width="1"/>
+  <text x="150" y="220" text-anchor="middle" fill="#888" font-family="monospace" font-size="5">BOOT</text>
+  
+  <!-- GPIO Pins Header Left -->
+  <g fill="#c4a000">
+    <rect x="25" y="50" width="3" height="8" rx="0.5"/>
+    <rect x="25" y="62" width="3" height="8" rx="0.5"/>
+    <rect x="25" y="74" width="3" height="8" rx="0.5"/>
+    <rect x="25" y="200" width="3" height="8" rx="0.5"/>
+    <rect x="25" y="212" width="3" height="8" rx="0.5"/>
+    <rect x="25" y="224" width="3" height="8" rx="0.5"/>
+  </g>
+  
+  <!-- GPIO Pins Header Right -->
+  <g fill="#c4a000">
+    <rect x="172" y="50" width="3" height="8" rx="0.5"/>
+    <rect x="172" y="62" width="3" height="8" rx="0.5"/>
+    <rect x="172" y="74" width="3" height="8" rx="0.5"/>
+    <rect x="172" y="200" width="3" height="8" rx="0.5"/>
+    <rect x="172" y="212" width="3" height="8" rx="0.5"/>
+    <rect x="172" y="224" width="3" height="8" rx="0.5"/>
+  </g>
+  
+  <!-- Capacitors -->
+  <rect x="115" y="170" width="8" height="12" rx="1" fill="#2c2c2c" stroke="#1a1a1a"/>
+  <rect x="100" y="170" width="8" height="12" rx="1" fill="#2c2c2c" stroke="#1a1a1a"/>
+  
+  <!-- Crystal Oscillator -->
+  <rect x="130" y="120" width="15" height="8" rx="1" fill="#c0c0c0" stroke="#888"/>
+  
+  <!-- Product Label -->
+  <text x="100" y="270" text-anchor="middle" fill="#1277b0" font-family="sans-serif" font-size="10" font-weight="bold">AquaSense Pro</text>
+</svg>

@@ -1,5 +1,5 @@
 // api.js
-const DEV_MODE = true; // toggle to true for local development without backend
+const DEV_MODE = false; // toggle to true for local development without backend
 
 const API_BASE_URL = 'http://localhost:8080';
 
@@ -679,6 +679,134 @@ export const getSensorData = async (tankId, timeRange = '24h') => apiRequest(`/t
 export const getAlertThresholds = async (tankId) => apiRequest(`/tanks/${tankId}/thresholds`);
 export const updateAlertThresholds = async (tankId, data) => apiRequest(`/tanks/${tankId}/thresholds`, { method: 'PUT', body: JSON.stringify(data) });
 
+// ============================================
+// DEVICE CONTROL MOCK DATA & ENDPOINTS
+// ============================================
+
+// Mock device info - ESP32 AquaSense Pro
+let _mockDeviceInfo = {
+  id: 1,
+  name: 'AquaSense Pro',
+  status: 'online', // online, offline, error
+  firmwareVersion: 'v2.4.1',
+  wifiNetwork: 'Home_Network_5G',
+  ipAddress: '192.168.1.105',
+  macAddress: 'A4:CF:12:8E:3B:9D',
+  signalStrength: -45, // dBm
+  cpuSpeed: 240, // MHz
+  freeMemory: 142, // KB
+  totalMemory: 320, // KB
+  sensorInterval: 30, // seconds
+  lastSync: new Date(Date.now() - 2 * 60 * 1000).toISOString(), // 2 minutes ago
+  uptime: 14 * 24 * 60 * 60 + 6 * 60 * 60, // seconds (14 days, 6 hours)
+  connectedTankId: 1,
+  connectedTankName: 'Living Room Tank',
+  features: {
+    temperatureSensor: true,
+    phSensor: true,
+    turbiditySensor: true,
+    ammoniaSensor: true,
+    autoFeeder: true,
+    waterLevelSensor: true,
+  }
+};
+
+// Mock feeding schedules
+let _mockFeedingSchedules = [
+  { id: 1, time: '08:00', portionSize: 'small', enabled: true, daysOfWeek: [0, 1, 2, 3, 4, 5, 6], label: 'Morning Feed' },
+  { id: 2, time: '13:00', portionSize: 'small', enabled: false, daysOfWeek: [0, 6], label: 'Weekend Lunch' },
+  { id: 3, time: '18:30', portionSize: 'medium', enabled: true, daysOfWeek: [0, 1, 2, 3, 4, 5, 6], label: 'Evening Feed' },
+];
+let _nextScheduleId = 4;
+
+// Mock feeding history
+const _mockFeedingHistory = [
+  { id: 1, time: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), portionSize: 'medium', status: 'completed', type: 'scheduled', scheduleName: 'Evening Feed' },
+  { id: 2, time: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(), portionSize: 'small', status: 'completed', type: 'manual', scheduleName: null },
+  { id: 3, time: new Date(Date.now() - 14 * 60 * 60 * 1000).toISOString(), portionSize: 'small', status: 'completed', type: 'scheduled', scheduleName: 'Morning Feed' },
+  { id: 4, time: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(), portionSize: 'medium', status: 'completed', type: 'scheduled', scheduleName: 'Evening Feed' },
+  { id: 5, time: new Date(Date.now() - 32 * 60 * 60 * 1000).toISOString(), portionSize: 'small', status: 'skipped', type: 'scheduled', scheduleName: 'Morning Feed' },
+  { id: 6, time: new Date(Date.now() - 38 * 60 * 60 * 1000).toISOString(), portionSize: 'medium', status: 'completed', type: 'scheduled', scheduleName: 'Evening Feed' },
+  { id: 7, time: new Date(Date.now() - 50 * 60 * 60 * 1000).toISOString(), portionSize: 'small', status: 'completed', type: 'scheduled', scheduleName: 'Morning Feed' },
+  { id: 8, time: new Date(Date.now() - 56 * 60 * 60 * 1000).toISOString(), portionSize: 'large', status: 'completed', type: 'manual', scheduleName: null },
+];
+
+// Device API functions (mock-only for presentation)
+export const getDeviceInfo = async () => {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  // Update last sync and uptime dynamically
+  _mockDeviceInfo.lastSync = new Date(Date.now() - Math.floor(Math.random() * 5) * 60 * 1000).toISOString();
+  _mockDeviceInfo.uptime += 1;
+  
+  return { ..._mockDeviceInfo };
+};
+
+export const updateDeviceInfo = async (updates) => {
+  await new Promise(resolve => setTimeout(resolve, 200));
+  _mockDeviceInfo = { ..._mockDeviceInfo, ...updates };
+  return { ..._mockDeviceInfo };
+};
+
+export const getFeedingSchedules = async () => {
+  await new Promise(resolve => setTimeout(resolve, 200));
+  return [..._mockFeedingSchedules];
+};
+
+export const createFeedingSchedule = async (schedule) => {
+  await new Promise(resolve => setTimeout(resolve, 300));
+  const newSchedule = {
+    id: _nextScheduleId++,
+    ...schedule,
+    enabled: schedule.enabled ?? true,
+  };
+  _mockFeedingSchedules.push(newSchedule);
+  return newSchedule;
+};
+
+export const updateFeedingSchedule = async (scheduleId, updates) => {
+  await new Promise(resolve => setTimeout(resolve, 200));
+  const index = _mockFeedingSchedules.findIndex(s => s.id === scheduleId);
+  if (index === -1) throw new Error('Schedule not found');
+  _mockFeedingSchedules[index] = { ..._mockFeedingSchedules[index], ...updates };
+  return _mockFeedingSchedules[index];
+};
+
+export const deleteFeedingSchedule = async (scheduleId) => {
+  await new Promise(resolve => setTimeout(resolve, 200));
+  const index = _mockFeedingSchedules.findIndex(s => s.id === scheduleId);
+  if (index === -1) throw new Error('Schedule not found');
+  _mockFeedingSchedules.splice(index, 1);
+  return { success: true };
+};
+
+export const triggerManualFeeding = async (portionSize = 'medium') => {
+  await new Promise(resolve => setTimeout(resolve, 500));
+  const newEntry = {
+    id: _mockFeedingHistory.length + 1,
+    time: new Date().toISOString(),
+    portionSize,
+    status: 'completed',
+    type: 'manual',
+    scheduleName: null,
+  };
+  _mockFeedingHistory.unshift(newEntry);
+  return newEntry;
+};
+
+export const getFeedingHistory = async (limit = 10) => {
+  await new Promise(resolve => setTimeout(resolve, 200));
+  return _mockFeedingHistory.slice(0, limit);
+};
+
+export const reconnectDevice = async () => {
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  _mockDeviceInfo.status = 'online';
+  _mockDeviceInfo.lastSync = new Date().toISOString();
+  return { success: true, status: 'online' };
+};
+
 export { apiRequest };
 
-export default { signup, verifyEmail, resendVerificationCode, login, logout, getFishTypes, getOnboardingStatus, completeOnboarding, getCurrentUser, updateProfile, deleteAccount, isAuthenticated, setToken, removeToken, getTanks, getTank, createTank, updateTank, deleteTank, addFishToTank, removeFishFromTank, updateFish, getSensorData, getAlertThresholds, updateAlertThresholds, apiRequest };
+export default { signup, verifyEmail, resendVerificationCode, login, logout, getFishTypes, getOnboardingStatus, completeOnboarding, getCurrentUser, updateProfile, deleteAccount, isAuthenticated, setToken, removeToken, getTanks, getTank, createTank, updateTank, deleteTank, addFishToTank, removeFishFromTank, updateFish, getSensorData, getAlertThresholds, updateAlertThresholds, getDeviceInfo, updateDeviceInfo, getFeedingSchedules, createFeedingSchedule, updateFeedingSchedule, deleteFeedingSchedule, triggerManualFeeding, getFeedingHistory, reconnectDevice, apiRequest };

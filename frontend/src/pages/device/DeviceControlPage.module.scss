@@ -1,0 +1,1081 @@
+// DeviceControlPage.module.scss
+// Theme colors
+$primary: #1277b0;
+$primary-dark: #0e5a85;
+$primary-light: #e0f2fe;
+$danger: #dc2626;
+$danger-light: #fee2e2;
+$success: #16a34a;
+$success-light: #dcfce7;
+$warning: #f59e0b;
+$warning-light: #fef3c7;
+$text-dark: #1f2937;
+$text-muted: #6b7280;
+$border-color: #e5e7eb;
+$bg-cream: #f5f1e3;
+$card-bg: #E8DCC0;
+
+// Loading State
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 16px;
+  color: $text-muted;
+
+  .loader {
+    font-size: 3rem;
+    color: $primary;
+  }
+
+  .spinIcon {
+    animation: spin 1.5s linear infinite;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+// Page Container
+.pageContainer {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: slideIn 0.3s ease-out;
+  position: relative;
+}
+
+// Success Toast
+.successToast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: $success;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out;
+}
+
+// Header
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  .headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .headerIcon {
+      font-size: 2.5rem;
+      color: $primary;
+    }
+
+    h1 {
+      font-family: 'Special Elite', cursive;
+      font-size: 1.75rem;
+      color: $text-dark;
+      margin: 0;
+    }
+
+    .subtitle {
+      color: $text-muted;
+      font-size: 0.9rem;
+      margin: 4px 0 0 0;
+    }
+  }
+
+  .headerRight {
+    display: flex;
+    align-items: center;
+  }
+}
+
+// Status Badge
+.statusBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  .statusDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  &.online {
+    background: $success-light;
+    color: $success;
+
+    .statusDot {
+      background: $success;
+    }
+  }
+
+  &.offline {
+    background: $danger-light;
+    color: $danger;
+
+    .statusDot {
+      background: $danger;
+      animation: none;
+    }
+  }
+
+  &.error {
+    background: $warning-light;
+    color: $warning;
+
+    .statusDot {
+      background: $warning;
+    }
+  }
+}
+
+// Tabs
+.tabsContainer {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid $border-color;
+  padding-bottom: 0;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: $text-muted;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: $primary;
+    background: rgba($primary, 0.05);
+  }
+
+  &.activeTab {
+    color: $primary;
+    border-bottom-color: $primary;
+    font-weight: 600;
+  }
+
+  svg {
+    font-size: 1.1rem;
+  }
+}
+
+// Tab Content
+.tabContent {
+  animation: slideIn 0.2s ease-out;
+}
+
+// Device Tab
+.deviceTab {
+  .deviceGrid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 20px;
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+// Device Image Card
+.deviceImageCard {
+  grid-row: span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px !important;
+
+  .deviceImageWrapper {
+    position: relative;
+    width: 200px;
+    height: 240px;
+    margin-bottom: 16px;
+
+    .deviceImage {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+    }
+
+    .statusIndicator {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+      &.online {
+        background: $success;
+      }
+
+      &.offline {
+        background: $danger;
+      }
+
+      &.error {
+        background: $warning;
+      }
+    }
+  }
+
+  .deviceNameSection {
+    text-align: center;
+    width: 100%;
+
+    h2 {
+      font-family: 'Special Elite', cursive;
+      font-size: 1.4rem;
+      color: $text-dark;
+      margin: 0 0 8px 0;
+    }
+
+    .connectedTo {
+      font-size: 0.85rem;
+      color: $text-muted;
+      margin: 0;
+
+      strong {
+        color: $primary;
+      }
+    }
+  }
+
+  .deviceNameRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .editNameRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    .nameInput {
+      padding: 8px 12px;
+      border: 2px solid $primary;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-family: 'Special Elite', cursive;
+      text-align: center;
+      width: 160px;
+
+      &:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba($primary, 0.2);
+      }
+    }
+  }
+
+  .iconBtn {
+    background: transparent;
+    border: none;
+    padding: 6px;
+    cursor: pointer;
+    color: $text-muted;
+    border-radius: 4px;
+    transition: all 0.2s;
+
+    &:hover {
+      color: $primary;
+      background: rgba($primary, 0.1);
+    }
+  }
+
+  .reconnectBtn {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: $primary;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+      background: $primary-dark;
+      transform: translateY(-2px);
+    }
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .spinning {
+      animation: spin 1s linear infinite;
+    }
+  }
+}
+
+// Spec Cards
+.specsCard,
+.networkCard,
+.statusCard,
+.featuresCard {
+  padding: 20px !important;
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Special Elite', cursive;
+    font-size: 1.1rem;
+    color: $text-dark;
+    margin: 0 0 16px 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid $border-color;
+
+    svg {
+      color: $primary;
+    }
+  }
+}
+
+.specsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.specItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .specLabel {
+    font-size: 0.9rem;
+    color: $text-muted;
+  }
+
+  .specValue {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: $text-dark;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+// Features Grid
+.featuresCard {
+  grid-column: span 2;
+
+  @media (max-width: 900px) {
+    grid-column: span 1;
+  }
+}
+
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.featureItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s;
+
+  svg {
+    font-size: 1.5rem;
+  }
+
+  &.enabled {
+    background: $success-light;
+    color: $success;
+  }
+
+  &.disabled {
+    background: #f3f4f6;
+    color: $text-muted;
+    opacity: 0.6;
+  }
+}
+
+// Feeder Tab
+.feederTab {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+// Manual Feed Card
+.manualFeedCard {
+  padding: 24px !important;
+  text-align: center;
+
+  h3 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: 'Special Elite', cursive;
+    font-size: 1.3rem;
+    color: $text-dark;
+    margin: 0 0 8px 0;
+
+    svg {
+      color: $primary;
+    }
+  }
+
+  .feedDescription {
+    color: $text-muted;
+    margin: 0 0 20px 0;
+  }
+}
+
+.portionSelector {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.portionBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+  background: white;
+  border: 2px solid $border-color;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  .portionIcon {
+    font-size: 1.5rem;
+  }
+
+  .portionLabel {
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: capitalize;
+    color: $text-dark;
+  }
+
+  &:hover {
+    border-color: $primary;
+    transform: translateY(-2px);
+  }
+
+  &.selected {
+    border-color: $primary;
+    background: $primary-light;
+
+    .portionLabel {
+      color: $primary;
+    }
+  }
+}
+
+.feedNowBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 48px;
+  background: #CCC20C;
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Special Elite', cursive;
+  font-size: 1.4rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: #d4cc15;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .spinning {
+    animation: spin 1s linear infinite;
+  }
+}
+
+.offlineWarning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px;
+  background: $warning-light;
+  color: $warning;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+// Schedules Card
+.schedulesCard {
+  padding: 24px !important;
+
+  .schedulesHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Special Elite', cursive;
+      font-size: 1.2rem;
+      color: $text-dark;
+      margin: 0;
+
+      svg {
+        color: $primary;
+      }
+    }
+  }
+
+  .addScheduleBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: $primary;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: $primary-dark;
+    }
+  }
+}
+
+// Add Schedule Form
+.addScheduleForm {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  border: 1px solid $border-color;
+
+  .formRow {
+    margin-bottom: 16px;
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: $text-dark;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="time"],
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid $border-color;
+      border-radius: 6px;
+      font-size: 0.95rem;
+
+      &:focus {
+        outline: none;
+        border-color: $primary;
+        box-shadow: 0 0 0 3px rgba($primary, 0.1);
+      }
+    }
+  }
+
+  .formActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid $border-color;
+  }
+
+  .cancelBtn {
+    padding: 10px 20px;
+    background: #f3f4f6;
+    color: $text-dark;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+
+    &:hover {
+      background: #e5e7eb;
+    }
+  }
+
+  .saveScheduleBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    background: $success;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+
+    &:hover {
+      background: darken($success, 5%);
+    }
+  }
+}
+
+.daysSelector {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.dayBtn {
+  padding: 8px 12px;
+  background: #f3f4f6;
+  border: 1px solid $border-color;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: $primary;
+  }
+
+  &.selected {
+    background: $primary;
+    color: white;
+    border-color: $primary;
+  }
+}
+
+// Schedules List
+.schedulesList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.noSchedules {
+  text-align: center;
+  color: $text-muted;
+  padding: 24px;
+}
+
+.scheduleItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid $border-color;
+  transition: all 0.2s;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  &.disabled {
+    opacity: 0.6;
+
+    .scheduleTime {
+      color: $text-muted;
+    }
+  }
+
+  .scheduleInfo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+
+    .scheduleTime {
+      font-family: 'Special Elite', cursive;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: $primary;
+      min-width: 70px;
+    }
+
+    .scheduleLabel {
+      font-weight: 600;
+      color: $text-dark;
+    }
+
+    .scheduleDays {
+      font-size: 0.85rem;
+      color: $text-muted;
+    }
+  }
+
+  .scheduleActions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .deleteBtn {
+    padding: 8px;
+    background: transparent;
+    border: none;
+    color: $text-muted;
+    cursor: pointer;
+    border-radius: 4px;
+
+    &:hover {
+      color: $danger;
+      background: $danger-light;
+    }
+  }
+}
+
+// Toggle Switch
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 26px;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+
+    &:checked + .slider {
+      background-color: $success;
+    }
+
+    &:checked + .slider:before {
+      transform: translateX(22px);
+    }
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: 0.3s;
+    border-radius: 26px;
+
+    &:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+// Portion Badge
+.portionBadge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+
+  &.small {
+    background: #e0f2fe;
+    color: #0369a1;
+  }
+
+  &.medium {
+    background: #fef3c7;
+    color: #b45309;
+  }
+
+  &.large {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+}
+
+// History Tab
+.historyTab {
+  .historyCard {
+    padding: 24px !important;
+
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Special Elite', cursive;
+      font-size: 1.2rem;
+      color: $text-dark;
+      margin: 0 0 20px 0;
+      padding-bottom: 12px;
+      border-bottom: 1px solid $border-color;
+
+      svg {
+        color: $primary;
+      }
+    }
+  }
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.noHistory {
+  text-align: center;
+  color: $text-muted;
+  padding: 24px;
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid $border-color;
+
+  .historyIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .completedIcon {
+      color: $success;
+      font-size: 1.2rem;
+      background: $success-light;
+      padding: 10px;
+      border-radius: 50%;
+    }
+
+    .skippedIcon {
+      color: $warning;
+      font-size: 1.2rem;
+      background: $warning-light;
+      padding: 10px;
+      border-radius: 50%;
+    }
+  }
+
+  .historyInfo {
+    flex: 1;
+
+    .historyTime {
+      font-weight: 600;
+      color: $text-dark;
+      margin-bottom: 4px;
+    }
+
+    .historyMeta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+
+      .scheduleName {
+        font-size: 0.85rem;
+        color: $text-muted;
+      }
+    }
+  }
+
+  .historyStatus {
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: capitalize;
+
+    &.completed {
+      background: $success-light;
+      color: $success;
+    }
+
+    &.skipped {
+      background: $warning-light;
+      color: $warning;
+    }
+
+    &.failed {
+      background: $danger-light;
+      color: $danger;
+    }
+  }
+}
+
+.typeBadge {
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+
+  &.manual {
+    background: #e0e7ff;
+    color: #4338ca;
+  }
+
+  &.scheduled {
+    background: #f3e8ff;
+    color: #7c3aed;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .pageContainer {
+    padding: 16px;
+  }
+
+  .header {
+    .headerLeft {
+      h1 {
+        font-size: 1.4rem;
+      }
+
+      .headerIcon {
+        font-size: 2rem;
+      }
+    }
+  }
+
+  .tabsContainer {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tab {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+
+    span {
+      display: none;
+    }
+
+    svg {
+      font-size: 1.3rem;
+    }
+  }
+
+  .portionSelector {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .portionBtn {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .scheduleItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+
+    .scheduleActions {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+
+  .historyItem {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .historyStatus {
+      align-self: flex-end;
+    }
+  }
+}

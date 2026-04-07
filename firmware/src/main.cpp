@@ -2,7 +2,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-// --- Temperature Sensor ---
+// ===== TEMPERATURE SENSOR =====
 #define TEMP_SENSOR_PIN 32
 #define STATUS_LED 33
 
@@ -10,11 +10,15 @@ OneWire oneWire(TEMP_SENSOR_PIN);
 DallasTemperature temperatureSensor(&oneWire);
 float temperature = 0;
 
-// --- Turbidity Sensor ---
+// ===== TURBIDITY SENSOR =====
 #define TURBIDITY_PIN 34
 int turbidityValue = 0;
 float voltage = 0;
 float ntu = 0;
+
+// ===== CALIBRATION (YOU MUST ADJUST THESE) =====
+float cleanVoltage = 1.90; // voltage in clean water
+float dirtyVoltage = 1.20; // voltage in dirty water
 
 void setup() {
   Serial.begin(115200);
@@ -24,11 +28,7 @@ void setup() {
   pinMode(STATUS_LED, OUTPUT);
   digitalWrite(STATUS_LED, LOW);
 
-  Serial.println("\n\n");
-  Serial.println("╔═══════════════════════════════════════════════════╗");
-  Serial.println("║        FishMaster Sensor System v1                ║");
-  Serial.println("╚═══════════════════════════════════════════════════╝");
-  Serial.println("Status: INITIALIZED ✓");
+  Serial.println("\nFishMaster Sensor System (Calibrated)");
   Serial.println("────────────────────────────────────────────");
 }
 
@@ -61,13 +61,15 @@ void loop() {
   // ===== TURBIDITY =====
   turbidityValue = analogRead(TURBIDITY_PIN);
 
-  // Convert ADC → Voltage
+  // ADC → Voltage
   voltage = turbidityValue * (3.3 / 4095.0);
 
-  // Convert Voltage → NTU (approximation formula)
-  ntu = -1120.4 * voltage * voltage + 5742.3 * voltage - 4352.9;
+  // Voltage → NTU (calibrated mapping)
+  ntu = (cleanVoltage - voltage) * (300.0 / (cleanVoltage - dirtyVoltage));
 
+  // Clamp values
   if (ntu < 0) ntu = 0;
+  if (ntu > 300) ntu = 300;
 
   Serial.print("🌊 Voltage: ");
   Serial.print(voltage);
@@ -77,11 +79,11 @@ void loop() {
   Serial.print(ntu);
   Serial.println(" NTU");
 
-  // Interpretation (this is what your dashboard will use later)
-  if (ntu < 5) {
-    Serial.println("✓ Water: VERY CLEAR");
-  } else if (ntu < 50) {
-    Serial.println("~ Water: Slightly Cloudy");
+  // ===== INTERPRETATION =====
+  if (ntu < 50) {
+    Serial.println("✓ Water: CLEAR");
+  } else if (ntu < 150) {
+    Serial.println("~ Water: CLOUDY");
   } else {
     Serial.println("⚠ Water: DIRTY");
   }

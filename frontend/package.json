@@ -21,7 +21,7 @@
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.10.1",
     "react-wavify": "^1.11.1",
-    "vite-plugin-pwa": "^0.19.8"
+    "vite-plugin-pwa": "^1.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
@@ -29,14 +29,14 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
     "@vitejs/plugin-react-swc": "^4.2.2",
+    "es-abstract": "^1.23.9",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
     "sass": "^1.95.1",
-    "vite": "npm:rolldown-vite@7.2.5"
-  },
-  "overrides": {
-    "vite": "npm:rolldown-vite@7.2.5"
+    "vite": "^7.2.5",
+    "workbox-build": "^7.4.0",
+    "workbox-window": "^7.4.0"
   }
 }

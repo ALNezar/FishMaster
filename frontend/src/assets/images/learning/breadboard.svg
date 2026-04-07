@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="breadboard illustration">
+  <rect width="640" height="360" fill="#0f324b"/>
+  <rect x="160" y="85" width="320" height="190" rx="14" fill="#f3f4f6" stroke="#cbd5e1" stroke-width="4"/>
+  <g fill="#94a3b8">
+    <circle cx="200" cy="120" r="3"/><circle cx="220" cy="120" r="3"/><circle cx="240" cy="120" r="3"/><circle cx="260" cy="120" r="3"/><circle cx="280" cy="120" r="3"/>
+    <circle cx="200" cy="145" r="3"/><circle cx="220" cy="145" r="3"/><circle cx="240" cy="145" r="3"/><circle cx="260" cy="145" r="3"/><circle cx="280" cy="145" r="3"/>
+    <circle cx="360" cy="120" r="3"/><circle cx="380" cy="120" r="3"/><circle cx="400" cy="120" r="3"/><circle cx="420" cy="120" r="3"/><circle cx="440" cy="120" r="3"/>
+    <circle cx="360" cy="145" r="3"/><circle cx="380" cy="145" r="3"/><circle cx="400" cy="145" r="3"/><circle cx="420" cy="145" r="3"/><circle cx="440" cy="145" r="3"/>
+  </g>
+  <rect x="180" y="102" width="280" height="8" fill="#ef4444"/>
+  <rect x="180" y="250" width="280" height="8" fill="#3b82f6"/>
+  <text x="320" y="330" text-anchor="middle" fill="#e5f6ff" font-size="30" font-family="Arial, sans-serif">MB-102 Breadboard</text>
+</svg>

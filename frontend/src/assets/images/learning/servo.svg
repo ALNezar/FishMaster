@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="servo motor illustration">
+  <rect width="640" height="360" fill="#113a55"/>
+  <rect x="230" y="120" width="180" height="130" rx="12" fill="#2563eb"/>
+  <rect x="265" y="100" width="110" height="30" rx="8" fill="#1d4ed8"/>
+  <circle cx="320" cy="115" r="18" fill="#e5e7eb"/>
+  <rect x="320" y="60" width="120" height="10" rx="5" fill="#f3f4f6"/>
+  <rect x="410" y="210" width="90" height="10" rx="5" fill="#f59e0b"/>
+  <text x="320" y="330" text-anchor="middle" fill="#e5f6ff" font-size="30" font-family="Arial, sans-serif">SG90 Servo</text>
+</svg>

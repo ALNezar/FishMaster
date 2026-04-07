@@ -1,0 +1,426 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding-bottom: 2rem;
+  font-family: 'DM Sans', sans-serif;
+}
+
+// ============= HERO SECTION =============
+.hero {
+  background: linear-gradient(135deg, #1277b0 0%, #0d5a8f 100%);
+  border-radius: 24px;
+  padding: 2rem;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+}
+
+.heroContent {
+  position: relative;
+  z-index: 1;
+}
+
+.badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 1rem;
+  backdrop-filter: blur(10px);
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 0.8rem;
+}
+
+.heroSummary {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  opacity: 0.95;
+  margin-bottom: 1rem;
+}
+
+.meta {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.95rem;
+  opacity: 0.85;
+  font-weight: 500;
+}
+
+// ============= CARD SECTIONS =============
+.cardSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.3rem;
+
+  h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #203345;
+  }
+
+  svg {
+    font-size: 1.5rem;
+    color: #1277b0;
+  }
+}
+
+.sectionHint {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #7a8fa0;
+  font-style: italic;
+}
+
+// ============= CARD COMPONENT =============
+.card {
+  background: #f8fbfd;
+  border: 2px solid #e0ecf5;
+  border-radius: 18px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #1277b0;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(18, 119, 176, 0.1);
+  }
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+
+  h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #203345;
+  }
+}
+
+.cardIcon {
+  font-size: 1.8rem;
+  color: #1277b0;
+}
+
+.cardContent {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #3c5061;
+}
+
+// ============= EXPANDABLE CARDS =============
+.expandableCards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.expandableCard {
+  background: linear-gradient(135deg, #fff 0%, #f8fbfd 100%);
+  border: 2px solid #e0ecf5;
+  border-radius: 16px;
+  padding: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  font-family: inherit;
+  font-size: 1rem;
+
+  &:hover {
+    border-color: #1277b0;
+    background: linear-gradient(135deg, #f0f8fc 0%, #e8f3fa 100%);
+    transform: translateX(4px);
+  }
+
+  &.expanded {
+    border-color: #1277b0;
+    background: linear-gradient(135deg, #e7f4fb 0%, #dff0fb 100%);
+    box-shadow: 0 8px 20px rgba(18, 119, 176, 0.12);
+  }
+}
+
+.cardNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: #1277b0;
+  color: #fff;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.cardText {
+  flex: 1;
+  color: #203345;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.expandIcon {
+  font-size: 1.5rem;
+  color: #1277b0;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+// ============= ACTION CARDS =============
+.actionCards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.actionCard {
+  background: linear-gradient(135deg, #fff 0%, #f8fbfd 100%);
+  border: 2px solid #e0ecf5;
+  border-radius: 16px;
+  padding: 1.2rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  font-family: inherit;
+
+  &:hover {
+    border-color: #16a34a;
+    background: linear-gradient(135deg, #f0fdf4 0%, #f0faf2 100%);
+    transform: translateX(4px);
+  }
+
+  &.expanded {
+    border-color: #16a34a;
+    background: linear-gradient(135deg, #f0fdf4 0%, #e8f9f0 100%);
+    box-shadow: 0 8px 20px rgba(22, 163, 74, 0.12);
+  }
+}
+
+.actionNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: #16a34a;
+  color: #fff;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  min-width: 48px;
+}
+
+.actionContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.actionText {
+  margin: 0;
+  color: #203345;
+  font-weight: 600;
+  line-height: 1.4;
+  font-size: 1rem;
+}
+
+.actionArrow {
+  font-size: 1rem;
+  color: #16a34a;
+  font-weight: 700;
+  flex-shrink: 0;
+  align-self: center;
+  transition: transform 0.3s ease;
+}
+
+.actionCard.expanded .actionArrow {
+  transform: rotate(180deg);
+}
+
+// ============= CTA SECTION =============
+.ctaSection {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.ctaButton {
+  background: linear-gradient(135deg, #1277b0 0%, #0d5a8f 100%);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 1rem 2.5rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 8px 24px rgba(18, 119, 176, 0.25);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(18, 119, 176, 0.35);
+  }
+
+  &:active {
+    transform: translateY(0px);
+  }
+
+  svg {
+    font-size: 1rem;
+  }
+}
+
+// ============= FOOTER =============
+.footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #e0ecf5;
+}
+
+.completeButton {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 1rem 2.5rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.25);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(22, 163, 74, 0.35);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.completedMessage {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: #16a34a;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  svg {
+    font-size: 1.5rem;
+  }
+}
+
+// ============= FALLBACK =============
+.fallback {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: #7a8fa0;
+  font-size: 1.1rem;
+}
+
+// ============= RESPONSIVE =============
+@media (max-width: 768px) {
+  .hero h1 {
+    font-size: 1.8rem;
+  }
+
+  .heroSummary {
+    font-size: 1rem;
+  }
+
+  .sectionTitle h2 {
+    font-size: 1.1rem;
+  }
+
+  .cardNumber,
+  .actionNumber {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .expandableCard,
+  .actionCard {
+    padding: 1rem;
+  }
+
+  .cardText,
+  .actionText {
+    font-size: 0.95rem;
+  }
+
+  .ctaButton,
+  .completeButton {
+    padding: 0.85rem 2rem;
+    font-size: 1rem;
+  }
+
+  .card {
+    padding: 1.2rem;
+  }
+}
+

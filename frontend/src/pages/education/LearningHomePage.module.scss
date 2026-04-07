@@ -1,0 +1,357 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.loading {
+  background: #fff;
+  border: 1px solid #d6e4ef;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.hero {
+  background: linear-gradient(120deg, #03334f 0%, #1277b0 60%, #65b6dc 100%);
+  color: #f7fbff;
+  border-radius: 14px;
+  padding: 1rem;
+}
+
+.kicker {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  opacity: 0.9;
+}
+
+.hero h1 {
+  margin: 0.2rem 0;
+}
+
+.subtext {
+  margin: 0;
+  color: #d4ebf8;
+}
+
+.progressRow {
+  margin-top: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.progressMeta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #e8f5fc;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #9ae6ff, #e1f4ff);
+}
+
+.sensorSection,
+.pathSection,
+.hardwareSection,
+.footerCard {
+  background: #fff;
+  border: 1px solid #d7e3ec;
+  border-radius: 12px;
+  padding: 0.95rem;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.cardHeader h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #203141;
+}
+
+.cardHeader a {
+  color: #1277b0;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.sensorGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.sensorCard {
+  border: 1px solid #d9e8f1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f7fbfe;
+}
+
+.sensorCard img {
+  width: 100%;
+  height: 125px;
+  object-fit: cover;
+}
+
+.sensorBody {
+  padding: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sensorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sensorLabel {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  font-weight: 700;
+  color: #1f425a;
+}
+
+.statusPill {
+  text-transform: capitalize;
+  font-size: 0.74rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  color: #fff;
+}
+
+.sensorValue {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1b3447;
+  margin: 0;
+}
+
+.sensorExplanation {
+  margin: 0;
+  color: #5a7485;
+}
+
+.tipList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.tipList p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.whyDetails {
+  margin-top: 0.2rem;
+}
+
+.whyDetails summary {
+  cursor: pointer;
+  color: #106691;
+  font-weight: 600;
+}
+
+.whyDetails p {
+  margin: 0.4rem 0 0 0;
+  color: #57707f;
+}
+
+.safe {
+  border-color: #b9e7cf;
+}
+
+.safe .statusPill {
+  background: #16a34a;
+}
+
+.caution {
+  border-color: #f2dda4;
+}
+
+.caution .statusPill {
+  background: #ca8a04;
+}
+
+.danger {
+  border-color: #f2b8b8;
+}
+
+.danger .statusPill {
+  background: #dc2626;
+}
+
+.pathTabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pathTab {
+  border: 1px solid #d3e1ea;
+  background: #f7fbfe;
+  border-radius: 10px;
+  padding: 0.5rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.pathTab span {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: #5f7788;
+}
+
+.pathTab strong {
+  color: #1f3d52;
+}
+
+.pathTabActive {
+  border-color: #1277b0;
+  background: #e8f4fb;
+}
+
+.activePathCard {
+  margin-top: 0.7rem;
+  border: 1px solid #d8e6f0;
+  border-radius: 12px;
+  padding: 0.75rem;
+  background: #f9fcff;
+}
+
+.activePathCard h3,
+.activePathCard p {
+  margin: 0;
+}
+
+.estimate {
+  margin-top: 0.4rem !important;
+  color: #5b7484;
+  font-size: 0.9rem;
+}
+
+.pathActions {
+  margin-top: 0.65rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pathActions button {
+  border: none;
+  background: #0f6d9d;
+  color: #fff;
+  border-radius: 9px;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+.pathActions .secondary {
+  background: #e7f3fa;
+  color: #1f4f6b;
+}
+
+.hardwareIntro {
+  margin: 0;
+  color: #5a7283;
+}
+
+.hardwareGrid {
+  margin-top: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.hardwareCard {
+  border: 1px solid #d9e7f1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f7fbfe;
+  display: grid;
+  grid-template-columns: 180px 1fr;
+}
+
+.hardwareCard img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  min-height: 120px;
+}
+
+.hardwareBody {
+  padding: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.hardwareBody h3,
+.hardwareBody p {
+  margin: 0;
+}
+
+.hardwareBody p {
+  color: #486276;
+  font-size: 0.92rem;
+}
+
+.hardwareMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.hardwareMeta span {
+  font-size: 0.8rem;
+  color: #1e5676;
+  background: #e2f1fa;
+  border-radius: 999px;
+  padding: 0.2rem 0.5rem;
+}
+
+.footerCard p {
+  margin: 0;
+  color: #55707f;
+}
+
+@media (max-width: 900px) {
+  .sensorGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .hardwareGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .hardwareCard {
+    grid-template-columns: 1fr;
+  }
+
+  .pathActions {
+    flex-direction: column;
+  }
+}

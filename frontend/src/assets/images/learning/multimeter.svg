@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="multimeter illustration">
+  <rect width="640" height="360" fill="#113a55"/>
+  <rect x="230" y="70" width="180" height="230" rx="18" fill="#f59e0b" stroke="#78350f" stroke-width="4"/>
+  <rect x="260" y="100" width="120" height="60" rx="8" fill="#dcfce7"/>
+  <text x="320" y="140" text-anchor="middle" fill="#166534" font-size="26" font-family="Arial, sans-serif">12.47</text>
+  <circle cx="320" cy="210" r="32" fill="#1f2937"/>
+  <path d="M320 210 L345 193" stroke="#f8fafc" stroke-width="4"/>
+  <line x1="250" y1="280" x2="180" y2="330" stroke="#ef4444" stroke-width="6"/>
+  <line x1="390" y1="280" x2="460" y2="330" stroke="#111827" stroke-width="6"/>
+  <text x="320" y="330" text-anchor="middle" fill="#e5f6ff" font-size="30" font-family="Arial, sans-serif">HABOTEST Multimeter</text>
+</svg>

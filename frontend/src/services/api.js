@@ -1,5 +1,5 @@
 // api.js
-const DEV_MODE = false; // toggle to true for local development without backend
+const DEV_MODE = true; // toggle to true for local development without backend
 
 const API_BASE_URL = 'http://localhost:8080';
 
@@ -719,6 +719,321 @@ let _mockFeedingSchedules = [
 ];
 let _nextScheduleId = 4;
 
+// ============================================
+// LEARNING HUB MOCK DATA & ENDPOINTS
+// ============================================
+
+const LEARNING_PROGRESS_KEY = 'fishmaster_learning_progress_v1';
+
+const _learningSections = [
+  {
+    id: 'temperature',
+    title: 'Temperature Sensor',
+    icon: 'temperature',
+    sensorImage: '/sensor-temp.png',
+    summary: 'Measures tank water warmth in °C or °F',
+    subsections: [
+      {
+        id: 'what-it-does',
+        title: 'What It Does',
+        description: 'Thermometers (usually a probe submerged in the tank) measure how warm or cold the water is. Fish are cold-blooded—their metabolism, immunity, and digestion all depend on stable temperature. Most tropical freshwater fish need 24-26°C (75-79°F).',
+        images: [
+          { src: '/temp-probe-full.png', caption: 'Complete temperature probe assembly' },
+          { src: '/temp-sensor-close.png', caption: 'Close-up of sensor tip' },
+          { src: '/temp-reading-display.png', caption: 'How readings appear on FishMaster' },
+        ],
+      },
+      {
+        id: 'how-to-read',
+        title: 'How to Read It',
+        description: 'Look at the current value in Analytics or on the Dashboard card. Check the trend line—steady line = stable (good), wandering up or down = drifting (investigate heater or environment). Compare against your target range set during onboarding.',
+        images: [
+          { src: '/temp-reading-stable.png', caption: 'A stable, steady temperature line' },
+          { src: '/temp-reading-drift.png', caption: 'Temperature drifting upward (action needed)' },
+          { src: '/temp-dashboard-card.png', caption: 'Quick glance at current temp on Dashboard' },
+        ],
+      },
+      {
+        id: 'ranges',
+        title: 'Normal Ranges',
+        description: 'Most tropical fish: 24-26°C (75-79°F). Coldwater fish: 18-22°C (64-72°F). Discus: 26-28°C (79-82°F). Check your fish species in the app—safe range is shown to help.',
+        images: [
+          { src: '/temp-range-tropical.png', caption: 'Tropical fish Safe Zone' },
+          { src: '/temp-range-coldwater.png', caption: 'Coldwater fish Safe Zone' },
+          { src: '/temp-range-chart.png', caption: 'Full temperature range guide' },
+        ],
+      },
+      {
+        id: 'why-high',
+        title: 'Why Is It High?',
+        description: 'Heater stuck ON, broken thermostat, room is too warm, direct sunlight on tank, or electrical issue. High temp speeds up fish metabolism (fish breathe faster, need more oxygen). Stress, disease, and algae blooms follow quickly.',
+        images: [
+          { src: '/temp-high-heater.png', caption: 'Broken heater causing spike' },
+          { src: '/temp-high-sunlight.png', caption: 'Window sunlight warming tank' },
+          { src: '/temp-high-stress.png', caption: 'Fish stress symptoms from high temp' },
+          { src: '/temp-high-fix-steps.png', caption: 'Quick steps to lower temperature' },
+        ],
+      },
+      {
+        id: 'why-low',
+        title: 'Why Is It Low?',
+        description: 'Heater off or malfunctioning, room is cold, AC is too strong, or water change with unheated water added. Low temp slows everything—less feed uptake, weaker immunity, lethargy. Fish may pile at the surface or huddle on the bottom.',
+        images: [
+          { src: '/temp-low-heater-off.png', caption: 'Heater powered off or unplugged' },
+          { src: '/temp-low-cold-room.png', caption: 'Cold room temperature impact' },
+          { src: '/temp-low-behavior.png', caption: 'Fish behavior during low temp stress' },
+          { src: '/temp-low-fix-steps.png', caption: 'How to safely warm the tank' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ph',
+    title: 'pH Sensor',
+    icon: 'ph',
+    sensorImage: '/sensor-ph.png',
+    summary: 'Measures how acidic or alkaline your water is (0–14 scale)',
+    subsections: [
+      {
+        id: 'what-it-does',
+        title: 'What It Does',
+        description: 'pH is the measure of acidity vs. alkalinity (0 = most acidic, 7 = neutral, 14 = most alkaline). Fish are sensitive to shifts. Most freshwater fish prefer neutral to slightly acidic (6.5–7.5). Small pH swings stress fish and damage gills.',
+        images: [
+          { src: '/ph-probe.png', caption: 'pH electrode probe' },
+          { src: '/ph-scale.png', caption: 'pH scale explained (0–14)' },
+          { src: '/ph-reading.png', caption: 'pH reading displayed in-app' },
+        ],
+      },
+      {
+        id: 'how-to-read',
+        title: 'How to Read It',
+        description: 'Check the numeric value (e.g., 7.2). Compare to your species target range (usually 6.5–7.5). If the trend line is climbing or dropping, your water is shifting—investigate decay (ammonia build-up), driftwood, or tap water changes.',
+        images: [
+          { src: '/ph-reading-safe.png', caption: 'Stable pH in Safe Zone' },
+          { src: '/ph-reading-climbing.png', caption: 'pH trending upward (investigate)' },
+          { src: '/ph-trend-7-day.png', caption: '7-day pH trend showing drift' },
+          { src: '/ph-alert-high.png', caption: 'pH alert notification' },
+        ],
+      },
+      {
+        id: 'ranges',
+        title: 'Normal Ranges',
+        description: 'Neutral community fish: 6.8–7.2. Acidic-loving: 5.8–6.8 (e.g., tetras, discus). Alkaline-loving: 7.5–8.5 (e.g., cichlids). Check your tank profile to see your target range.',
+        images: [
+          { src: '/ph-range-acidic.png', caption: 'Acidic zone (5.5–6.5)' },
+          { src: '/ph-range-neutral.png', caption: 'Neutral zone (6.8–7.2)' },
+          { src: '/ph-range-alkaline.png', caption: 'Alkaline zone (7.5–8.5)' },
+        ],
+      },
+      {
+        id: 'why-high',
+        title: 'Why Is It High?',
+        description: 'Tap water is alkaline, gravel/rockwork leaches minerals, bacterial load is low (new tank), or water hasn\'t cycled properly. High pH stresses acidophilic fish and can cause gill burns, gasping behavior, and poor appetite.',
+        images: [
+          { src: '/ph-high-gravel.png', caption: 'Alkaline gravel raising pH' },
+          { src: '/ph-high-tap-water.png', caption: 'Alkaline tap water impact' },
+          { src: '/ph-high-fish-stress.png', caption: 'Fish showing stress from high pH' },
+          { src: '/ph-high-fix-directions.png', caption: 'Lowering pH: natural methods' },
+        ],
+      },
+      {
+        id: 'why-low',
+        title: 'Why Is It Low?',
+        description: 'Driftwood or peat in substrate releasing tannins, decaying plant matter, bacterial urea accumulation, or acidic substrate. Low pH stresses alkaliphilic fish, reduces immune response, and can cause erosion of fish slime coat.',
+        images: [
+          { src: '/ph-low-driftwood.png', caption: 'Driftwood lowering pH (tannins)' },
+          { src: '/ph-low-decay.png', caption: 'Decaying plants releasing acids' },
+          { src: '/ph-low-buildup.png', caption: 'Bacterial waste acidifying water' },
+          { src: '/ph-low-fix-directions.png', caption: 'Raising pH: rock additions, water change' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'turbidity',
+    title: 'Turbidity Sensor',
+    icon: 'turbidity',
+    sensorImage: '/sensor-turbidity.png',
+    summary: 'Measures water clarity (how cloudy or clear it is)',
+    subsections: [
+      {
+        id: 'what-it-does',
+        title: 'What It Does',
+        description: 'Turbidity is water cloudiness caused by suspended particles (algae spores, bacteria, uneaten food, dead material). Lower turbidity = clearer water = healthier. High turbidity can reduce light penetration and oxygen, and strains fish gills. Measured in NTU (Nephelometric Turbidity Units).',
+        images: [
+          { src: '/turbidity-sensor.png', caption: 'Turbidity sensor probe' },
+          { src: '/turbidity-clear.png', caption: 'Crystal-clear water (low turbidity)' },
+          { src: '/turbidity-cloudy.png', caption: 'Cloudy water (high turbidity)' },
+          { src: '/turbidity-reading.png', caption: 'Turbidity reading in app (NTU)' },
+        ],
+      },
+      {
+        id: 'how-to-read',
+        title: 'How to Read It',
+        description: 'Lower values = clearer water (better). Typical ranges: <1 NTU = crystal clear, 1–5 NTU = slightly hazy, >5 NTU = noticeably cloudy. Check if turbidity is creeping up—early sign of filter clogging, overfeeding, or bacterial bloom.',
+        images: [
+          { src: '/turbidity-reading-clear.png', caption: 'Low turbidity (good)' },
+          { src: '/turbidity-reading-hazy.png', caption: 'Moderate turbidity (marginal)' },
+          { src: '/turbidity-reading-cloudy.png', caption: 'High turbidity (action needed)' },
+          { src: '/turbidity-trend-rising.png', caption: 'Turbidity trend climbing over 7 days' },
+        ],
+      },
+      {
+        id: 'ranges',
+        title: 'Normal Ranges',
+        description: 'Target: <1–2 NTU. Acceptable: 1–4 NTU. Concerning: >4 NTU (indicates filter stress or overload). Brand-new tank (first week) may be 3–5 NTU as cycle establishes, then clears within 1–2 weeks.',
+        images: [
+          { src: '/turbidity-range-excellent.png', caption: 'Excellent clarity zone' },
+          { src: '/turbidity-range-acceptable.png', caption: 'Acceptable range' },
+          { src: '/turbidity-range-concerning.png', caption: 'Concerning turbidity levels' },
+          { src: '/turbidity-new-tank-timeline.png', caption: 'How clarity improves over 2 weeks' },
+        ],
+      },
+      {
+        id: 'why-high',
+        title: 'Why Is It High?',
+        description: 'Overfeeding (uneaten particles decay), bacterial or algae bloom, filter clogged or needs priming, gravel stirred up during maintenance, new tank cycling, or excess decor waste. High turbidity traps debris and reduces oxygen diffusion.',
+        images: [
+          { src: '/turbidity-high-overfeeding.png', caption: 'Cloudiness from overfeeding' },
+          { src: '/turbidity-high-bloom.png', caption: 'Bacterial/algae bloom example' },
+          { src: '/turbidity-high-clogged-filter.png', caption: 'Clogged filter causing cloudiness' },
+          { src: '/turbidity-high-fix-steps.png', caption: 'Steps to clear cloudy water' },
+        ],
+      },
+      {
+        id: 'why-low',
+        title: 'Why Is It Low',
+        description: 'Excellent! This usually means filter is working well, feeding quantity is right, no algae or bacterial bloom, and water changes are regular. Low turbidity is the target state—maintain it by feeding carefully, cleaning filter periodically, and doing weekly water changes.',
+        images: [
+          { src: '/turbidity-low-perfect.png', caption: 'Ideal crystal-clear tank' },
+          { src: '/turbidity-low-maintenance.png', caption: 'Maintenance routine that keeps it clear' },
+          { src: '/turbidity-low-comparison.png', caption: 'Before/after filter cleaning' },
+          { src: '/turbidity-low-tips.png', caption: 'Tips to maintain low turbidity' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'ammonia',
+    title: 'Ammonia Safety (Info Only)',
+    icon: 'ammonia-info',
+    sensorImage: '/sensor-ammonia.png',
+    summary: 'Educational guidance only; no live ammonia sensor reading in FishMaster.',
+    subsections: [
+      {
+        id: 'what-it-does',
+        title: 'What It Does',
+        description: 'Ammonia (NH₃) comes from fish waste, dead plants, and food decay. Even small amounts are toxic to fish—it burns gills, damages kidneys, and causes neurological damage. In a cycled tank, beneficial bacteria convert ammonia → nitrite → nitrate. Measuredppm (parts per million).',
+        images: [
+          { src: '/ammonia-sensor.png', caption: 'Ammonia probe' },
+          { src: '/ammonia-cycle.png', caption: 'Ammonia in the nitrogen cycle' },
+          { src: '/ammonia-source-waste.png', caption: 'Fish waste is the primary ammonia source' },
+          { src: '/ammonia-reading.png', caption: 'Ammonia reading (ppm)' },
+        ],
+      },
+      {
+        id: 'how-to-read',
+        title: 'How to Check It (Manual Test)',
+        description: 'FishMaster currently does not have live ammonia sensor telemetry. Use a manual liquid test kit or strips and log results in your maintenance notes. Target is 0 ppm in established tanks; 0.25 ppm or higher should be treated as urgent.',
+        images: [
+          { src: '/ammonia-reading-zero.png', caption: 'Manual test result: 0 ppm (established tank)' },
+          { src: '/ammonia-reading-low.png', caption: 'Manual test: below 0.25 ppm (monitor closely)' },
+          { src: '/ammonia-reading-high.png', caption: 'Manual test: above 0.5 ppm (urgent action)' },
+          { src: '/ammonia-trend-rising.png', caption: 'Record manual results over time to spot worsening trends' },
+        ],
+      },
+      {
+        id: 'ranges',
+        title: 'Normal Ranges',
+        description: 'Established tank: 0 ppm (all converted by bacteria). Cycling tank: 0–0.5 ppm (still cycling, bacteria still colonizing). Any >0.25 ppm = concerning; >0.5 ppm = emergency (can kill fish in hours).',
+        images: [
+          { src: '/ammonia-range-zero.png', caption: 'Target: 0 ppm' },
+          { src: '/ammonia-range-cycling.png', caption: 'Cycling phase (0–0.5 ppm)' },
+          { src: '/ammonia-range-danger.png', caption: 'Danger zone (>0.25 ppm)' },
+          { src: '/ammonia-toxicity-chart.png', caption: 'How ammonia harms fish by concentration' },
+        ],
+      },
+      {
+        id: 'why-high',
+        title: 'Why Is It High?',
+        description: 'Tank is new and cycling (bacteria not established yet), filter is off or clogged, overfeeding, dead fish/plant decay, water change too large, or too many fish added at once. High ammonia kills fish fast—gills get burned, fish gasp at surface, some die within hours.',
+        images: [
+          { src: '/ammonia-high-new-tank.png', caption: 'New tank cycling—ammonia spike' },
+          { src: '/ammonia-high-filter-off.png', caption: 'Filter power cut = ammonia rises' },
+          { src: '/ammonia-high-overfeeding.png', caption: 'Overfeeding doubles ammonia' },
+          { src: '/ammonia-high-recovery-protocol.png', caption: 'Emergency ammonia reduction steps' },
+        ],
+      },
+      {
+        id: 'why-low',
+        title: 'Why Is It Low (Zero)',
+        description: 'Perfect!Your filter is working, bacteria colonies are established, feeding rate is matched to filter capacity, and maintenance routine is solid. Keep doing what youre doing: regular water changes, dont overfeed, clean filter gently to preserve bacteria.',
+        images: [
+          { src: '/ammonia-zero-stable.png', caption: 'Stable zero ammonia = healthy tank' },
+          { src: '/ammonia-zero-bacteria.png', caption: 'Healthy bacteria colony maintaining zero' },
+          { src: '/ammonia-zero-routine.png', caption: 'Daily maintenance keeping ammonia zero' },
+          { src: '/ammonia-zero-longterm.png', caption: 'Months of zero ammonia = thriving tank' },
+        ],
+      },
+    ],
+  },
+];
+
+
+const _getLearningProgress = () => {
+  const fallback = { viewedSectionIds: [], lastViewedSection: null };
+  try {
+    const raw = localStorage.getItem(LEARNING_PROGRESS_KEY);
+    if (!raw) return fallback;
+    return { ...fallback, ...JSON.parse(raw) };
+  } catch {
+    return fallback;
+  }
+};
+
+const _saveLearningProgress = (progress) => {
+  localStorage.setItem(LEARNING_PROGRESS_KEY, JSON.stringify(progress));
+  return progress;
+};
+
+export const getLearningSections = async () => {
+  await new Promise(resolve => setTimeout(resolve, 120));
+  return _learningSections.map(section => ({
+    id: section.id,
+    title: section.title,
+    icon: section.icon,
+    sensorImage: section.sensorImage,
+    summary: section.summary,
+    subsectionCount: section.subsections.length,
+  }));
+};
+
+export const getLearningSection = async (sectionId) => {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  const section = _learningSections.find(s => s.id === sectionId);
+  if (!section) return null;
+
+  // Mark as viewed
+  const progress = _getLearningProgress();
+  if (!progress.viewedSectionIds.includes(sectionId)) {
+    progress.viewedSectionIds.push(sectionId);
+  }
+  progress.lastViewedSection = sectionId;
+  _saveLearningProgress(progress);
+
+  return section;
+};
+
+export const getLearningProgress = async () => {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  const progress = _getLearningProgress();
+  const totalSections = _learningSections.length;
+  const viewedCount = progress.viewedSectionIds.length;
+  const completionRate = totalSections === 0 ? 0 : Math.round((viewedCount / totalSections) * 100);
+
+  return { ...progress, totalSections, viewedCount, completionRate };
+};
+
 // Mock feeding history
 const _mockFeedingHistory = [
   { id: 1, time: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), portionSize: 'medium', status: 'completed', type: 'scheduled', scheduleName: 'Evening Feed' },
@@ -807,6 +1122,31 @@ export const reconnectDevice = async () => {
   return { success: true, status: 'online' };
 };
 
+export const getLearningPaths = async () => {
+  await new Promise(resolve => setTimeout(resolve, 120));
+  return getLearningSections();
+};
+
+export const getLessons = async (pathId = null) => {
+  await new Promise(resolve => setTimeout(resolve, 120));
+  if (!pathId) return [];
+  return [];
+};
+
+export const getLesson = async (lessonId) => {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  return null;
+};
+
+export const completeLesson = async (lessonId) => {
+  await new Promise(resolve => setTimeout(resolve, 80));
+  return getLearningProgress();
+};
+
+export const getRecommendedLessons = async () => {
+  return [];
+};
+
 export { apiRequest };
 
-export default { signup, verifyEmail, resendVerificationCode, login, logout, getFishTypes, getOnboardingStatus, completeOnboarding, getCurrentUser, updateProfile, deleteAccount, isAuthenticated, setToken, removeToken, getTanks, getTank, createTank, updateTank, deleteTank, addFishToTank, removeFishFromTank, updateFish, getSensorData, getAlertThresholds, updateAlertThresholds, getDeviceInfo, updateDeviceInfo, getFeedingSchedules, createFeedingSchedule, updateFeedingSchedule, deleteFeedingSchedule, triggerManualFeeding, getFeedingHistory, reconnectDevice, apiRequest };
+export default { signup, verifyEmail, resendVerificationCode, login, logout, getFishTypes, getOnboardingStatus, completeOnboarding, getCurrentUser, updateProfile, deleteAccount, isAuthenticated, setToken, removeToken, getTanks, getTank, createTank, updateTank, deleteTank, addFishToTank, removeFishFromTank, updateFish, getSensorData, getAlertThresholds, updateAlertThresholds, getDeviceInfo, updateDeviceInfo, getFeedingSchedules, createFeedingSchedule, updateFeedingSchedule, deleteFeedingSchedule, triggerManualFeeding, getFeedingHistory, reconnectDevice, getLearningSections, getLearningSection, getLearningProgress, getLearningSections, getLearningPaths, getLessons, getLesson, completeLesson, getRecommendedLessons, apiRequest };

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="TFT display illustration">
+  <rect width="640" height="360" fill="#0f324b"/>
+  <rect x="170" y="70" width="300" height="220" rx="16" fill="#111827" stroke="#7fb9d5" stroke-width="4"/>
+  <rect x="205" y="100" width="230" height="150" rx="10" fill="#93c5fd"/>
+  <path d="M205 190 C245 150 285 230 325 190 C365 150 395 220 435 175 L435 250 L205 250 Z" fill="#1277b0"/>
+  <circle cx="457" cy="110" r="8" fill="#ef4444"/>
+  <circle cx="457" cy="132" r="8" fill="#22c55e"/>
+  <text x="320" y="330" text-anchor="middle" fill="#e5f6ff" font-size="30" font-family="Arial, sans-serif">2.8 inch TFT LCD</text>
+</svg>

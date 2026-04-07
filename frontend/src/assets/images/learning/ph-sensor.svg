@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="pH sensor illustration">
+  <rect width="640" height="360" fill="#113a55"/>
+  <ellipse cx="320" cy="300" rx="190" ry="26" fill="#0b2536"/>
+  <rect x="288" y="70" width="64" height="210" rx="20" fill="#d1e9f7" stroke="#7fb6d2" stroke-width="4"/>
+  <rect x="300" y="90" width="40" height="110" rx="10" fill="#ffffff"/>
+  <rect x="300" y="205" width="40" height="60" rx="8" fill="#7ee0ff"/>
+  <text x="320" y="146" text-anchor="middle" fill="#1277b0" font-size="32" font-family="Arial, sans-serif">pH</text>
+  <text x="320" y="330" text-anchor="middle" fill="#e5f6ff" font-size="30" font-family="Arial, sans-serif">pH Probe</text>
+</svg>

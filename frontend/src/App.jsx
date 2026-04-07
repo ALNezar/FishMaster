@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import './index.scss';
 
 // Pages
@@ -16,6 +17,7 @@ import TrendsPage from './pages/dashboard/TrendsPage.jsx';
 import DataPage from './pages/dashboard/DataPage.jsx';
 import AlertConfigPage from './pages/alerts/AlertConfigPage.jsx';
 import DeviceControlPage from './pages/device/DeviceControlPage.jsx';
+import LearningPage from './pages/learning/LearningPage.jsx';
 
 // Layouts
 import MyTanksPage from './pages/tanks/MyTanksPage.jsx';
@@ -48,7 +50,10 @@ function App() {
         <Route path="/analytics" element={<DataPage />} />
         <Route path="/alerts" element={<AlertConfigPage />} />
         <Route path="/notifications" element={<PlaceholderPage title="Notifications" />} />
-        <Route path="/education" element={<PlaceholderPage title="Learn & Care" />} />
+        <Route path="/education" element={<Navigate to="/learning" replace />} />
+        <Route path="/education/*" element={<Navigate to="/learning" replace />} />
+        <Route path="/learning" element={<LearningPage />} />
+        <Route path="/learning/:sectionId" element={<LearningPage />} />
         <Route path="/device" element={<DeviceControlPage />} />
       </Route>
     </Routes>

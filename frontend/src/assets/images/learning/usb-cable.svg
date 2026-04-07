@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="USB cable illustration">
+  <rect width="640" height="360" fill="#0f324b"/>
+  <path d="M120 250 C240 120 360 260 520 120" stroke="#d1d5db" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <rect x="98" y="228" width="34" height="44" rx="6" fill="#6b7280"/>
+  <rect x="518" y="98" width="34" height="44" rx="6" fill="#6b7280"/>
+  <rect x="107" y="236" width="16" height="18" fill="#111827"/>
+  <rect x="527" y="106" width="16" height="18" fill="#111827"/>
+  <text x="320" y="330" text-anchor="middle" fill="#e5f6ff" font-size="30" font-family="Arial, sans-serif">Micro USB Cable</text>
+</svg>

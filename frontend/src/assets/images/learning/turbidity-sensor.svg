@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="turbidity sensor illustration">
+  <rect width="640" height="360" fill="#0e3148"/>
+  <rect x="190" y="95" width="260" height="170" rx="16" fill="#1e293b" stroke="#88b8d3" stroke-width="4"/>
+  <circle cx="250" cy="180" r="34" fill="#0ea5e9"/>
+  <circle cx="390" cy="180" r="34" fill="#22d3ee"/>
+  <rect x="290" y="165" width="60" height="30" rx="8" fill="#0f172a"/>
+  <rect x="205" y="265" width="230" height="12" rx="6" fill="#b9d9ea"/>
+  <text x="320" y="330" text-anchor="middle" fill="#e5f6ff" font-size="30" font-family="Arial, sans-serif">Turbidity Module</text>
+</svg>

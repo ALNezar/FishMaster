@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="dupont wires illustration">
+  <rect width="640" height="360" fill="#113a55"/>
+  <path d="M120 250 C210 80 290 280 390 120 C450 40 520 120 560 80" stroke="#f43f5e" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <path d="M120 280 C220 110 300 300 400 150 C460 70 520 150 560 110" stroke="#22c55e" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <path d="M120 220 C210 50 300 240 390 90 C470 10 520 90 560 60" stroke="#f59e0b" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <rect x="90" y="208" width="28" height="84" rx="6" fill="#e5e7eb"/>
+  <rect x="560" y="48" width="24" height="82" rx="6" fill="#e5e7eb"/>
+  <text x="320" y="330" text-anchor="middle" fill="#e5f6ff" font-size="30" font-family="Arial, sans-serif">Dupont Wires</text>
+</svg>

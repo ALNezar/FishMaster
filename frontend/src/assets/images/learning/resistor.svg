@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="resistor illustration">
+  <rect width="640" height="360" fill="#0f324b"/>
+  <line x1="120" y1="180" x2="250" y2="180" stroke="#9ca3af" stroke-width="8"/>
+  <line x1="390" y1="180" x2="520" y2="180" stroke="#9ca3af" stroke-width="8"/>
+  <rect x="250" y="145" width="140" height="70" rx="18" fill="#fde68a" stroke="#d97706" stroke-width="4"/>
+  <rect x="280" y="145" width="10" height="70" fill="#7c3aed"/>
+  <rect x="308" y="145" width="10" height="70" fill="#111827"/>
+  <rect x="336" y="145" width="10" height="70" fill="#ef4444"/>
+  <text x="320" y="330" text-anchor="middle" fill="#e5f6ff" font-size="30" font-family="Arial, sans-serif">4.7k Resistor Pack</text>
+</svg>

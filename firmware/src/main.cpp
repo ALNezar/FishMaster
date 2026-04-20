@@ -1,94 +1,94 @@
 #include <Arduino.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <WiFi.h>
+#include <PubSubClient.h>
 
-// ===== TEMPERATURE SENSOR =====
-#define TEMP_SENSOR_PIN 32
-#define STATUS_LED 33
 
-OneWire oneWire(TEMP_SENSOR_PIN);
-DallasTemperature temperatureSensor(&oneWire);
-float temperature = 0;
+// for millis clock
+unsigned long lastTime = 0;
 
-// ===== TURBIDITY SENSOR =====
-#define TURBIDITY_PIN 34
-int turbidityValue = 0;
-float voltage = 0;
-float ntu = 0;
 
-// ===== CALIBRATION (YOU MUST ADJUST THESE) =====
-float cleanVoltage = 1.90; // voltage in clean water
-float dirtyVoltage = 1.20; // voltage in dirty water
+// sensors global
+constexpr byte TEMP_PIN = 32;
+OneWire Temp_Wire(TEMP_PIN);
+DallasTemperature Temp_Sensor(&Temp_Wire);
 
-void setup() {
-  Serial.begin(115200);
-  delay(2000);
 
-  temperatureSensor.begin();
-  pinMode(STATUS_LED, OUTPUT);
-  digitalWrite(STATUS_LED, LOW);
 
-  Serial.println("\nFishMaster Sensor System (Calibrated)");
-  Serial.println("────────────────────────────────────────────");
+// networking global
+const char *SSID = "your network name";
+const char *PASSWORD = "your password";
+
+WiFiClient espClient; // the network socket
+PubSubClient mqttClient(espClient);
+
+
+void setup()
+{
+	Serial.begin(115200);
+	Temp_Sensor.begin();
+
+	// =========== WIFI ============ //
+
+	WiFi.begin(SSID, PASSWORD);
+	while (WiFi.status() != WL_CONNECTED)
+	{
+		delay(500);
+		Serial.println("Connecting to WiFi<@_@>...");
+	}
+	Serial.println("Connected to WiFi :D");
+	Serial.println(WiFi.localIP());
+
+	// ============================= //
+
+	// =========== MQTT ============ //
+
+	mqttClient.setServer("10.4.42.128", 1883);
+	mqttClient.connect("FM-Tankie_1");
+
+	if (mqttClient.connected())
+	{
+		Serial.println("Connected to MQTT broker :D");
+	}
+	else
+	{
+		Serial.println("Failed to connect to MQTT broker D:! Check your settings and try again...");
+	}
+
+	// ============================= //
 }
 
-void loop() {
+void loop()
+{
+	unsigned long currentTime = millis();
 
-  // ===== TEMPERATURE =====
-  temperatureSensor.requestTemperatures();
-  temperature = temperatureSensor.getTempCByIndex(0);
+	if (currentTime - lastTime >= 2000) // sending data every 2 seconds
+	{
+		// getting tempture data
+		lastTime = currentTime;
+		Temp_Sensor.requestTemperatures();
+		float Temp = Temp_Sensor.getTempCByIndex(0);
 
-  Serial.print("(👉ﾟヮﾟ)👉 Temperature: ");
+		if (Temp == -127.0)
+		{
+			Serial.println("Sensor error! Check wiring ...."
+						   " "
+						   "ಠ╭╮ಠ");
+		}
+		else
+		{
+			Serial.print(Temp);
+			Serial.println(" °C");
+		}
 
-  if (temperature == DEVICE_DISCONNECTED_C) {
-    Serial.println("ERROR: Sensor not found!");
-    digitalWrite(STATUS_LED, HIGH);
-  } else {
-    Serial.print(temperature);
-    Serial.println(" °C");
+		// building JSON payload
+		char payload[50];
+		snprintf(payload, sizeof(payload), "{\"temperature\": %.1f}", Temp);
 
-    if (temperature > 0 && temperature < 50) {
-      Serial.println("✓ Temperature normal");
-      digitalWrite(STATUS_LED, HIGH);
-      delay(150);
-      digitalWrite(STATUS_LED, LOW);
-    } else {
-      Serial.println("⚠ Temperature abnormal!");
-      digitalWrite(STATUS_LED, HIGH);
-    }
-  }
-
-  // ===== TURBIDITY =====
-  turbidityValue = analogRead(TURBIDITY_PIN);
-
-  // ADC → Voltage
-  voltage = turbidityValue * (3.3 / 4095.0);
-
-  // Voltage → NTU (calibrated mapping)
-  ntu = (cleanVoltage - voltage) * (300.0 / (cleanVoltage - dirtyVoltage));
-
-  // Clamp values
-  if (ntu < 0) ntu = 0;
-  if (ntu > 300) ntu = 300;
-
-  Serial.print("🌊 Voltage: ");
-  Serial.print(voltage);
-  Serial.println(" V");
-
-  Serial.print("🌊 Turbidity: ");
-  Serial.print(ntu);
-  Serial.println(" NTU");
-
-  // ===== INTERPRETATION =====
-  if (ntu < 50) {
-    Serial.println("✓ Water: CLEAR");
-  } else if (ntu < 150) {
-    Serial.println("~ Water: CLOUDY");
-  } else {
-    Serial.println("⚠ Water: DIRTY");
-  }
-
-  Serial.println("────────────────────────────────────────────");
-
-  delay(2000);
+		// publishing to MQTT broker
+		mqttClient.publish("FishMaster/tank/Tankie", payload)
+			? Serial.println("Message published successfully :D")
+			: Serial.println("Failed to publish message D: ! Check your MQTT broker settings and try again...");
+	}
 }

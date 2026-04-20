@@ -81,13 +81,15 @@ The system is designed to work whether or not there is an internet connection.
 | Multimeter      | HABOTEST HT109L                                 | 1   | Debugging & testing              |
 | USB Cable       | USB Type-C                                      | 1   | Power & programming              |
 | Power Supply Module | MB102 Breadboard 5V/3.3V Power Supply Module | 1 | Provides stable power to breadboard |
-#### Software (Web)
-| Part | Function |
-| :--- | :--- |
-| Backend | Spring Boot app that receives data and stores it. |
-| Frontend | React dashboard for viewing charts and settings. |
-| Database | Stores login info and sensor history. |
 
+#### Software (Web)
+
+
+| Component | Technology / Details                     | Function                                      |
+|-----------|------------------------------------------|----------------------------------------------|
+| Backend   | Spring Boot (Java)                      | Receives sensor data via API and processes it |
+| Frontend  | React (JavaScript)         |            Displays dashboard, charts, and user controls |
+| Database  | PostgreSQL                              | Stores user data and sensor history           |
 
 
 ---
@@ -97,11 +99,13 @@ The system is designed to work whether or not there is an internet connection.
 * [ ] Hardware sensor setup
 * [x] Basic backend API
 * [x] Dashboard UI
-* [ ] Support for multiple tanks
+* [x] Support for multiple tanks
 * [ ] Support for calibration settings
 ---
 
 <div align="center">
-    <sub>Made with 🐟 by <strong>Abdalla Nezar</strong> | Powered by ESP32 · Spring Boot · React</sub>
+  <sub>
+    Made with 🐟 by <a href="https://www.linkedin.com/in/abdalla-nezar-elshiekh/"><b>Abdalla Elshiekh</b></a>  
+    | Powered by ESP32 ⚡ · Spring Boot 🟢 · React 🔷
+  </sub>
 </div>
-

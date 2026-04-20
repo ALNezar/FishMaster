@@ -3,7 +3,7 @@
 #include <DallasTemperature.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
-
+#include "networkparameter.h"
 
 // for millis clock
 unsigned long lastTime = 0;
@@ -17,8 +17,8 @@ DallasTemperature Temp_Sensor(&Temp_Wire);
 
 
 // networking global
-const char *SSID = "your network name";
-const char *PASSWORD = "your password";
+const char *SSID = WIFI_SSID;
+const char *PASSWORD = WIFI_PASS;
 
 WiFiClient espClient; // the network socket
 PubSubClient mqttClient(espClient);
@@ -44,8 +44,8 @@ void setup()
 
 	// =========== MQTT ============ //
 
-	mqttClient.setServer("10.4.42.128", 1883);
-	mqttClient.connect("FM-Tankie_1");
+	mqttClient.setServer(MQTT_SERVER,  MQTT_PORT);
+	mqttClient.connect(MQTT_CLIENT_ID);
 
 	if (mqttClient.connected())
 	{

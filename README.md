@@ -25,12 +25,9 @@ FishMaster is an IoT aquarium monitor that tracks water quality and controls fee
 
 FishMaster is a smart aquarium system that monitors and controls key aquarium conditions through two layers: an embedded local system and a web-based system.
 
-The embedded system uses an ESP32 microcontroller with sensors to measure parameters like pH and temperature. Readings appear on a local LCD screen, and a servo-driven feeder handles scheduled feeding. This setup works entirely offline, so the aquarium stays managed even if the network fails.
+The embedded system uses an ESP32 microcontroller with sensors to measure parameters 3 main parameter (PH,Temperature and turbidity) Readings appear on a local LCD tocuh screen, and a servo-driven feeder handles scheduled feeding. This setup works entirely offline, so the aquarium stays managed even if the network fails.
 
 The web system adds cloud connectivity. The ESP32 uploads data to a backend, and users can view their aquarium through a mobile or web interface. The dashboard includes charts, historical data, and remote monitoring. If the network becomes unavailable, the system automatically switches back to the embedded mode.
-
-This dual design gives remote convenience while staying reliable during connectivity issues.
-
 
 ---
 
@@ -53,7 +50,7 @@ The system is designed to work whether or not there is an internet connection.
 
 ### Main Features
 
-* **Monitoring:** Tracks Temperature, pH, Turbidity, and Ammonia.
+* **Monitoring:** Tracks Temperature, pH, and Turbidity.
 * **Feeding:** Uses a servo motor to drop food on a set schedule.
 * **Alerts:** Sends a notification if water levels go outside the safe range.
 * **Data History:** Saves sensor readings so you can see trends over time.

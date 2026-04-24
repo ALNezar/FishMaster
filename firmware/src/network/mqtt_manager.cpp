@@ -9,38 +9,37 @@
 static WiFiClient espClient;
 static PubSubClient mqttClient(espClient);
 
-static void fmMqttReconnect(void)
+void mqttReconnect(void)
 {
-    while (!mqttClient.connected())
+    if (mqttClient.connected()) return;
+
+    if (mqttClient.connect(MQTT_CLIENT_ID))
     {
-        if (mqttClient.connect(MQTT_CLIENT_ID))
-        {
-            Serial.println("Connected to MQTT broker :D");
-        }
-        else
-        {
-            Serial.println("MQTT connect failed, retrying...");
-            delay(1000);
-        }
+        Serial.println("Connected to MQTT broker :D");
+    }
+    else
+    {
+        Serial.println("MQTT connect failed");
     }
 }
-
 void mqttSetup(void)
 {
     mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
-    fmMqttReconnect();
+    mqttReconnect();
+    
 }
 
+// Call this function in the main loop to maintain MQTT connection and handle incoming messages
 void mqttLoop(void)
 {
     if (!mqttClient.connected())
     {
-        fmMqttReconnect();
+        mqttReconnect();
     }
 
     mqttClient.loop();
 }
-
+// Publish temperature to MQTT broker
 bool mqttPublishTemperature(float temp)
 {
     char payload[64];

@@ -1,0 +1,90 @@
+@startuml
+!theme vibrant
+left to right direction
+skinparam componentStyle rectangle
+skinparam NoteBackgroundColor #f9f9f9
+
+title Fishmaster Cloud ArchitecturenPSM 2 — IoT Aquarium Monitoring
+
+' --- Hardware Layer ---
+package Hardware Layer {
+    node ESP32n(tank_1) as esp
+    component Temp as temp
+    component pH as ph
+    component Turbidity as turb
+
+    esp -down- temp  reads
+    esp -down- ph
+    esp -down- turb
+}
+
+' --- Cloud Services ---
+package Cloud Services {
+
+    package MQTT Broker (HiveMQ) {
+        node HiveMQ Cloud as hivemq
+        note bottom of hivemq
+            Topics
+            QoS 1 — Free Tier
+             FishMaster{tankId}sensor
+             FishMaster{tankId}control
+             FishMaster{tankId}alert
+        end note
+    }
+
+    package Backend (Spring Boot - Railway) {
+        component ((o)) MQTT Listener as listener
+        component Service  Logic as logic
+        component REST API as rest
+        component WebSocket as ws
+        database PostgreSQLnids [tank_id, ts] as db
+
+        listener -down- logic
+        logic -down- rest
+        logic -down- ws
+        logic -[#green]down- db  colorgreenpersistcolor
+    }
+
+    package Frontend (React - Vercel) {
+        component React Dashboard as react
+    }
+}
+
+' --- User ---
+package User Group {
+    actor Evaluator  User as user
+}
+
+' --- Layout Anchors ---
+Hardware Layer  -[hidden]- Cloud Services
+Cloud Services  -[hidden]- User Group
+hivemq -[hidden]- listener
+
+' --- 1. Sensor Data Flows (Blue - Solid) ---
+esp    -[#blue]-  hivemq    Publish Sensor DatanFishMaster{tankId}sensor
+hivemq -[#blue]-  listener  Subscribe Sensor DatanFishMaster{tankId}sensor
+ws     -[#blue]-  react     WebSocket live stream
+
+' --- 2. Control Flows (Red - Dashed) ---
+react  .[#red].  rest    GET apitanksnPOST apidevice
+logic  .[#red].  hivemq
+hivemq .[#red].  esp     Subscribe ControlnFishMaster{tankId}control
+
+' --- 3. User Interactions ---
+react - user  view dashboard
+user  .  react  actions
+
+' --- Legend ---
+note as Legend
+    Legend
+    colorblue■color Sensor Data (device - cloud - UI)
+    colorred■color Control Commands (UI - cloud - device)
+    colorgreen■color Persistence
+
+    Reliability
+     MQTT QoS 1 (at-least-once)
+     Auto-reconnect on ESP32 & backend
+     DB index (tank_id, timestamp)
+end note
+
+@enduml

@@ -125,7 +125,7 @@ FishMaster uses a hybrid IoT architecture with two main data flows:
 - Some features may not work fully
 - Mainly for testing UI and data flow
 
-👉 https://frontend-production-939a7.up.railway.app/
+👉 https://fishmaster.up.railway.app/
 
 ---
 

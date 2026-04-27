@@ -101,6 +101,33 @@ FishMaster uses a hybrid IoT architecture with two main data flows:
 | MQTT Broker | HiveMQ Cloud (Free Tier, QoS 1) | Handles real-time messaging between ESP32 and backend |
 
 ---
+## 📸 Preview
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/b6e1b513-3dc5-45cb-9a92-ce2e12188653" width="80%" />
+  <br>
+  <em>Main dashboard view</em>
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/180b3914-b47b-487f-8dbe-f7e047dc5ecc" width="80%" />
+  <br>
+  <em>Sensor data charts</em>
+</p>
+
+---
+
+## 🌐 Live Demo (Development)
+
+⚠️ This is a development deployment and may be partially functional.
+
+- No authentication (single client setup)
+- Some features may not work fully
+- Mainly for testing UI and data flow
+
+👉 https://frontend-production-939a7.up.railway.app/
+
+---
 
 ### Progress
 

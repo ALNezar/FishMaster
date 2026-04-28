@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getLearningProgress, getLearningPaths } from '../../services/api';
+import { getLearningProgress, getLearningPaths } from '../../api';
 import { FaTrophy, FaFire, FaBook, FaArrowRight } from 'react-icons/fa';
 import styles from './LearningProgressPage.module.scss';
 

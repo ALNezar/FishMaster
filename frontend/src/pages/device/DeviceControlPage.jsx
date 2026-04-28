@@ -35,7 +35,7 @@ import {
   triggerManualFeeding,
   getFeedingHistory,
   reconnectDevice,
-} from '../../services/api';
+} from '../../api';
 import esp32Image from '../../assets/images/esp32-device.svg';
 import styles from './DeviceControlPage.module.scss';
 

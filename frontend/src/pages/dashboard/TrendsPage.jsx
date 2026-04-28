@@ -11,7 +11,7 @@ import {
   Filler,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { getTanks, getSensorData, useTemperatureStream } from '../../services/api';
+import { getTanks, getSensorData, useTemperatureStream } from '../../api';
 import Card from '../../components/common/card/card.jsx';
 import InfoTooltip from '../../components/common/InfoTooltip/InfoTooltip';
 import styles from './TrendsPage.module.scss';

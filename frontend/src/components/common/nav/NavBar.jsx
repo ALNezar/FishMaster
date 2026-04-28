@@ -16,7 +16,7 @@ import {
   MdShowChart,
   MdSensors
 } from 'react-icons/md';
-import { logout } from '../../../services/api';
+import { logout } from '../../../api';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import './NavBar.scss';

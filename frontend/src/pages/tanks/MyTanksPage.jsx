@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/common/button/button';
-import api from '../../services/api';
+import api from '../../api';
 import styles from './MyTanksPage.module.scss';
 import Wave from 'react-wavify';
 

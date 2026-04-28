@@ -14,7 +14,7 @@ function getTankHealthScore({ ph, temperature, turbidity }) {
 }
 
 import React, { useState, useEffect, useRef } from 'react';
-import { getSensorData, getTanks, useTemperatureStream } from '../../services/api.js';
+import { getSensorData, getTanks, useTemperatureStream } from '../../api';
 import Card from '../../components/common/card/card.jsx';
 import InfoTooltip from '../../components/common/InfoTooltip/InfoTooltip';
 import {

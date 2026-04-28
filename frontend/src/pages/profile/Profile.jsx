@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCurrentUser, updateProfile, deleteAccount, logout } from '../../services/api';
+import { getCurrentUser, updateProfile, deleteAccount, logout } from '../../api';
 import styles from './Profile.module.scss';
 import { FaUser, FaSave, FaTimes, FaTrash, FaPhone, FaEnvelope, FaBell } from 'react-icons/fa';
 

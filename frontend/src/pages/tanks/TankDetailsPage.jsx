@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Card from '../../components/common/card/card';
 import Button from '../../components/common/button/button';
-import api, { getFishTypes, addFishToTank, removeFishFromTank } from '../../services/api';
+import api, { getFishTypes, addFishToTank, removeFishFromTank } from '../../api';
 import styles from './TankDetailsPage.module.scss';
 import { FaFish, FaPlus, FaTrash, FaEdit, FaTimes, FaThermometerHalf, FaTint, FaExclamationTriangle } from 'react-icons/fa';
 

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { verifyEmail, resendVerificationCode, login } from '../../services/api.js';
+import { verifyEmail, resendVerificationCode, login } from '../../api';
 import Button from '../../components/common/button/button.jsx';
 import Card from '../../components/common/card/card.jsx';
 import Wave from 'react-wavify';

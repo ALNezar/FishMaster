@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getLearningPaths, getLessons, getLearningProgress } from '../../services/api';
+import { getLearningPaths, getLessons, getLearningProgress } from '../../api';
 import { FaArrowRight, FaCheckCircle } from 'react-icons/fa';
 import styles from './LearningPathPage.module.scss';
 

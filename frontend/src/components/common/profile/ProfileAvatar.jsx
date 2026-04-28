@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa';
-import { removeToken } from '../../../services/api';
+import { removeToken } from '../../../api';
 import styles from './ProfileAvatar.module.scss';
 
 const ProfileAvatar = ({ user }) => {

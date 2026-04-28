@@ -4,7 +4,7 @@ import { FaThermometerHalf, FaTint, FaWater, FaFlask, FaBell, FaBellSlash, FaEnv
 import { MdNotificationsActive } from 'react-icons/md';
 import Card from '../../components/common/card/card';
 import Button from '../../components/common/button/button';
-import { getTanks, getAlertThresholds, updateAlertThresholds } from '../../services/api';
+import { getTanks, getAlertThresholds, updateAlertThresholds } from '../../api';
 import styles from './AlertConfigPage.module.scss';
 
 // Default threshold values for freshwater tanks

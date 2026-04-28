@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getFishTypes, completeOnboarding, login, isAuthenticated } from '../../services/api.js';
+import { getFishTypes, completeOnboarding, login, isAuthenticated } from '../../api';
 import Wave from 'react-wavify';
 
 // Import step components

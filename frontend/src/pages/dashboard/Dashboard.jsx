@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { getTanks, getSensorData, useTemperatureStream } from '../../services/api.js';
+import { getTanks, getSensorData, useTemperatureStream } from '../../api';
 import styles from './Dashboard.module.scss';
 import { FaFish, FaThermometerHalf, FaBell, FaChartLine, FaTint, FaPlus, FaHome, FaWater, FaUtensils, FaWrench, FaCircle } from 'react-icons/fa';
 import Header from "./header.jsx";

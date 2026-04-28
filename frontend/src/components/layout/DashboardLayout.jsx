@@ -4,7 +4,7 @@ import Wave from 'react-wavify';
 
 import QuickAccessNav from '../common/nav/QuickAccessNav';
 import ProfileAvatar from '../common/profile/ProfileAvatar';
-import { isAuthenticated, getCurrentUser, logout } from '../../services/api';
+import { isAuthenticated, getCurrentUser, logout } from '../../api';
 
 import styles from './DashboardLayout.module.scss';
 

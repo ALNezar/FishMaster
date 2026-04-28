@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { completeLesson, getLearningProgress, getLesson } from '../../services/api';
+import { completeLesson, getLearningProgress, getLesson } from '../../api';
 import { FaLightbulb, FaClipboardList, FaPaw, FaCheckCircle, FaArrowRight } from 'react-icons/fa';
 import styles from './LessonPage.module.scss';
 

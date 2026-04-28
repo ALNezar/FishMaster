@@ -5,7 +5,7 @@ import {
   getTanks,
   getLearningPaths,
   getLearningProgress,
-} from '../../services/api';
+} from '../../api';
 import styles from './LearningHomePage.module.scss';
 import { FaThermometerHalf, FaTint, FaFlask } from 'react-icons/fa';
 import esp32Image from '../../assets/images/learning/esp32.svg';

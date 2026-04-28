@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getTanks } from '../../services/api';
+import { getTanks } from '../../api';
 import Card from '../../components/common/card/card.jsx';
 import styles from './HistoryPage.module.scss';
 import { FaHistory, FaThermometerHalf, FaExclamationTriangle, FaTools, FaFish, FaTint, FaCheckCircle, FaFilter } from 'react-icons/fa';

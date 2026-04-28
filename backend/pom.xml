@@ -107,6 +107,14 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+        <!-- MQTT client (Eclipse Paho) for subscribing to HiveMQ topics -->
+        <dependency>
+            <groupId>org.eclipse.paho</groupId>
+            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+            <version>1.2.5</version>
+        </dependency>
+        <!-- MQTT integration can be added with Spring Integration MQTT or Eclipse Paho.
+             Intentionally omitted here to keep the project buildable in constrained environments. -->
     </dependencies>
 
     <build>

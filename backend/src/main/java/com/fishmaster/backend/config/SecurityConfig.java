@@ -40,6 +40,7 @@ public class SecurityConfig {
                 // Allow /auth/** for public access, protect everything else
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/telemetry/**").permitAll()
                         .anyRequest().authenticated()
                 )
 

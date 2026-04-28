@@ -1,7 +1,9 @@
 // api.js
-const DEV_MODE = true; // toggle to true for local development without backend
+import { useEffect, useRef, useState } from 'react';
 
-const API_BASE_URL = 'http://localhost:8080';
+const DEV_MODE = false; // toggle to true for local development without backend
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 const getToken = () => localStorage.getItem('fishmaster_token');
 export const setToken = (token) => localStorage.setItem('fishmaster_token', token);
@@ -25,52 +27,34 @@ const createHeaders = (includeAuth = true, customHeaders = {}) => {
 const normalizeResponse = (data, endpoint) => {
   if (!data || typeof data !== 'object') return data;
 
-  // Helper to normalize FishType from backend format to frontend format
   const normalizeFishType = (fishType) => {
     if (!fishType) return { name: 'Unknown', careLevel: 'Easy' };
-    
-    // Helper to convert BigDecimal objects or any value to number
     const toNumber = (val) => {
       if (val === null || val === undefined) return 0;
       if (typeof val === 'number') return val;
-      if (typeof val === 'object' && val !== null) {
-        // Handle Java BigDecimal object format
-        return parseFloat(val) || 0;
-      }
+      if (typeof val === 'object' && val !== null) return parseFloat(val) || 0;
       return parseFloat(val) || 0;
     };
-    
-    // Calculate a reasonable minTankSize based on fish type if not provided
-    let estimatedMinTankSize = 40; // default
+    let estimatedMinTankSize = 40;
     if (fishType.careLevel) {
       const level = fishType.careLevel.toLowerCase();
-      if (level === 'beginner' || level === 'easy') {
-        estimatedMinTankSize = 20;
-      } else if (level === 'intermediate' || level === 'moderate' || level === 'medium') {
-        estimatedMinTankSize = 40;
-      } else if (level === 'advanced' || level === 'hard' || level === 'expert') {
-        estimatedMinTankSize = 75;
-      }
+      if (level === 'beginner' || level === 'easy') estimatedMinTankSize = 20;
+      else if (level === 'intermediate' || level === 'moderate' || level === 'medium') estimatedMinTankSize = 40;
+      else if (level === 'advanced' || level === 'hard' || level === 'expert') estimatedMinTankSize = 75;
     }
-    
     return {
       id: fishType.id,
       name: fishType.name || 'Unknown',
       careLevel: fishType.careLevel || 'Easy',
-      // Backend uses minPh/maxPh, frontend expects phMin/phMax
-      // Convert BigDecimal to number
       phMin: toNumber(fishType.phMin || fishType.minPh),
       phMax: toNumber(fishType.phMax || fishType.maxPh),
-      // Backend uses minTemp/maxTemp, frontend expects temperatureMin/temperatureMax
       temperatureMin: toNumber(fishType.temperatureMin || fishType.minTemp),
       temperatureMax: toNumber(fishType.temperatureMax || fishType.maxTemp),
-      // minTankSize doesn't exist in backend - use provided or estimate
       minTankSize: toNumber(fishType.minTankSize) || estimatedMinTankSize,
       description: fishType.description || ''
     };
   };
 
-  // Normalize tank response
   if (endpoint.match(/^\/tanks\/\d+$/) && data.fish) {
     data.fish = data.fish.map(fish => ({
       id: fish.id,
@@ -78,25 +62,15 @@ const normalizeResponse = (data, endpoint) => {
       fishType: normalizeFishType(fish.fishType),
       createdAt: fish.createdAt
     }));
-
-    // Ensure waterParameters exists
     if (!data.waterParameters) {
-      data.waterParameters = {
-        targetPh: 7.0,
-        targetTemperature: 25,
-        ph: 7.0,
-        temperature: 25
-      };
+      data.waterParameters = { targetPh: 7.0, targetTemperature: 25, ph: 7.0, temperature: 25 };
     }
   }
 
-  // Normalize fish type list (from /api/onboarding/fish-types)
   if (endpoint.includes('/fish-types') && Array.isArray(data)) {
     return data.map(fishType => normalizeFishType(fishType));
   }
 
-  // Normalize single fish response (from POST /tanks/:id/fish)
-  // Backend returns a Fish entity with nested FishType
   if (endpoint.match(/^\/tanks\/\d+\/fish$/) && data.id && data.fishType) {
     return {
       id: data.id,
@@ -106,35 +80,84 @@ const normalizeResponse = (data, endpoint) => {
     };
   }
 
-  // Handle case where POST returns just the fish without nested type
   if (endpoint.match(/^\/tanks\/\d+\/fish$/) && data.id && !data.fishType) {
     console.warn('Backend returned fish without fishType, fetching tank to get full data');
-    return data; // Let the caller handle refetching
+    return data;
   }
 
   return data;
 };
 
-// --- Live Sensor Data Simulation State ---
+// ============================================================
+// LIVE TEMPERATURE SSE HOOK (real backend telemetry)
+// ============================================================
+
+/**
+ * React hook – subscribe to live temperature from the real backend SSE stream.
+ * Usage:  const { lastReading, connected } = useTemperatureStream();
+ */
+export function useTemperatureStream() {
+  const [lastReading, setLastReading] = useState(null);
+  const [connected, setConnected] = useState(false);
+  const esRef = useRef(null);
+
+  useEffect(() => {
+    const url = `${API_BASE_URL}/api/telemetry/temperature/stream`;
+    const es = new EventSource(url, { withCredentials: false });
+    esRef.current = es;
+
+    es.onopen = () => setConnected(true);
+    es.onerror = () => setConnected(false);
+
+    es.addEventListener('temperature', (evt) => {
+      try {
+        const data = JSON.parse(evt.data);
+        // data: { id, tankId, temperature, deviceTimestamp?, serverTimestamp }
+        setLastReading(data);
+      } catch (e) {
+        console.warn('Bad SSE payload', e);
+      }
+    });
+
+    return () => es.close();
+  }, []);
+
+  return { lastReading, connected };
+}
+
+// REST helpers for real telemetry data
+export const fetchLatestTemperature = async (tankId = 'tank1') => {
+  const res = await fetch(`${API_BASE_URL}/api/telemetry/temperature/latest?tankId=${encodeURIComponent(tankId)}`);
+  if (!res.ok) throw new Error(`latest failed: ${res.status}`);
+  return res.json(); // TemperatureReading | null
+};
+
+export const fetchRecentTemperature = async (tankId = 'tank1', limit = 50) => {
+  const res = await fetch(`${API_BASE_URL}/api/telemetry/temperature/recent?tankId=${encodeURIComponent(tankId)}&limit=${limit}`);
+  if (!res.ok) throw new Error(`recent failed: ${res.status}`);
+  return res.json(); // TemperatureReading[]
+};
+
+// --- Live Sensor Data Simulation State (temperature & ph only now) ---
 const _liveSensorState = {
   temperature: 25.2,
   ph: 7.1,
   turbidity: 3.8,
-  ammonia: 0.1,
   trend: {
     temperature: 'stable',
     ph: 'rising',
     turbidity: 'stable',
-    ammonia: 'falling',
   },
 };
 
-// --- Simple in-memory mock user for profile/read/update flows ---
+// --- Simple in-memory mock user ---
 const _defaultMockUser = {
   id: 1,
   username: 'devuser',
   name: 'Dev User',
   email: 'dev@fishmaster.app',
+  // DEV_MODE password for local testing
+  _password: 'password',
   contactNumber: '',
   emailNotifications: false,
   smsNotifications: false,
@@ -143,29 +166,28 @@ let _mockUser = { ..._defaultMockUser };
 
 // In-memory mock tanks database
 let _mockTanks = [
-  { 
-    id: 1, 
-    name: 'Living Room Tank', 
-    sizeLiters: 120, 
+  {
+    id: 1,
+    name: 'Living Room Tank',
+    sizeLiters: 120,
     fish: [
-      { id: 1, name: 'Goldie', fishType: { name: 'Goldfish', careLevel: 'Easy' } }, 
+      { id: 1, name: 'Goldie', fishType: { name: 'Goldfish', careLevel: 'Easy' } },
       { id: 2, name: 'Finn', fishType: { name: 'Guppy', careLevel: 'Easy' } }
-    ], 
-    waterParameters: { targetPh: 7.0, targetTemperature: 25, ph: 7.1, temperature: 25.2 } 
+    ],
+    waterParameters: { targetPh: 7.0, targetTemperature: 25, ph: 7.1, temperature: 25.2 }
   },
-  { 
-    id: 2, 
-    name: 'Betta Bowl', 
-    sizeLiters: 20, 
+  {
+    id: 2,
+    name: 'Betta Bowl',
+    sizeLiters: 20,
     fish: [
       { id: 3, name: 'Blue', fishType: { name: 'Betta', careLevel: 'Medium' } }
-    ], 
-    waterParameters: { targetPh: 7.2, targetTemperature: 26, ph: 7.2, temperature: 26.1 } 
+    ],
+    waterParameters: { targetPh: 7.2, targetTemperature: 26, ph: 7.2, temperature: 26.1 }
   }
 ];
 let _nextFishId = 4;
 
-// In-memory mock alert thresholds per tank
 let _mockAlertThresholds = {
   1: {
     globalAlertsEnabled: true,
@@ -174,7 +196,6 @@ let _mockAlertThresholds = {
     temperature: { enabled: true, min: 22, max: 28 },
     ph: { enabled: true, min: 6.5, max: 7.5 },
     turbidity: { enabled: true, max: 5 },
-    ammonia: { enabled: true, max: 0.25 },
   },
   2: {
     globalAlertsEnabled: true,
@@ -183,11 +204,9 @@ let _mockAlertThresholds = {
     temperature: { enabled: true, min: 24, max: 28 },
     ph: { enabled: true, min: 6.5, max: 7.5 },
     turbidity: { enabled: false, max: 5 },
-    ammonia: { enabled: true, max: 0.25 },
   },
 };
 
-// Default thresholds for new tanks
 const _defaultThresholds = {
   globalAlertsEnabled: true,
   emailAlertsEnabled: true,
@@ -195,7 +214,6 @@ const _defaultThresholds = {
   temperature: { enabled: true, min: 22, max: 28 },
   ph: { enabled: true, min: 6.5, max: 7.5 },
   turbidity: { enabled: true, max: 5 },
-  ammonia: { enabled: true, max: 0.25 },
 };
 
 function _jitter(val, min, max, step = 0.2) {
@@ -211,14 +229,13 @@ function _updateLiveState() {
   _liveSensorState.temperature = _jitter(_liveSensorState.temperature, 22, 28, 0.25);
   _liveSensorState.ph = _jitter(_liveSensorState.ph, 6.5, 8.0, 0.05);
   _liveSensorState.turbidity = _jitter(_liveSensorState.turbidity, 0, 6, 0.15);
-  _liveSensorState.ammonia = _jitter(_liveSensorState.ammonia, 0, 0.4, 0.02);
 
   _liveSensorState.trend.temperature = _liveSensorState.temperature > prev.temperature ? 'rising' : _liveSensorState.temperature < prev.temperature ? 'falling' : 'stable';
   _liveSensorState.trend.ph = _liveSensorState.ph > prev.ph ? 'rising' : _liveSensorState.ph < prev.ph ? 'falling' : 'stable';
   _liveSensorState.trend.turbidity = _liveSensorState.turbidity > prev.turbidity ? 'rising' : _liveSensorState.turbidity < prev.turbidity ? 'falling' : 'stable';
-  _liveSensorState.trend.ammonia = _liveSensorState.ammonia > prev.ammonia ? 'rising' : _liveSensorState.ammonia < prev.ammonia ? 'falling' : 'stable';
 }
 
+// Sensor data now only includes temperature, ph, turbidity (ammonia removed — no hardware sensor)
 const generateMockSensorData = (timeRange, tankId) => {
   _updateLiveState();
   const now = new Date();
@@ -248,18 +265,15 @@ const generateMockSensorData = (timeRange, tankId) => {
       break;
     default:
       dataPoints = 24;
-      for (let i = 23; i >= 0; i--) {
-        labels.push(`${23-i}:00`);
-      }
+      for (let i = 23; i >= 0; i--) labels.push(`${23 - i}:00`);
   }
 
-  const generateValues = (base, variance, min, max) => {
-    return Array(dataPoints).fill(0).map((_, i) => {
+  const generateValues = (base, variance, min, max) =>
+    Array(dataPoints).fill(0).map((_, i) => {
       const noise = (Math.random() - 0.5) * variance;
       const trend = Math.sin(i / dataPoints * Math.PI) * (variance / 2);
       return Math.min(max, Math.max(min, base + noise + trend));
     });
-  };
 
   return {
     temperature: {
@@ -278,15 +292,11 @@ const generateMockSensorData = (timeRange, tankId) => {
       labels,
       values: generateValues(_liveSensorState.turbidity, 2, 0, 6),
     },
-    ammonia: {
-      labels,
-      values: generateValues(_liveSensorState.ammonia, 0.15, 0, 0.4),
-    },
+    // ammonia removed — no live sensor; use manual test kits
     multiParam: {
       labels,
       temperature: generateValues(70, 15, 50, 90),
       ph: generateValues(75, 10, 60, 90),
-      ammonia: generateValues(80, 20, 40, 100),
     },
     summary: {
       optimal: 78,
@@ -297,7 +307,6 @@ const generateMockSensorData = (timeRange, tankId) => {
       temperature: { value: _liveSensorState.temperature, unit: '°C', status: 'optimal', trend: _liveSensorState.trend.temperature },
       ph: { value: _liveSensorState.ph, unit: '', status: 'optimal', trend: _liveSensorState.trend.ph },
       turbidity: { value: _liveSensorState.turbidity, unit: 'NTU', status: 'optimal', trend: _liveSensorState.trend.turbidity },
-      ammonia: { value: _liveSensorState.ammonia, unit: 'ppm', status: 'optimal', trend: _liveSensorState.trend.ammonia },
     },
     lastUpdated: now.toISOString(),
   };
@@ -305,7 +314,6 @@ const generateMockSensorData = (timeRange, tankId) => {
 
 const getMockResponse = (endpoint, options = {}) => {
   const method = options && options.method ? options.method.toUpperCase() : 'GET';
-  console.log(`getMockResponse called: ${method} ${endpoint}`);
 
   // Sensor endpoints
   const sensorMatch = endpoint.match(/^\/tanks\/(\d+)\/sensors/);
@@ -318,33 +326,17 @@ const getMockResponse = (endpoint, options = {}) => {
   // Fish endpoints - POST /tanks/:id/fish
   const addFishMatch = endpoint.match(/^\/tanks\/(\d+)\/fish$/);
   if (addFishMatch && method === 'POST') {
-    console.log('Matched POST /tanks/:id/fish');
     const tankId = parseInt(addFishMatch[1]);
     let tank = _mockTanks.find(t => t.id === tankId);
-    
-    // If tank doesn't exist in mock, create a placeholder
     if (!tank) {
-      console.log(`Tank ${tankId} not found in mock, creating placeholder`);
-      tank = {
-        id: tankId,
-        name: `Tank ${tankId}`,
-        sizeLiters: 100,
-        fish: [],
-        waterParameters: { targetPh: 7.0, targetTemperature: 25, ph: 7.0, temperature: 25 }
-      };
+      tank = { id: tankId, name: `Tank ${tankId}`, sizeLiters: 100, fish: [], waterParameters: { targetPh: 7.0, targetTemperature: 25, ph: 7.0, temperature: 25 } };
       _mockTanks.push(tank);
     }
-
     try {
       const fishData = options.body ? JSON.parse(options.body) : {};
-      console.log('Fish data to add:', fishData);
-      
-      // Find the fish type from available types
       const fishTypeId = fishData.fishTypeId;
       let fishType = null;
-      
       if (fishTypeId) {
-        // Mock fish types
         const mockFishTypes = [
           { id: 1, name: 'Goldfish', careLevel: 'beginner', minPh: 6.5, maxPh: 7.5, minTemp: 18, maxTemp: 24 },
           { id: 2, name: 'Betta', careLevel: 'beginner', minPh: 6.5, maxPh: 7.5, minTemp: 24, maxTemp: 28 },
@@ -354,17 +346,14 @@ const getMockResponse = (endpoint, options = {}) => {
         ];
         fishType = mockFishTypes.find(ft => ft.id === fishTypeId) || mockFishTypes[0];
       }
-      
       const newFish = {
         id: _nextFishId++,
         name: fishData.name || 'New Fish',
         fishType: fishType || { name: 'Unknown', careLevel: 'beginner', minPh: 6.5, maxPh: 7.5, minTemp: 22, maxTemp: 28 }
       };
       tank.fish.push(newFish);
-      console.log('Created mock fish:', newFish);
       return newFish;
     } catch (e) {
-      console.error('Mock add fish error:', e);
       return { error: 'Invalid fish data' };
     }
   }
@@ -376,10 +365,8 @@ const getMockResponse = (endpoint, options = {}) => {
     const fishId = parseInt(removeFishMatch[2]);
     const tank = _mockTanks.find(t => t.id === tankId);
     if (!tank) return { error: 'Tank not found' };
-
     const fishIndex = tank.fish.findIndex(f => f.id === fishId);
     if (fishIndex === -1) return { error: 'Fish not found' };
-
     tank.fish.splice(fishIndex, 1);
     return { success: true };
   }
@@ -391,10 +378,8 @@ const getMockResponse = (endpoint, options = {}) => {
     const fishId = parseInt(updateFishMatch[2]);
     const tank = _mockTanks.find(t => t.id === tankId);
     if (!tank) return { error: 'Tank not found' };
-
     const fish = tank.fish.find(f => f.id === fishId);
     if (!fish) return { error: 'Fish not found' };
-
     try {
       const updates = options.body ? JSON.parse(options.body) : {};
       Object.assign(fish, updates);
@@ -408,31 +393,18 @@ const getMockResponse = (endpoint, options = {}) => {
   if (endpoint.match(/^\/tanks\/\d+$/) && method === 'GET') {
     const tankId = parseInt(endpoint.split('/')[2]);
     let tank = _mockTanks.find(t => t.id === tankId);
-    
-    // If tank doesn't exist, create placeholder for consistency
     if (!tank) {
-      console.log(`Creating placeholder for tank ${tankId} in mock`);
-      tank = {
-        id: tankId,
-        name: `Tank ${tankId}`,
-        sizeLiters: 100,
-        fish: [],
-        waterParameters: { targetPh: 7.0, targetTemperature: 25, ph: 7.0, temperature: 25 }
-      };
+      tank = { id: tankId, name: `Tank ${tankId}`, sizeLiters: 100, fish: [], waterParameters: { targetPh: 7.0, targetTemperature: 25, ph: 7.0, temperature: 25 } };
       _mockTanks.push(tank);
-    } else {
-      console.log(`Returning mock tank ${tankId} with ${tank.fish.length} fish`);
     }
-    
     return tank;
   }
 
-  // Tank update endpoint - PUT /tanks/:id
+  // Tank update - PUT /tanks/:id
   if (endpoint.match(/^\/tanks\/\d+$/) && method === 'PUT') {
     const tankId = parseInt(endpoint.split('/')[2]);
     const tank = _mockTanks.find(t => t.id === tankId);
     if (!tank) return { error: 'Tank not found' };
-
     try {
       const updates = options.body ? JSON.parse(options.body) : {};
       Object.assign(tank, updates);
@@ -442,17 +414,16 @@ const getMockResponse = (endpoint, options = {}) => {
     }
   }
 
-  // Tank delete endpoint - DELETE /tanks/:id
+  // Tank delete - DELETE /tanks/:id
   if (endpoint.match(/^\/tanks\/\d+$/) && method === 'DELETE') {
     const tankId = parseInt(endpoint.split('/')[2]);
     const index = _mockTanks.findIndex(t => t.id === tankId);
     if (index === -1) return { error: 'Tank not found' };
-    
     _mockTanks.splice(index, 1);
     return { success: true };
   }
 
-  // Handle /users/me for GET, PUT, DELETE
+  // /users/me
   if (endpoint === '/users/me') {
     if (method === 'PUT') {
       try {
@@ -468,9 +439,31 @@ const getMockResponse = (endpoint, options = {}) => {
     return _mockUser;
   }
 
-  if (endpoint === '/auth/login') {
-    if (method === 'POST') {
-      return { token: 'dev-token', user: _mockUser };
+  // ============================================================
+  // LOGIN — validate credentials, NEVER silently create accounts
+  // ============================================================
+  if (endpoint === '/auth/login' && method === 'POST') {
+    try {
+      const body = options.body ? JSON.parse(options.body) : {};
+      const { email, password } = body;
+
+      if (!email || !password) {
+        throw new Error('Email and password are required.');
+      }
+
+      // Check credentials against mock user
+      const emailMatch = email.trim().toLowerCase() === _mockUser.email.toLowerCase();
+      const passwordMatch = password === _mockUser._password;
+
+      if (!emailMatch || !passwordMatch) {
+        // Return a structured error — apiRequest will throw this to the caller
+        throw new Error('Invalid email or password. Please try again.');
+      }
+
+      const { _password, ...safeUser } = _mockUser;
+      return { token: 'dev-token', user: safeUser };
+    } catch (e) {
+      throw e; // propagate so the login form can display the message
     }
   }
 
@@ -484,28 +477,15 @@ const getMockResponse = (endpoint, options = {}) => {
     ];
   }
 
-  if (endpoint === '/api/onboarding/status') {
-    return { completed: true };
-  }
-
-  if (endpoint === '/api/onboarding/complete') {
-    return { success: true };
-  }
-
-  if (endpoint === '/tanks') {
-    return _mockTanks;
-  }
+  if (endpoint === '/api/onboarding/status') return { completed: true };
+  if (endpoint === '/api/onboarding/complete') return { success: true };
+  if (endpoint === '/tanks') return _mockTanks;
 
   // Alert thresholds - GET /tanks/:id/thresholds
   const getThresholdsMatch = endpoint.match(/^\/tanks\/(\d+)\/thresholds$/);
   if (getThresholdsMatch && method === 'GET') {
     const tankId = parseInt(getThresholdsMatch[1]);
-    console.log(`Getting thresholds for tank ${tankId}`);
-    if (_mockAlertThresholds[tankId]) {
-      return { ...(_mockAlertThresholds[tankId]) };
-    }
-    // Return defaults for tanks without saved thresholds
-    return { ..._defaultThresholds };
+    return _mockAlertThresholds[tankId] ? { ...(_mockAlertThresholds[tankId]) } : { ..._defaultThresholds };
   }
 
   // Alert thresholds - PUT /tanks/:id/thresholds
@@ -514,10 +494,8 @@ const getMockResponse = (endpoint, options = {}) => {
     try {
       const data = options.body ? JSON.parse(options.body) : {};
       _mockAlertThresholds[tankId] = { ...data };
-      console.log(`Saved thresholds for tank ${tankId}:`, data);
       return { success: true, ...data };
     } catch (e) {
-      console.error('Failed to save thresholds:', e);
       return { error: 'Invalid threshold data' };
     }
   }
@@ -527,6 +505,7 @@ const getMockResponse = (endpoint, options = {}) => {
 
 const apiRequest = async (endpoint, options = {}) => {
   if (DEV_MODE) {
+    // getMockResponse may throw (e.g. login with wrong password) — let it propagate
     const mock = getMockResponse(endpoint, options);
     if (mock !== null) return mock;
     return {};
@@ -538,102 +517,59 @@ const apiRequest = async (endpoint, options = {}) => {
 
   try {
     const response = await fetch(url, config);
-    
-    // Handle 204 No Content
     if (response.status === 204) return null;
-    
-    // For non-OK responses, try fallback BEFORE parsing response body
+
     if (!response.ok) {
       console.warn(`Backend returned ${response.status} for ${endpoint}. Attempting mock fallback...`);
-      
       try {
         const fallback = getMockResponse(endpoint, config);
-        console.log('Fallback result:', fallback);
-        
         if (fallback !== null && (!fallback.error || fallback.error === undefined)) {
           console.warn(`✓ Using mock fallback for ${endpoint}`);
-          console.warn('⚠️ NOTE: Mock data is temporary and will be lost on page refresh.');
-          console.warn('⚠️ Fix the backend 403 error to persist data permanently.');
           return fallback;
-        } else if (fallback && fallback.error) {
-          console.warn(`✗ Mock fallback returned error: ${fallback.error}`);
-        } else {
-          console.warn('✗ No mock fallback available');
         }
       } catch (e) {
-        console.error('Mock fallback failed with exception:', e);
+        console.error('Mock fallback failed:', e);
       }
-      
-      // If no fallback available, parse error and throw
+
       const contentType = response.headers.get('content-type');
-      let data;
       const rawText = await response.text();
-      
+      let data;
       if (contentType && contentType.includes('application/json') && rawText) {
-        try {
-          data = JSON.parse(rawText);
-        } catch {
-          data = rawText;
-        }
+        try { data = JSON.parse(rawText); } catch { data = rawText; }
       } else {
         data = rawText;
       }
-
-      console.error(`API Error Details [${endpoint}]:`, {
-        status: response.status,
-        statusText: response.statusText,
-        contentType,
-        rawResponse: rawText,
-        parsedData: data
-      });
 
       let errorMessage;
-      if (typeof data === 'string' && data.length > 0) {
-        errorMessage = data;
-      } else if (typeof data === 'object' && data !== null) {
-        errorMessage = data.error || data.message || JSON.stringify(data);
-      } else {
-        errorMessage = `Request failed with status ${response.status}`;
-      }
+      if (typeof data === 'string' && data.length > 0) errorMessage = data;
+      else if (typeof data === 'object' && data !== null) errorMessage = data.error || data.message || JSON.stringify(data);
+      else errorMessage = `Request failed with status ${response.status}`;
       throw new Error(errorMessage);
     }
-    
-    // Parse successful response
+
     const contentType = response.headers.get('content-type');
-    let data;
     const rawText = await response.text();
-    
+    let data;
     if (contentType && contentType.includes('application/json') && rawText) {
-      try {
-        data = JSON.parse(rawText);
-      } catch {
-        data = rawText;
-      }
+      try { data = JSON.parse(rawText); } catch { data = rawText; }
     } else {
       data = rawText;
     }
-    
-    // Merge mock fish with backend fish for GET /tanks/:id requests
+
     const tankDetailMatch = endpoint.match(/^\/tanks\/(\d+)$/);
     if (tankDetailMatch && data && data.fish) {
       const tankId = parseInt(tankDetailMatch[1]);
       const mockTank = _mockTanks.find(t => t.id === tankId);
-      
       if (mockTank && mockTank.fish && mockTank.fish.length > 0) {
-        // Get IDs of backend fish
         const backendFishIds = new Set(data.fish.map(f => f.id));
-        
-        // Add mock fish that don't exist in backend
         const mockOnlyFish = mockTank.fish.filter(f => !backendFishIds.has(f.id));
-        
         if (mockOnlyFish.length > 0) {
           console.warn(`Merging ${mockOnlyFish.length} mock fish with backend data for tank ${tankId}`);
           data.fish = [...data.fish, ...mockOnlyFish];
         }
       }
     }
-    
-    // Normalize response data
+
     return normalizeResponse(data, endpoint);
   } catch (error) {
     console.error(`API Error [${endpoint}]:`, error);
@@ -654,7 +590,12 @@ const apiRequest = async (endpoint, options = {}) => {
 export const signup = async (username, email, password) => apiRequest('/auth/signup', { method: 'POST', includeAuth: false, body: JSON.stringify({ username, email, password }) });
 export const verifyEmail = async (email, verificationCode) => apiRequest('/auth/verify', { method: 'POST', includeAuth: false, body: JSON.stringify({ email, verificationCode }) });
 export const resendVerificationCode = async (email) => apiRequest('/auth/resend', { method: 'POST', includeAuth: false, body: email, headers: { 'Content-Type': 'text/plain' } });
-export const login = async (email, password) => { const res = await apiRequest('/auth/login', { method: 'POST', includeAuth: false, body: JSON.stringify({ email, password }) }); if (res.token) setToken(res.token); return res; };
+export const login = async (email, password) => {
+  // Will throw if credentials are wrong — caller (login form) must catch and display the error
+  const res = await apiRequest('/auth/login', { method: 'POST', includeAuth: false, body: JSON.stringify({ email, password }) });
+  if (res.token) setToken(res.token);
+  return res;
+};
 export const logout = () => removeToken();
 export const getFishTypes = async (careLevel = null) => apiRequest(`/api/onboarding/fish-types${careLevel ? `?careLevel=${careLevel}` : ''}`);
 export const getOnboardingStatus = async () => apiRequest('/api/onboarding/status');
@@ -673,9 +614,62 @@ export const addFishToTank = async (tankId, fishData) => apiRequest(`/tanks/${ta
 export const removeFishFromTank = async (tankId, fishId) => apiRequest(`/tanks/${tankId}/fish/${fishId}`, { method: 'DELETE' });
 export const updateFish = async (tankId, fishId, fishData) => apiRequest(`/tanks/${tankId}/fish/${fishId}`, { method: 'PUT', body: JSON.stringify(fishData) });
 
-export const getSensorData = async (tankId, timeRange = '24h') => apiRequest(`/tanks/${tankId}/sensors?timeRange=${timeRange}`);
+export const getSensorData = async (tankId, timeRange = '24h') => {
+  // Determine how many recent readings to fetch based on time range
+  const limitMap = { '24h': 288, '7d': 500, '30d': 500 };
+  const limit = limitMap[timeRange] || 288;
 
-// Alert threshold endpoints
+  // Try to get real temperature data from the telemetry backend
+  let realTemperature = null;
+  try {
+    const tankIdStr = typeof tankId === 'number' ? `tank${tankId}` : tankId;
+    const readings = await fetchRecentTemperature(tankIdStr, limit);
+
+    if (readings && readings.length > 0) {
+      // Sort oldest → newest
+      const sorted = [...readings].sort(
+        (a, b) => new Date(a.serverTimestamp) - new Date(b.serverTimestamp)
+      );
+
+      const labels = sorted.map(r =>
+        new Date(r.serverTimestamp).toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      );
+      const values = sorted.map(r => Number(r.temperature));
+      const latest = values[values.length - 1];
+
+      realTemperature = {
+        labels,
+        values,
+        target: 25,
+        min: 20,
+        max: 30,
+        currentValue: latest,
+      };
+    }
+  } catch (e) {
+    console.warn('Could not fetch real temperature telemetry, falling back to mock:', e);
+  }
+
+  // Get mock data for the rest (ph, turbidity) and merge real temperature in
+  const mock = generateMockSensorData(timeRange, tankId);
+
+  if (realTemperature) {
+    const latestVal = realTemperature.currentValue;
+    mock.temperature = realTemperature;
+    mock.currentReadings.temperature = {
+      value: latestVal,
+      unit: '°C',
+      status: latestVal < 22 || latestVal > 28 ? 'warning' : 'optimal',
+      trend: 'stable',
+    };
+  }
+
+  return mock;
+};
+
 export const getAlertThresholds = async (tankId) => apiRequest(`/tanks/${tankId}/thresholds`);
 export const updateAlertThresholds = async (tankId, data) => apiRequest(`/tanks/${tankId}/thresholds`, { method: 'PUT', body: JSON.stringify(data) });
 
@@ -683,35 +677,33 @@ export const updateAlertThresholds = async (tankId, data) => apiRequest(`/tanks/
 // DEVICE CONTROL MOCK DATA & ENDPOINTS
 // ============================================
 
-// Mock device info - ESP32 AquaSense Pro
 let _mockDeviceInfo = {
   id: 1,
   name: 'AquaSense Pro',
-  status: 'online', // online, offline, error
+  status: 'online',
   firmwareVersion: 'v2.4.1',
   wifiNetwork: 'Home_Network_5G',
   ipAddress: '192.168.1.105',
   macAddress: 'A4:CF:12:8E:3B:9D',
-  signalStrength: -45, // dBm
-  cpuSpeed: 240, // MHz
-  freeMemory: 142, // KB
-  totalMemory: 320, // KB
-  sensorInterval: 30, // seconds
-  lastSync: new Date(Date.now() - 2 * 60 * 1000).toISOString(), // 2 minutes ago
-  uptime: 14 * 24 * 60 * 60 + 6 * 60 * 60, // seconds (14 days, 6 hours)
+  signalStrength: -45,
+  cpuSpeed: 240,
+  freeMemory: 142,
+  totalMemory: 320,
+  sensorInterval: 30,
+  lastSync: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
+  uptime: 14 * 24 * 60 * 60 + 6 * 60 * 60,
   connectedTankId: 1,
   connectedTankName: 'Living Room Tank',
   features: {
     temperatureSensor: true,
     phSensor: true,
     turbiditySensor: true,
-    ammoniaSensor: true,
+    // ammoniaSensor removed — no hardware sensor
     autoFeeder: true,
     waterLevelSensor: true,
   }
 };
 
-// Mock feeding schedules
 let _mockFeedingSchedules = [
   { id: 1, time: '08:00', portionSize: 'small', enabled: true, daysOfWeek: [0, 1, 2, 3, 4, 5, 6], label: 'Morning Feed' },
   { id: 2, time: '13:00', portionSize: 'small', enabled: false, daysOfWeek: [0, 6], label: 'Weekend Lunch' },
@@ -720,7 +712,7 @@ let _mockFeedingSchedules = [
 let _nextScheduleId = 4;
 
 // ============================================
-// LEARNING HUB MOCK DATA & ENDPOINTS
+// LEARNING HUB — ammonia section removed (no live sensor)
 // ============================================
 
 const LEARNING_PROGRESS_KEY = 'fishmaster_learning_progress_v1';
@@ -892,7 +884,7 @@ const _learningSections = [
       {
         id: 'why-high',
         title: 'Why Is It High?',
-        description: 'Overfeeding (uneaten particles decay), bacterial or algae bloom, filter clogged or needs priming, gravel stirred up during maintenance, new tank cycling, or excess decor waste. High turbidity traps debris and reduces oxygen diffusion.',
+        description: 'Overfeeding (uneaten particles decay), bacterial or algae bloom, filter clogged or needs priming, gravel stirred up during maintenance, new tank cycling, or excess decor waste.',
         images: [
           { src: '/turbidity-high-overfeeding.png', caption: 'Cloudiness from overfeeding' },
           { src: '/turbidity-high-bloom.png', caption: 'Bacterial/algae bloom example' },
@@ -903,7 +895,7 @@ const _learningSections = [
       {
         id: 'why-low',
         title: 'Why Is It Low',
-        description: 'Excellent! This usually means filter is working well, feeding quantity is right, no algae or bacterial bloom, and water changes are regular. Low turbidity is the target state—maintain it by feeding carefully, cleaning filter periodically, and doing weekly water changes.',
+        description: 'Excellent! Filter is working well, feeding quantity is right, no algae or bacterial bloom, and water changes are regular. Maintain it by feeding carefully, cleaning the filter periodically, and doing weekly water changes.',
         images: [
           { src: '/turbidity-low-perfect.png', caption: 'Ideal crystal-clear tank' },
           { src: '/turbidity-low-maintenance.png', caption: 'Maintenance routine that keeps it clear' },
@@ -913,72 +905,9 @@ const _learningSections = [
       },
     ],
   },
-  {
-    id: 'ammonia',
-    title: 'Ammonia Safety (Info Only)',
-    icon: 'ammonia-info',
-    sensorImage: '/sensor-ammonia.png',
-    summary: 'Educational guidance only; no live ammonia sensor reading in FishMaster.',
-    subsections: [
-      {
-        id: 'what-it-does',
-        title: 'What It Does',
-        description: 'Ammonia (NH₃) comes from fish waste, dead plants, and food decay. Even small amounts are toxic to fish—it burns gills, damages kidneys, and causes neurological damage. In a cycled tank, beneficial bacteria convert ammonia → nitrite → nitrate. Measuredppm (parts per million).',
-        images: [
-          { src: '/ammonia-sensor.png', caption: 'Ammonia probe' },
-          { src: '/ammonia-cycle.png', caption: 'Ammonia in the nitrogen cycle' },
-          { src: '/ammonia-source-waste.png', caption: 'Fish waste is the primary ammonia source' },
-          { src: '/ammonia-reading.png', caption: 'Ammonia reading (ppm)' },
-        ],
-      },
-      {
-        id: 'how-to-read',
-        title: 'How to Check It (Manual Test)',
-        description: 'FishMaster currently does not have live ammonia sensor telemetry. Use a manual liquid test kit or strips and log results in your maintenance notes. Target is 0 ppm in established tanks; 0.25 ppm or higher should be treated as urgent.',
-        images: [
-          { src: '/ammonia-reading-zero.png', caption: 'Manual test result: 0 ppm (established tank)' },
-          { src: '/ammonia-reading-low.png', caption: 'Manual test: below 0.25 ppm (monitor closely)' },
-          { src: '/ammonia-reading-high.png', caption: 'Manual test: above 0.5 ppm (urgent action)' },
-          { src: '/ammonia-trend-rising.png', caption: 'Record manual results over time to spot worsening trends' },
-        ],
-      },
-      {
-        id: 'ranges',
-        title: 'Normal Ranges',
-        description: 'Established tank: 0 ppm (all converted by bacteria). Cycling tank: 0–0.5 ppm (still cycling, bacteria still colonizing). Any >0.25 ppm = concerning; >0.5 ppm = emergency (can kill fish in hours).',
-        images: [
-          { src: '/ammonia-range-zero.png', caption: 'Target: 0 ppm' },
-          { src: '/ammonia-range-cycling.png', caption: 'Cycling phase (0–0.5 ppm)' },
-          { src: '/ammonia-range-danger.png', caption: 'Danger zone (>0.25 ppm)' },
-          { src: '/ammonia-toxicity-chart.png', caption: 'How ammonia harms fish by concentration' },
-        ],
-      },
-      {
-        id: 'why-high',
-        title: 'Why Is It High?',
-        description: 'Tank is new and cycling (bacteria not established yet), filter is off or clogged, overfeeding, dead fish/plant decay, water change too large, or too many fish added at once. High ammonia kills fish fast—gills get burned, fish gasp at surface, some die within hours.',
-        images: [
-          { src: '/ammonia-high-new-tank.png', caption: 'New tank cycling—ammonia spike' },
-          { src: '/ammonia-high-filter-off.png', caption: 'Filter power cut = ammonia rises' },
-          { src: '/ammonia-high-overfeeding.png', caption: 'Overfeeding doubles ammonia' },
-          { src: '/ammonia-high-recovery-protocol.png', caption: 'Emergency ammonia reduction steps' },
-        ],
-      },
-      {
-        id: 'why-low',
-        title: 'Why Is It Low (Zero)',
-        description: 'Perfect!Your filter is working, bacteria colonies are established, feeding rate is matched to filter capacity, and maintenance routine is solid. Keep doing what youre doing: regular water changes, dont overfeed, clean filter gently to preserve bacteria.',
-        images: [
-          { src: '/ammonia-zero-stable.png', caption: 'Stable zero ammonia = healthy tank' },
-          { src: '/ammonia-zero-bacteria.png', caption: 'Healthy bacteria colony maintaining zero' },
-          { src: '/ammonia-zero-routine.png', caption: 'Daily maintenance keeping ammonia zero' },
-          { src: '/ammonia-zero-longterm.png', caption: 'Months of zero ammonia = thriving tank' },
-        ],
-      },
-    ],
-  },
+  // Ammonia section removed — FishMaster has no live ammonia sensor.
+  // Users should use manual test kits and log results in their maintenance notes.
 ];
-
 
 const _getLearningProgress = () => {
   const fallback = { viewedSectionIds: [], lastViewedSection: null };
@@ -1012,15 +941,10 @@ export const getLearningSection = async (sectionId) => {
   await new Promise(resolve => setTimeout(resolve, 100));
   const section = _learningSections.find(s => s.id === sectionId);
   if (!section) return null;
-
-  // Mark as viewed
   const progress = _getLearningProgress();
-  if (!progress.viewedSectionIds.includes(sectionId)) {
-    progress.viewedSectionIds.push(sectionId);
-  }
+  if (!progress.viewedSectionIds.includes(sectionId)) progress.viewedSectionIds.push(sectionId);
   progress.lastViewedSection = sectionId;
   _saveLearningProgress(progress);
-
   return section;
 };
 
@@ -1030,7 +954,6 @@ export const getLearningProgress = async () => {
   const totalSections = _learningSections.length;
   const viewedCount = progress.viewedSectionIds.length;
   const completionRate = totalSections === 0 ? 0 : Math.round((viewedCount / totalSections) * 100);
-
   return { ...progress, totalSections, viewedCount, completionRate };
 };
 
@@ -1046,15 +969,10 @@ const _mockFeedingHistory = [
   { id: 8, time: new Date(Date.now() - 56 * 60 * 60 * 1000).toISOString(), portionSize: 'large', status: 'completed', type: 'manual', scheduleName: null },
 ];
 
-// Device API functions (mock-only for presentation)
 export const getDeviceInfo = async () => {
-  // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 300));
-  
-  // Update last sync and uptime dynamically
   _mockDeviceInfo.lastSync = new Date(Date.now() - Math.floor(Math.random() * 5) * 60 * 1000).toISOString();
   _mockDeviceInfo.uptime += 1;
-  
   return { ..._mockDeviceInfo };
 };
 
@@ -1071,11 +989,7 @@ export const getFeedingSchedules = async () => {
 
 export const createFeedingSchedule = async (schedule) => {
   await new Promise(resolve => setTimeout(resolve, 300));
-  const newSchedule = {
-    id: _nextScheduleId++,
-    ...schedule,
-    enabled: schedule.enabled ?? true,
-  };
+  const newSchedule = { id: _nextScheduleId++, ...schedule, enabled: schedule.enabled ?? true };
   _mockFeedingSchedules.push(newSchedule);
   return newSchedule;
 };
@@ -1098,14 +1012,7 @@ export const deleteFeedingSchedule = async (scheduleId) => {
 
 export const triggerManualFeeding = async (portionSize = 'medium') => {
   await new Promise(resolve => setTimeout(resolve, 500));
-  const newEntry = {
-    id: _mockFeedingHistory.length + 1,
-    time: new Date().toISOString(),
-    portionSize,
-    status: 'completed',
-    type: 'manual',
-    scheduleName: null,
-  };
+  const newEntry = { id: _mockFeedingHistory.length + 1, time: new Date().toISOString(), portionSize, status: 'completed', type: 'manual', scheduleName: null };
   _mockFeedingHistory.unshift(newEntry);
   return newEntry;
 };
@@ -1129,7 +1036,6 @@ export const getLearningPaths = async () => {
 
 export const getLessons = async (pathId = null) => {
   await new Promise(resolve => setTimeout(resolve, 120));
-  if (!pathId) return [];
   return [];
 };
 
@@ -1143,10 +1049,23 @@ export const completeLesson = async (lessonId) => {
   return getLearningProgress();
 };
 
-export const getRecommendedLessons = async () => {
-  return [];
-};
+export const getRecommendedLessons = async () => [];
 
 export { apiRequest };
 
-export default { signup, verifyEmail, resendVerificationCode, login, logout, getFishTypes, getOnboardingStatus, completeOnboarding, getCurrentUser, updateProfile, deleteAccount, isAuthenticated, setToken, removeToken, getTanks, getTank, createTank, updateTank, deleteTank, addFishToTank, removeFishFromTank, updateFish, getSensorData, getAlertThresholds, updateAlertThresholds, getDeviceInfo, updateDeviceInfo, getFeedingSchedules, createFeedingSchedule, updateFeedingSchedule, deleteFeedingSchedule, triggerManualFeeding, getFeedingHistory, reconnectDevice, getLearningSections, getLearningSection, getLearningProgress, getLearningSections, getLearningPaths, getLessons, getLesson, completeLesson, getRecommendedLessons, apiRequest };
+export default {
+  signup, verifyEmail, resendVerificationCode, login, logout,
+  getFishTypes, getOnboardingStatus, completeOnboarding,
+  getCurrentUser, updateProfile, deleteAccount,
+  isAuthenticated, setToken, removeToken,
+  getTanks, getTank, createTank, updateTank, deleteTank,
+  addFishToTank, removeFishFromTank, updateFish,
+  getSensorData, getAlertThresholds, updateAlertThresholds,
+  getDeviceInfo, updateDeviceInfo,
+  getFeedingSchedules, createFeedingSchedule, updateFeedingSchedule, deleteFeedingSchedule,
+  triggerManualFeeding, getFeedingHistory, reconnectDevice,
+  getLearningSections, getLearningSection, getLearningProgress,
+  getLearningPaths, getLessons, getLesson, completeLesson, getRecommendedLessons,
+  fetchLatestTemperature, fetchRecentTemperature, useTemperatureStream,
+  apiRequest,
+};

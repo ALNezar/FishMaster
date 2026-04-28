@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { getTanks, getSensorData } from '../../services/api.js';
+import { getTanks, getSensorData, useTemperatureStream } from '../../services/api.js';
 import styles from './Dashboard.module.scss';
-import { FaFish, FaThermometerHalf, FaBell, FaChartLine, FaTint, FaPlus, FaHome, FaCog, FaUtensils, FaWrench } from 'react-icons/fa';
+import { FaFish, FaThermometerHalf, FaBell, FaChartLine, FaTint, FaPlus, FaHome, FaWater, FaUtensils, FaWrench, FaCircle } from 'react-icons/fa';
 import Header from "./header.jsx";
-
 
 /**
  * Dashboard - Main overview page with sidebar layout
@@ -16,6 +15,9 @@ function Dashboard() {
   const [tanks, setTanks] = useState([]);
   const [loadingTanks, setLoadingTanks] = useState(true);
   const [sensorData, setSensorData] = useState(null);
+
+  // Live temperature via SSE
+  const { lastReading: liveTemp, connected: sseConnected } = useTemperatureStream();
 
   useEffect(() => {
     getTanks()
@@ -31,40 +33,64 @@ function Dashboard() {
       .finally(() => setLoadingTanks(false));
   }, []);
 
-  // Calculate totals
+  // Merge live SSE temperature into readings whenever a new event arrives
+  useEffect(() => {
+    if (!liveTemp) return;
+    const value = Number(liveTemp.temperature);
+    setSensorData(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        currentReadings: {
+          ...prev.currentReadings,
+          temperature: {
+            value,
+            unit: '°C',
+            status: value < 22 || value > 28 ? 'warning' : 'optimal',
+            trend: prev.currentReadings?.temperature?.value != null
+              ? value > prev.currentReadings.temperature.value ? 'rising'
+                : value < prev.currentReadings.temperature.value ? 'falling'
+                : 'stable'
+              : 'stable',
+          },
+        },
+      };
+    });
+  }, [liveTemp]);
+
   const totalFish = tanks.reduce((sum, tank) => sum + (tank.fish?.length || 0), 0);
   const readings = sensorData?.currentReadings;
-  
-  // Health score calculation
+
+  // Health score — ammonia removed (no live sensor)
   const getHealthPercent = () => {
     if (!readings) return 0;
     let score = 0;
-    const weights = { ph: 1.5, ammonia: 1.2, temperature: 0.8, turbidity: 0.5 };
+    const weights = { ph: 1.5, temperature: 0.8, turbidity: 0.5 };
     const maxScore = Object.values(weights).reduce((a, b) => a + b, 0);
-    
     if (readings.ph?.value >= 6.8 && readings.ph?.value <= 7.4) score += weights.ph;
-    if (readings.ammonia?.value >= 0 && readings.ammonia?.value <= 0.25) score += weights.ammonia;
     if (readings.temperature?.value >= 24 && readings.temperature?.value <= 26) score += weights.temperature;
     if (readings.turbidity?.value < 3) score += weights.turbidity;
-    
     return Math.round((score / maxScore) * 100);
   };
 
   const healthPercent = getHealthPercent();
 
+  const trendLabel = (trend) =>
+    trend === 'rising' ? '↑ Rising' : trend === 'falling' ? '↓ Falling' : '→ Stable';
+
   return (
     <div className={styles.dashboardContainer}>
       <Header user={user} />
-      
+
       <div className={styles.layout}>
         {/* Main Content */}
         <div className={styles.mainContent}>
-          
+
           {/* Summary Stats Row */}
           <div className={styles.statsRow}>
             <div className={styles.statCard} onClick={() => navigate('/tanks')}>
               <div className={styles.statLabel}>Total Tanks</div>
-              <div className={styles.statValue}>{loadingTanks ? '...' : tanks.length}</div>
+              <div className={styles.statValue}>{loadingTanks ? '…' : tanks.length}</div>
             </div>
             <div className={styles.statCard} onClick={() => navigate('/tanks')}>
               <div className={styles.statLabel}>Total Fish</div>
@@ -80,7 +106,7 @@ function Dashboard() {
             <div className={styles.statCard}>
               <div className={styles.statLabel}>Temperature</div>
               <div className={styles.statValue}>
-                {readings?.temperature?.value?.toFixed(1) || '--'}°C
+                {readings?.temperature?.value?.toFixed(1) ?? '--'}°C
               </div>
             </div>
           </div>
@@ -92,12 +118,12 @@ function Dashboard() {
               <span className={styles.sectionLink} onClick={() => navigate('/tanks')}>View All →</span>
             </div>
             {loadingTanks ? (
-              <div className={styles.emptyState}>Loading tanks...</div>
+              <div className={styles.emptyState}>Loading tanks…</div>
             ) : tanks.length > 0 ? (
               <div className={styles.tankList}>
                 {tanks.map(tank => (
-                  <div 
-                    key={tank.id} 
+                  <div
+                    key={tank.id}
                     className={styles.tankRow}
                     onClick={() => navigate(`/tanks/${tank.id}`)}
                   >
@@ -105,13 +131,13 @@ function Dashboard() {
                     <span className={styles.tankSize}>{tank.sizeLiters}L</span>
                     <div className={styles.tankMetric}>
                       <span className={styles.tankMetricValue}>
-                        {tank.waterParameters?.targetPh?.toFixed(1) || '--'}
+                        {tank.waterParameters?.targetPh?.toFixed(1) ?? '--'}
                       </span>
                       <span className={styles.tankMetricLabel}>pH</span>
                     </div>
                     <div className={styles.tankMetric}>
                       <span className={styles.tankMetricValue}>
-                        {tank.waterParameters?.targetTemperature || '--'}°
+                        {tank.waterParameters?.targetTemperature ?? '--'}°
                       </span>
                       <span className={styles.tankMetricLabel}>Temp</span>
                     </div>
@@ -131,14 +157,23 @@ function Dashboard() {
             )}
           </div>
 
-          {/* Live Readings */}
+          {/* Live Readings — ammonia removed */}
           <div className={styles.card}>
             <div className={styles.cardHeader}>
               <h3><FaThermometerHalf /> Live Readings</h3>
-              <span className={`${styles.badge} ${styles.success}`}>Live</span>
+              {/* SSE connection badge */}
+              <span
+                className={`${styles.badge} ${sseConnected ? styles.success : styles.warning}`}
+                title={sseConnected ? 'Live data connected' : 'Reconnecting…'}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+              >
+                <FaCircle style={{ fontSize: '0.5rem' }} />
+                {sseConnected ? 'Live' : 'Reconnecting…'}
+              </span>
             </div>
             {readings ? (
               <div className={styles.readingsRow}>
+                {/* Temperature — real data via SSE */}
                 <div className={styles.readingCard}>
                   <div className={styles.readingHeader}>
                     <span className={styles.readingLabel}>Temperature</span>
@@ -147,9 +182,11 @@ function Dashboard() {
                   <div className={styles.readingValue}>{readings.temperature?.value?.toFixed(1)}</div>
                   <div className={styles.readingUnit}>°C</div>
                   <div className={`${styles.readingTrend} ${styles[readings.temperature?.trend || 'stable']}`}>
-                    {readings.temperature?.trend === 'rising' ? '↑ Rising' : readings.temperature?.trend === 'falling' ? '↓ Falling' : '→ Stable'}
+                    {trendLabel(readings.temperature?.trend)}
                   </div>
                 </div>
+
+                {/* pH */}
                 <div className={styles.readingCard}>
                   <div className={styles.readingHeader}>
                     <span className={styles.readingLabel}>pH Level</span>
@@ -158,9 +195,11 @@ function Dashboard() {
                   <div className={styles.readingValue}>{readings.ph?.value?.toFixed(1)}</div>
                   <div className={styles.readingUnit}>pH</div>
                   <div className={`${styles.readingTrend} ${styles[readings.ph?.trend || 'stable']}`}>
-                    {readings.ph?.trend === 'rising' ? '↑ Rising' : readings.ph?.trend === 'falling' ? '↓ Falling' : '→ Stable'}
+                    {trendLabel(readings.ph?.trend)}
                   </div>
                 </div>
+
+                {/* Turbidity */}
                 <div className={styles.readingCard}>
                   <div className={styles.readingHeader}>
                     <span className={styles.readingLabel}>Turbidity</span>
@@ -169,18 +208,7 @@ function Dashboard() {
                   <div className={styles.readingValue}>{readings.turbidity?.value?.toFixed(1)}</div>
                   <div className={styles.readingUnit}>NTU</div>
                   <div className={`${styles.readingTrend} ${styles[readings.turbidity?.trend || 'stable']}`}>
-                    {readings.turbidity?.trend === 'rising' ? '↑ Rising' : readings.turbidity?.trend === 'falling' ? '↓ Falling' : '→ Stable'}
-                  </div>
-                </div>
-                <div className={styles.readingCard}>
-                  <div className={styles.readingHeader}>
-                    <span className={styles.readingLabel}>Ammonia</span>
-                    <span className={`${styles.readingStatus} ${styles[readings.ammonia?.status || 'optimal']}`} />
-                  </div>
-                  <div className={styles.readingValue}>{readings.ammonia?.value?.toFixed(2)}</div>
-                  <div className={styles.readingUnit}>ppm</div>
-                  <div className={`${styles.readingTrend} ${styles[readings.ammonia?.trend || 'stable']}`}>
-                    {readings.ammonia?.trend === 'rising' ? '↑ Rising' : readings.ammonia?.trend === 'falling' ? '↓ Falling' : '→ Stable'}
+                    {trendLabel(readings.turbidity?.trend)}
                   </div>
                 </div>
               </div>
@@ -221,8 +249,8 @@ function Dashboard() {
             {tanks.length > 0 ? (
               <div className={styles.recentTanks}>
                 {tanks.slice(0, 2).map(tank => (
-                  <div 
-                    key={tank.id} 
+                  <div
+                    key={tank.id}
                     className={styles.recentTankCard}
                     onClick={() => navigate(`/tanks/${tank.id}`)}
                   >
@@ -236,7 +264,7 @@ function Dashboard() {
             )}
           </div>
 
-          {/* Alerts / Tasks */}
+          {/* Alerts */}
           <div className={styles.card}>
             <div className={styles.cardHeader}>
               <h3><FaBell /> Alerts</h3>

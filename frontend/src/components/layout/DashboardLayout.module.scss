@@ -6,7 +6,7 @@ $primary: #1277b0;
 $primary-dark: #0e5a85;
 
 .layout {
-  min-height: 100vh;
+  min-height: 100dvh;
   background-color: $bg-cream;
   display: flex;
   flex-direction: column;
@@ -19,14 +19,21 @@ $primary-dark: #0e5a85;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
+  width: 100%;
+  padding-top: calc(0.95rem + env(safe-area-inset-top));
+  padding-right: clamp(1rem, 2.2vw, 2rem);
+  padding-bottom: 0.95rem;
+  padding-left: clamp(1rem, 2.2vw, 2rem);
   position: sticky;
-  top: 0;
+  top: env(safe-area-inset-top);
   z-index: 100;
   box-shadow: 0 4px 8px rgba($text-dark, 0.08);
 
   @media (max-width: 600px) {
-    padding: 0.75rem 1rem;
+    padding-top: calc(0.75rem + env(safe-area-inset-top));
+    padding-right: 1rem;
+    padding-bottom: 0.75rem;
+    padding-left: 1rem;
   }
 }
 
@@ -55,7 +62,10 @@ $primary-dark: #0e5a85;
 
 // Navigation Container
 .navContainer {
-  padding: 1rem 2rem 0;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 0.75rem clamp(1rem, 2.2vw, 2rem) 0;
   z-index: 90;
 
   @media (max-width: 768px) {
@@ -118,17 +128,17 @@ $primary-dark: #0e5a85;
 .content {
   position: relative;
   z-index: 1;
-  padding: 1.5rem 2rem 8rem; // Extra bottom padding to clear waves + mobile nav
-  max-width: 1400px;
-  width: 100%;
+  width: min(100%, 1240px);
   margin: 0 auto;
   flex: 1;
+  padding: 1rem clamp(1rem, 2vw, 1.5rem) calc(7.5rem + env(safe-area-inset-bottom)); // Extra bottom padding to clear waves + mobile nav
 
   @media (max-width: 768px) {
-    padding: 1rem 1rem 7rem;
+    width: 100%;
+    padding: 0.85rem 0.85rem calc(7.25rem + env(safe-area-inset-bottom));
   }
 
   @media (max-width: 480px) {
-    padding: 0.75rem 0.75rem 7rem;
+    padding: 0.75rem 0.75rem calc(7.25rem + env(safe-area-inset-bottom));
   }
 }

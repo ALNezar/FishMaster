@@ -20,6 +20,9 @@ $danger: #dc2626;
 
 .analyticsContainer {
   font-family: 'DM Sans', sans-serif;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
   
   h1, h2, h3 {
     font-family: 'Special Elite', cursive;
@@ -35,7 +38,7 @@ $danger: #dc2626;
 .controls {
   display: flex;
   gap: 1.5rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   flex-wrap: wrap;
   align-items: flex-end;
   
@@ -131,15 +134,15 @@ $danger: #dc2626;
 .lastUpdate {
   font-size: 0.875rem;
   color: $text-light;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 // Current Readings
 .currentReadings {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
   
   @media (max-width: 1024px) {
     grid-template-columns: repeat(2, 1fr);
@@ -154,7 +157,7 @@ $danger: #dc2626;
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1.25rem !important;
+  padding: 1.05rem !important;
   border-radius: 16px;
   background: white;
   border: 2px solid rgba($text-dark, 0.1);
@@ -258,7 +261,7 @@ $danger: #dc2626;
 .chartsGrid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: 1.5rem;
+  gap: 1rem;
   
   @media (max-width: 1024px) {
     gap: 1rem;
@@ -267,7 +270,7 @@ $danger: #dc2626;
 
 .summaryCard {
   grid-column: span 4;
-  padding: 1.5rem !important;
+  padding: 1.25rem !important;
   background: white;
   border-radius: 16px;
   border: 2px solid rgba($text-dark, 0.1);
@@ -306,7 +309,7 @@ $danger: #dc2626;
 
 .chartCard {
   grid-column: span 4;
-  padding: 1.5rem !important;
+  padding: 1.25rem !important;
   background: white;
   border-radius: 16px;
   border: 2px solid rgba($text-dark, 0.1);
@@ -338,7 +341,7 @@ $danger: #dc2626;
 
 .wideCard {
   grid-column: span 12;
-  padding: 1.5rem !important;
+  padding: 1.25rem !important;
   background: white;
   border-radius: 16px;
   border: 2px solid rgba($text-dark, 0.1);

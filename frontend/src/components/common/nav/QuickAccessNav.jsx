@@ -2,6 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { FaHome, FaFish, FaChartLine, FaBell, FaBook } from 'react-icons/fa';
 import { MdSensors, MdTimeline, MdHistory, MdNotifications, MdRule } from 'react-icons/md';
 import styles from './QuickAccessNav.module.scss';
+import { haptics } from '../../../utils/haptics';
 
 const navItems = [
   { 
@@ -82,6 +83,7 @@ const QuickAccessNav = () => {
               key={item.path}
               to={item.path}
               className={`${styles.tabButton} ${isActive ? styles.activeTab : ''}`}
+              onClick={() => haptics.tap(8)}
             >
               <item.icon className={styles.tabIcon} />
               <span className={styles.tabLabel}>{item.label}</span>

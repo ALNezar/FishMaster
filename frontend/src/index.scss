@@ -40,13 +40,29 @@
   scrollbar-color: #ffec7d #101010; 
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 /* Global Mobile-Friendly Styles */
 html {
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+}
+
 body {
+  margin: 0;
+  min-height: 100dvh;
+  background: #f5f1e3;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;

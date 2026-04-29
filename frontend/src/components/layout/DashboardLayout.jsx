@@ -5,6 +5,8 @@ import Wave from 'react-wavify';
 import QuickAccessNav from '../common/nav/QuickAccessNav';
 import ProfileAvatar from '../common/profile/ProfileAvatar';
 import { isAuthenticated, getCurrentUser, logout } from '../../api';
+import usePullToRefresh from '../../hooks/usePullToRefresh';
+import { haptics } from '../../utils/haptics';
 
 import styles from './DashboardLayout.module.scss';
 
@@ -52,6 +54,37 @@ export default function DashboardLayout() {
     };
   }, [navigate]);
 
+  // Install prompt handling for PWA 'Add to Home Screen' quick CTA
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    const onBeforeInstall = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    const onAppInstalled = () => {
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('beforeinstallprompt', onBeforeInstall);
+    window.addEventListener('appinstalled', onAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onBeforeInstall);
+      window.removeEventListener('appinstalled', onAppInstalled);
+    };
+  }, []);
+
+  // Quick pull-to-refresh: reload page data when user pulls down from top
+  usePullToRefresh({
+    onRefresh: () => {
+      haptics.notification();
+      // soft refresh: navigate current route to force data reloads
+      window.location.reload();
+    },
+  });
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -66,7 +99,29 @@ export default function DashboardLayout() {
       {/* Header */}
       <header className={styles.topHeader}>
         <h1 className={styles.logo}>FishMaster</h1>
-        <ProfileAvatar user={user} />
+        <div className={styles.headerRight}>
+          {deferredPrompt && (
+            <button
+              className={styles.installButton}
+              onClick={async () => {
+                try {
+                  haptics.tap();
+                  // @ts-ignore deferredPrompt typing
+                  await deferredPrompt.prompt();
+                  // @ts-ignore
+                  const choice = await deferredPrompt.userChoice;
+                  setDeferredPrompt(null);
+                  console.log('A2HS choice', choice);
+                } catch (err) {
+                  console.warn('Install prompt failed', err);
+                }
+              }}
+            >
+              Install
+            </button>
+          )}
+          <ProfileAvatar user={user} />
+        </div>
       </header>
 
       {/* Quick Access Navigation */}

@@ -14,7 +14,6 @@ export const removeToken = (): void => {
   localStorage.removeItem(TOKEN_KEY);
 };
 
-export const isAuthenticated = (devMode: boolean): boolean => {
-  if (devMode) return true;
+export const isAuthenticated = (): boolean => {
   return !!getToken();
 };

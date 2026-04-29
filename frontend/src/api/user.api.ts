@@ -1,4 +1,5 @@
 import { User } from './types';
+import { apiRequest } from './client';
 
 export const getCurrentUser = async (): Promise<User> => {
   return apiRequest('/users/me');

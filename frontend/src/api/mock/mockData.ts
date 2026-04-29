@@ -65,6 +65,13 @@ export let mockTanks: Tank[] = [
 
 export let nextFishId = 4;
 
+// Return and increment the next fish id in a safe way for consumers.
+export function consumeNextFishId() {
+  const id = nextFishId;
+  nextFishId += 1;
+  return id;
+}
+
 // Mock alert thresholds
 export const defaultAlertThresholds: AlertThresholds = {
   globalAlertsEnabled: true,

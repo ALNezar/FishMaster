@@ -5,6 +5,7 @@ import {
   mockUserPassword,
   mockTanks,
   nextFishId,
+  consumeNextFishId,
   mockAlertThresholds,
   defaultAlertThresholds,
   mockFeedingSchedules,
@@ -199,7 +200,7 @@ export const getMockResponse = (endpoint: string, options: any = {}): any => {
       }
 
       const newFish = {
-        id: nextFishId++,
+        id: consumeNextFishId(),
         name: fishData.name || 'New Fish',
         fishType: fishType || {
           name: 'Unknown',
@@ -412,6 +413,33 @@ export const getMockResponse = (endpoint: string, options: any = {}): any => {
     } catch (e) {
       return { error: 'Invalid threshold data' };
     }
+  }
+
+  // Telemetry - latest temperature
+  if (endpoint.includes('/api/telemetry/temperature/latest') && method === 'GET') {
+    updateLiveState();
+    return {
+      tankId: '1',
+      temperature: liveSensorState.temperature,
+      serverTimestamp: new Date().toISOString(),
+    };
+  }
+
+  // Telemetry - recent temperature readings
+  if (endpoint.includes('/api/telemetry/temperature/recent') && method === 'GET') {
+    updateLiveState();
+    const limitMatch = endpoint.match(/limit=(\d+)/);
+    const limit = limitMatch ? parseInt(limitMatch[1]) : 50;
+    const readings = [];
+    const now = Date.now();
+    for (let i = limit - 1; i >= 0; i--) {
+      readings.push({
+        tankId: '1',
+        temperature: liveSensorState.temperature + (Math.random() - 0.5) * 2,
+        serverTimestamp: new Date(now - i * 60000).toISOString(),
+      });
+    }
+    return readings;
   }
 
   return null;

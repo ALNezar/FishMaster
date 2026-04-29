@@ -36,14 +36,14 @@ const normalizeFishType = (fishType: any): FishType => {
   }
 
   return {
-    id: fishType.id || 0,
+    id: fishType.id ?? 0,
     name: fishType.name || 'Unknown',
     careLevel: fishType.careLevel || 'Easy',
-    phMin: toNumber(fishType.phMin || fishType.minPh),
-    phMax: toNumber(fishType.phMax || fishType.maxPh),
-    temperatureMin: toNumber(fishType.temperatureMin || fishType.minTemp),
-    temperatureMax: toNumber(fishType.temperatureMax || fishType.maxTemp),
-    minTankSize: toNumber(fishType.minTankSize) || estimatedMinTankSize,
+    phMin: toNumber(fishType.phMin ?? fishType.minPh),
+    phMax: toNumber(fishType.phMax ?? fishType.maxPh),
+    temperatureMin: toNumber(fishType.temperatureMin ?? fishType.minTemp),
+    temperatureMax: toNumber(fishType.temperatureMax ?? fishType.maxTemp),
+    minTankSize: toNumber(fishType.minTankSize ?? estimatedMinTankSize),
     description: fishType.description || '',
   };
 };

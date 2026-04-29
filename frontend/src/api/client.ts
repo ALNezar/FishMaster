@@ -1,22 +1,14 @@
 // Core API client with fetch + fallback logic
 
-import { API_BASE_URL, DEV_MODE } from './config';
+import { API_BASE_URL } from './config';
 import { createHeaders } from './utils/headers';
 import { normalizeResponse } from './utils/normalize';
 import { ApiRequestOptions } from '../types';
-import { getMockResponse } from './mock/mockHandlers';
 
 export const apiRequest = async (
   endpoint: string,
   options: ApiRequestOptions = {}
 ): Promise<any> => {
-  // Use mock in DEV_MODE
-  if (DEV_MODE) {
-    const mock = getMockResponse(endpoint, options);
-    if (mock !== null) return mock;
-    return {};
-  }
-
   const url = `${API_BASE_URL}${endpoint}`;
   const headers = createHeaders(
     options.includeAuth !== false,
@@ -34,20 +26,6 @@ export const apiRequest = async (
     if (response.status === 204) return null;
 
     if (!response.ok) {
-      // Try mock fallback on error
-      console.warn(
-        `Backend returned ${response.status} for ${endpoint}. Attempting mock fallback...`
-      );
-      try {
-        const fallback = getMockResponse(endpoint, config as any);
-        if (fallback !== null && (!fallback.error || fallback.error === undefined)) {
-          console.warn(`✓ Using mock fallback for ${endpoint}`);
-          return fallback;
-        }
-      } catch (e) {
-        console.error('Mock fallback failed:', e);
-      }
-
       // Extract error message
       const contentType = response.headers.get('content-type');
       const rawText = await response.text();
@@ -99,20 +77,6 @@ export const apiRequest = async (
     return normalizeResponse(data, endpoint);
   } catch (error) {
     console.error(`API Error [${endpoint}]:`, error);
-
-    // Try mock fallback on network error
-    try {
-      const fallback = getMockResponse(endpoint, config as any);
-      if (fallback !== null) {
-        console.warn(
-          `Network error for ${endpoint}. Falling back to mock response.`
-        );
-        return fallback;
-      }
-    } catch (e) {
-      console.error('Mock fallback failed:', e);
-    }
-
     throw error;
   }
 };

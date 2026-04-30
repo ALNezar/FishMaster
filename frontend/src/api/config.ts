@@ -1,6 +1,6 @@
 // Configuration for API client
 
-export const DEV_MODE = true; // Toggle to true for local development
+export const DEV_MODE = import.meta.env.DEV;
 
 export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';

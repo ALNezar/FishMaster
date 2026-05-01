@@ -87,9 +87,9 @@ function LandingPage() {
               />
             </div>
             <p className="slogan-secondary">
-              Monitor your aquarium <i><mark>easily</mark></i>, <i><mark>anytime</mark></i>, <i><mark>anywhere</mark></i>.
+              Aquarium monitoring and control system using ESP32, Spring Boot, and React.
             </p>
-            <Button className="cta-button" onClick={handleSignup}>Get Started!</Button>
+            <Button className="cta-button" onClick={handleSignup}>Create Account</Button>
             <p className="login-link-container">
               <button onClick={handleLogin} className="login-link" type="button">
                 Already have an account? <b className="login-link-login">Log in</b>
@@ -101,15 +101,19 @@ function LandingPage() {
         {/* WHAT IS FISHMASTER */}
         <LazySection id="about" minHeight="300px">
           <Card className="info-card">
-            <h2 className="section-title">What is FishMaster?</h2>
+            <h2 className="section-title">About the Project</h2>
             <p className="section-text">
-              Taking care of fish can be tricky, especially if you're not an expert. Water conditions, temperature, and tank health need constant attention, and it's easy for problems to sneak up.
+              FishMaster is a Final Year Project at UTHM built to monitor aquarium water conditions and control feeding.
             </p>
             <p className="section-text">
-              Fishmaster helps by monitoring your aquarium in real-time and sending alerts when something needs attention. It makes sure your fish stay healthy, and you don't have to worry about unexpected issues.
+              The embedded layer runs on ESP32 and continues working without internet. The web layer provides remote monitoring, history, and control when connectivity is available.
             </p>
             <p className="section-text">
-              Track water parameters, monitor fish health, get feeding reminders, and receive personalized care recommendations.
+              The goal is to reduce manual checking and keep routine aquarium care consistent.
+            </p>
+            <h2 className="section-title">Problem Motivation</h2>
+            <p className="section-text">
+              Water conditions can drift gradually and become unsafe before visible symptoms appear. FishMaster was built to measure key parameters continuously and report unsafe conditions early.
             </p>
           </Card>
         </LazySection>
@@ -117,29 +121,32 @@ function LandingPage() {
         {/* FEATURES */}
         <LazySection id="features" minHeight="400px">
           <Card className="info-card">
-            <h2 className="section-title">✨ Key Features</h2>
+            <h2 className="section-title">Features</h2>
             <div className="features-grid">
               <FeatureItem
                 icon={<FaWater style={iconStyle} />}
                 title="Water Monitoring"
-                description="Track pH, temperature, ammonia, nitrites, and more with smart alerts."
+                description="Tracks temperature, pH, and turbidity. Values are shown locally and on the dashboard."
               />
               <FeatureItem
                 icon={<FaFishFins style={iconStyle} />}
-                title="Fish Profiles"
-                description="Keep detailed records of each fish with health history and care notes."
+                title="Automatic Feeding"
+                description="An SG90 servo dispenses feed on schedule. Feeding can be paused when conditions are unsafe."
               />
               <FeatureItem
                 icon={<FaRegBell style={iconStyle} />}
-                title="Smart Reminders"
-                description="Never miss a feeding, water change, or maintenance task again."
+                title="Alerts"
+                description="Flags unsafe water conditions so action can be taken before fish health is affected."
               />
               <FeatureItem
                 icon={<FaChartLine style={iconStyle} />}
-                title="Analytics"
-                description="Visualize trends and patterns to optimize your aquarium care routine."
+                title="Dashboard"
+                description="Provides live readings, historical charts, feeding logs, tank configuration, and multi-tank support."
               />
             </div>
+            <p className="section-text">
+              Offline mode is supported: sensing, feeding, and local LCD display continue without cloud connectivity.
+            </p>
           </Card>
         </LazySection>
 
@@ -148,26 +155,41 @@ function LandingPage() {
           <Card className="info-card">
             <h2 className="section-title">
               <FaRocket style={{ color: '#ff6b6b', marginRight: '10px' }} aria-hidden="true" />
-              How It Works
+              System Overview
             </h2>
             <div className="steps-container">
-              <StepItem number="1" title="Create Your Account" description="Sign up in seconds and verify your email to get started." />
-              <StepItem number="2" title="Set Up Your Tanks" description="Add your aquariums with size, type, and equipment details." />
-              <StepItem number="3" title="Add Your Fish" description="Create profiles for each fish with species and care requirements." />
-              <StepItem number="4" title="Start Tracking!" description="Log water parameters, set reminders, and watch your fish thrive." />
+              <StepItem number="1" title="Offline Layer (ESP32)" description="Reads sensors, controls the feeder, and updates the local LCD independently of internet access." />
+              <StepItem number="2" title="Telemetry Uplink" description="When Wi-Fi is available, ESP32 publishes readings through MQTT for backend processing and storage." />
+              <StepItem number="3" title="Cloud Processing" description="Spring Boot handles device data, persists records in PostgreSQL, and broadcasts updates via WebSocket." />
+              <StepItem number="4" title="Remote Control" description="User commands from the React dashboard are sent back through MQTT and executed on ESP32." />
             </div>
           </Card>
         </LazySection>
 
-        {/* FINAL CTA */}
+        {/* TECH STACK */}
         <LazySection id="get-started" minHeight="250px">
-          <Card className="info-card cta-card">
-            <h2 className="section-title">Ready to Dive In? 🌊</h2>
+          <Card className="info-card">
+            <h2 className="section-title">Tech Stack</h2>
+            <p className="section-text"><strong>Hardware:</strong> ESP32 DevKit, pH sensor, DS18B20, turbidity sensor, 2.8" touch LCD, SG90 servo motor.</p>
+            <p className="section-text"><strong>Backend:</strong> Java, Spring Boot, REST API, MQTT, WebSocket.</p>
+            <p className="section-text"><strong>Frontend:</strong> React, JavaScript.</p>
+            <p className="section-text"><strong>Database:</strong> PostgreSQL.</p>
+            <p className="section-text"><strong>Cloud:</strong> HiveMQ, Railway.</p>
+
+            <h2 className="section-title">Cloud Architecture</h2>
+            <p className="section-text">Data flow: ESP32 publishes sensor data via MQTT, HiveMQ routes messages, Spring Boot processes and stores records, and the React dashboard renders real-time updates.</p>
+            <p className="section-text">Control flow: users send commands from the dashboard, backend publishes commands through MQTT, and ESP32 executes them.</p>
+
+            <h2 className="section-title">Progress</h2>
+            <p className="section-text">Sensor integration, backend API, React dashboard, MQTT communication, servo feeding, offline/online switching, and multi-tank support are implemented.</p>
+
+            <h2 className="section-title">Demo</h2>
             <p className="section-text">
-              Join thousands of aquarium enthusiasts who trust FishMaster to keep their aquatic friends happy and healthy.
+              Development version (some features are limited):{' '}
+              <a href="https://fishmaster.up.railway.app/" target="_blank" rel="noopener noreferrer">https://fishmaster.up.railway.app/</a>
             </p>
             <Button className="cta-button" onClick={handleSignup}>
-              Start Your Free Account
+              Open Dashboard Access
             </Button>
           </Card>
         </LazySection>
@@ -177,29 +199,19 @@ function LandingPage() {
       <LazySection id="contact" minHeight="550px">
         <Card className="info-card contact-section">
           <h2 className="section-title">
-            Contact Me <BiSolidWinkSmile style={iconStyle} aria-hidden="true" />
+            Contact <BiSolidWinkSmile style={iconStyle} aria-hidden="true" />
           </h2>
           <p className="section-text">
-            Have questions, suggestions, or just want to say hi?
-          </p>
-          <p className="section-text">
-            I'm the one-person team behind Fishmaster. I'd love to hear from you :D !
+            Built by Abdalla Elshiekh.
           </p>
 
           <div className="contact-info">
             <p className="section-text">
-              <strong>Email:</strong> <a href="mailto:al@fishmaster.app">al@fishmaster.app</a>
+              <strong>Email:</strong> <a href="mailto:abdallanezaree@gmail.com">abdallanezaree@gmail.com</a>
             </p>
             <p className="section-text">
-              <strong>Phone:</strong> <a href="tel:+15551234567">+1 (555) 123-4567</a>
-            </p>
-            <p className="section-text">
-              <strong>Follow me:</strong>{' '}
-              <a href="https://www.linkedin.com/in/abdalla-nezar-elshiekh" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-              {' | '}
-              <a href="https://twitter.com/fishmaster" target="_blank" rel="noopener noreferrer">Twitter</a>
-              {' | '}
-              <a href="https://instagram.com/AlNezaree" target="_blank" rel="noopener noreferrer">Instagram</a>
+              <strong>GitHub:</strong>{' '}
+              <a href="https://github.com/ALNezar" target="_blank" rel="noopener noreferrer">github.com/ALNezar</a>
             </p>
           </div>
 

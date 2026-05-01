@@ -6,6 +6,8 @@
   max-width: 95%;
   margin: 0 auto;
   padding-top: 40px;
+  padding-left: 12px;
+  padding-right: 12px;
 }
 
 /* Each section is now a Card component */
@@ -49,7 +51,7 @@
 }
 
 .logo {
-  max-width: 666px;
+  max-width: 520px;
   width: 100%;
   height: auto;
   -webkit-user-select: none;
@@ -64,13 +66,14 @@
   font-weight: bold;
   font-family: 'Special Elite', cursive;
   margin-bottom: 30px;
+  line-height: 1.35;
 }
 
 /* CTA */
 .cta-button {
   background-color: #d4af37;
   color: #000;
-  font-size: 1.3em;
+  font-size: clamp(1rem, 3.8vw, 1.3rem);
   font-weight: bold;
 
   padding: 15px 50px;
@@ -98,12 +101,15 @@
     border: none;
     padding: 0;
     font-size: 1rem;
-    color: #000000; 
+    color: #000000;
+    line-height: 1.45;
+    max-width: 100%;
+    white-space: normal;
 
     b.login-link-login {
-      font-size:20px;
+      font-size: 20px;
       font-weight: 700;
-      color: #2c8fff; 
+      color: #2c8fff;
       transition: color 0.2s ease;
       text-decoration: none;
       cursor: pointer;
@@ -129,6 +135,7 @@
 
 .section-title {
   font-family: 'Special Elite', cursive;
+  line-height: 1.25;
   font-size: 2rem;
   color: #333;
   margin-bottom: 20px;
@@ -140,6 +147,7 @@
   color: #555;
   line-height: 1.8;
   max-width: 700px;
+  overflow-wrap: anywhere;
   margin: 0 auto 15px;
 }
 
@@ -242,26 +250,122 @@
   background: linear-gradient(135deg, #f5efd3 0%, #e8e0c0 100%);
   border: 2px solid #d4af37;
 }
+@media (max-width: 900px) {
+  .landing-container {
+    max-width: 100%;
+  }
 
-/* RESPONSIVE */
+  .hero-card,
+  .info-card {
+    padding: 28px 20px;
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 18px;
+  }
+
+  .steps-container {
+    gap: 16px;
+  }
+}
+
 @media (max-width: 600px) {
   .section-title {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
   }
   
   .section-text {
     font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .landing-container {
+    padding-top: 18px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .hero-card,
+  .info-card {
+    padding: 22px 16px;
+    margin-bottom: 20px;
+    border-radius: 14px;
+  }
+
+  .logo-area {
+    margin: 18px 0 10px;
+  }
+
+  .logo {
+    max-width: 240px;
+  }
+
+  .slogan-secondary {
+    font-size: 1.15rem;
+    margin-bottom: 20px;
+  }
+
+  .cta-button {
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 1rem;
+  }
+
+  .login-link-container {
+    margin-top: 14px;
+  }
+
+  .login-link-container .login-link {
+    font-size: 0.95rem;
+  }
+
+  .login-link-container .login-link b.login-link-login {
+    font-size: 1.05rem;
   }
   
   .features-grid {
     grid-template-columns: 1fr;
+    gap: 14px;
   }
   
   .steps-container {
     flex-direction: column;
     align-items: center;
+    gap: 14px;
   }
   
+  .step-item {
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .landing-container {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .hero-card,
+  .info-card {
+    padding: 18px 14px;
+  }
+
+  .section-title {
+    font-size: 1.2rem;
+  }
+
+  .slogan-secondary {
+    font-size: 1rem;
+  }
+
+  .section-text,
+  .login-link-container .login-link {
+    font-size: 0.92rem;
+  }
+
   .step-item {
     max-width: 100%;
   }

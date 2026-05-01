@@ -19,7 +19,9 @@
     gap: 10px;
     color: #0077b6;
     justify-content: center;
-    
+    line-height: 1.25;
+    flex-wrap: wrap;
+    text-align: center;
   }
 
   .section-text {
@@ -27,6 +29,7 @@
     color: #333333;
     line-height: 1.6;
     margin-bottom: 15px;
+    overflow-wrap: anywhere;
 
     a {
       color: #0077b6;
@@ -51,19 +54,20 @@
 
     .form-input,
     .form-textarea {
-      width: 89%;
+      width: 100%;
+      box-sizing: border-box;
       padding: 12px 15px;
       border: 1px solid #cccccc;
       border-radius: 8px;
       font-size: 1rem;
       transition: border-color 0.2s, box-shadow 0.2s;
       animation: pencilMorph 9s ease-in-out infinite;
+
       &:focus {
         border-color: #0077b6;
         box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.2);
         outline: none;
       }
-      
     }
 
     .form-textarea {
@@ -96,16 +100,56 @@
 
 // Responsive tweaks
 @media (max-width: 650px) {
+  .contact-section {
+    padding: 32px 12px;
+  }
+
   .info-card {
-    padding: 30px 20px;
+    padding: 26px 16px;
   }
 
   .section-title {
-    font-size: 1.7rem;
+    font-size: 1.45rem;
   }
 
   .section-text {
     font-size: 0.95rem;
+  }
+
+  .contact-form {
+    .submit-button {
+      align-self: stretch;
+      width: 100%;
+      text-align: center;
+    }
+  }
+}
+
+@media (max-width: 380px) {
+  .contact-section {
+    padding: 24px 8px;
+  }
+
+  .info-card {
+    padding: 20px 14px;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+  }
+
+  .section-text {
+    font-size: 0.9rem;
+  }
+
+  .contact-form {
+    gap: 12px;
+
+    .form-input,
+    .form-textarea,
+    .submit-button {
+      font-size: 0.95rem;
+    }
   }
 }
 

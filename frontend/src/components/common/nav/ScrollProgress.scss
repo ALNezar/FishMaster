@@ -11,6 +11,29 @@
   align-items: center;
   gap: 16px;
   animation: slideDownSmooth 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+  flex-wrap: wrap;
+  overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+  .scroll-progress {
+    padding: 10px 8px;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .scroll-progress {
+    padding: 8px 6px;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 420px) {
+  .scroll-progress {
+    padding: 6px 4px;
+    gap: 6px;
+  }
 }
 
 @keyframes slideDownSmooth {
@@ -21,13 +44,28 @@
 .scroll-progress__nav {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 100%;
+}
+
+@media (max-width: 600px) {
+  .scroll-progress__nav {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 420px) {
+  .scroll-progress__nav {
+    gap: 6px;
+  }
 }
 
 /* Pencil-style button */
 .scroll-progress__nav-btn {
   font-family: 'Special Elite', cursive;
-  font-size: 14px;
-  padding: 8px 20px;
+  font-size: clamp(12px, 2.5vw, 14px);
+  padding: clamp(6px, 1vw, 8px) clamp(14px, 3vw, 20px);
   background: white;
   color: #000;
   font-weight: 600;
@@ -37,6 +75,16 @@
   border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
   animation: pencilMorph 6s ease-in-out infinite alternate;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 420px) {
+  .scroll-progress__nav-btn {
+    font-size: 11px;
+    padding: 5px 12px;
+    border-width: 1.5px;
+  }
 }
 
 /* Secondary sketch line */

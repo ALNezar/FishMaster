@@ -17,17 +17,12 @@ import InfoTooltip from '../../components/common/InfoTooltip/InfoTooltip';
 import styles from './TrendsPage.module.scss';
 import {
   FaChartLine,
-  FaArrowUp,
-  FaArrowDown,
-  FaMinus,
   FaThermometerHalf,
   FaTint,
   FaWater,
-  FaLightbulb,
-  FaCircle,
+  FaWifi,
 } from 'react-icons/fa';
 
-// Register Chart.js
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -39,10 +34,6 @@ ChartJS.register(
   Filler
 );
 
-/**
- * Trends Page — parameter trends over time.
- * Temperature is fed by real backend data; pH and turbidity use mock until those sensors ship.
- */
 function TrendsPage() {
   const [tanks, setTanks] = useState([]);
   const [selectedTank, setSelectedTank] = useState(null);
@@ -50,8 +41,8 @@ function TrendsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedMetric, setSelectedMetric] = useState('temperature');
   const [timeRange, setTimeRange] = useState('30d');
+  const [fillsVisible, setFillsVisible] = useState(false);
 
-  // Live SSE — append new temperature points to the chart in real time
   const { lastReading: liveTemp, connected: sseConnected } = useTemperatureStream();
 
   useEffect(() => {
@@ -73,9 +64,11 @@ function TrendsPage() {
 
   const loadTrendData = async () => {
     setLoading(true);
+    setFillsVisible(false);
     try {
       const data = await getSensorData(selectedTank, timeRange);
       setTrendData(data);
+      setTimeout(() => setFillsVisible(true), 120);
     } catch (err) {
       console.error('Failed to load trend data:', err);
     } finally {
@@ -83,7 +76,6 @@ function TrendsPage() {
     }
   };
 
-  // Append live SSE readings to the temperature series
   useEffect(() => {
     if (!liveTemp) return;
     const value = Number(liveTemp.temperature);
@@ -115,15 +107,73 @@ function TrendsPage() {
     return { direction: change > 0 ? 'rising' : 'falling', change: Math.abs(change) };
   };
 
-  const getTrendIcon = (direction) => {
-    switch (direction) {
-      case 'rising':  return <FaArrowUp className={styles.trendUp} />;
-      case 'falling': return <FaArrowDown className={styles.trendDown} />;
-      default:        return <FaMinus className={styles.trendStable} />;
-    }
+  /**
+   * Returns 0–100 representing how stressed/full a reading is
+   * relative to its safe range.
+   */
+  const getFillPercent = (key, values) => {
+    if (!values || values.length === 0) return 0;
+    const current = values[values.length - 1];
+    const ranges = {
+      temperature: { min: 22, max: 28 },
+      ph:          { min: 6.5, max: 8.0 },
+      turbidity:   { min: 0,   max: 8 },
+    };
+    const { min, max } = ranges[key] || { min: 0, max: 100 };
+    return Math.min(100, Math.max(0, Math.round(((current - min) / (max - min)) * 100)));
   };
 
-  // Ammonia removed — no live sensor hardware
+  /**
+   * Rule-based recommendation — built from calculateTrend, no AI.
+   */
+  const buildRecommendation = () => {
+    if (!trendData) return null;
+
+    const tempTrend = calculateTrend(trendData.temperature?.values);
+    const phTrend   = calculateTrend(trendData.ph?.values);
+    const turbTrend = calculateTrend(trendData.turbidity?.values);
+
+    const issues = [];
+    const good   = [];
+
+    if (turbTrend.direction === 'rising')
+      issues.push(`turbidity is climbing ${turbTrend.change}% — check your filter and cut back on feeding`);
+    else
+      good.push('water clarity looks great');
+
+    if (phTrend.direction === 'falling')
+      issues.push('pH is drifting down — keep an eye on your substrate');
+    else if (phTrend.direction === 'rising')
+      issues.push(`pH is creeping up ${phTrend.change}% — check your tap water`);
+    else
+      good.push('pH is holding steady');
+
+    if (tempTrend.direction === 'rising')
+      issues.push(`temperature is trending up ${tempTrend.change}% — check your heater settings`);
+    else if (tempTrend.direction === 'falling')
+      issues.push(`temperature is dropping ${tempTrend.change}% — make sure your heater is on`);
+    else
+      good.push('temperature is stable');
+
+    if (issues.length === 0) {
+      return `Everything looks healthy — ${good.join(' and ')}. Your tank is in great shape. WDYT?`;
+    }
+
+    const issueStr = issues.length === 1
+      ? issues[0]
+      : issues.slice(0, -1).join(', ') + ' and ' + issues[issues.length - 1];
+
+    const goodStr = good.length > 0 ? ` ${good.join(' and ')} though.` : '';
+
+    return `Heads up — ${issueStr}.${goodStr} WDYT?`;
+  };
+
+  const getTrendLabel = (trend) => {
+    if (trend.direction === 'stable') return 'Stable';
+    if (trend.direction === 'rising') return `↑ ${trend.change}%`;
+    return `↓ ${trend.change}%`;
+  };
+
   const metrics = [
     {
       key: 'temperature',
@@ -131,12 +181,14 @@ function TrendsPage() {
       unit: '°C',
       icon: <FaThermometerHalf />,
       color: '#dc2626',
+      bgColor: 'rgba(220,38,38,0.12)',
+      textColor: '#3d1a1a',
+      statusColor: '#dc2626',
       optimal: '24–26°C',
       whatIsIt: 'How warm or cold your water is.',
       whyItMatters: 'Fish are cold-blooded. If water is too hot or cold, they get stressed or sick.',
       ideal: '24–26°C (75–79°F)',
       danger: 'Below 22°C or above 28°C',
-      learnMoreUrl: null,
     },
     {
       key: 'ph',
@@ -144,25 +196,29 @@ function TrendsPage() {
       unit: '',
       icon: <FaTint />,
       color: '#16a34a',
+      bgColor: 'rgba(22,163,74,0.12)',
+      textColor: '#0f2d1a',
+      statusColor: '#15803d',
       optimal: '6.8–7.4',
       whatIsIt: 'How acidic or alkaline your water is. 7 = neutral.',
-      whyItMatters: 'Wrong pH hurts fish gills and skin. Each fish likes a specific range.',
+      whyItMatters: 'Wrong pH hurts fish gills and skin.',
       ideal: '6.8–7.4 for most fish',
       danger: 'Below 6.5 or above 8.0',
-      learnMoreUrl: null,
     },
     {
       key: 'turbidity',
       label: 'Turbidity',
       unit: 'NTU',
       icon: <FaWater />,
-      color: '#1277b0',
+      color: '#ca8a04',
+      bgColor: 'rgba(202,138,4,0.12)',
+      textColor: '#2d2000',
+      statusColor: '#a16207',
       optimal: '< 3',
       whatIsIt: 'How cloudy or clear your water looks.',
-      whyItMatters: 'Cloudy water = bacteria or dirt. Fish need clean, clear water to thrive.',
+      whyItMatters: 'Cloudy water = bacteria or dirt.',
       ideal: 'Under 3 NTU (crystal clear)',
       danger: 'Above 5 NTU — check your filter!',
-      learnMoreUrl: null,
     },
   ];
 
@@ -238,37 +294,8 @@ function TrendsPage() {
     },
   };
 
-  const generateInsights = () => {
-    if (!trendData) return [];
-    const insights = [];
-
-    const tempTrend = calculateTrend(trendData.temperature?.values);
-    if (tempTrend.direction === 'stable') {
-      insights.push({ type: 'success', icon: '✅', text: 'Temperature has remained stable within optimal range for the analysis period.' });
-    } else if (tempTrend.direction === 'rising') {
-      insights.push({ type: 'warning', icon: '⚠️', text: `Temperature shows an upward trend of ${tempTrend.change}%. Monitor your heater settings.` });
-    } else {
-      insights.push({ type: 'warning', icon: '⚠️', text: `Temperature is trending down by ${tempTrend.change}%. Check your heater is on and working.` });
-    }
-
-    const phTrend = calculateTrend(trendData.ph?.values);
-    if (phTrend.direction === 'falling') {
-      insights.push({ type: 'warning', icon: '⚠️', text: 'pH shows a slight downward trend. Consider checking your substrate and water source.' });
-    } else {
-      insights.push({ type: 'info', icon: '💧', text: 'pH levels are maintaining within acceptable parameters.' });
-    }
-
-    const turbTrend = calculateTrend(trendData.turbidity?.values);
-    if (turbTrend.direction === 'rising') {
-      insights.push({ type: 'warning', icon: '⚠️', text: `Turbidity is creeping up by ${turbTrend.change}%. Check your filter and avoid overfeeding.` });
-    } else {
-      insights.push({ type: 'success', icon: '✅', text: 'Water clarity is good — filter and feeding routine are on track.' });
-    }
-
-    insights.push({ type: 'info', icon: '📅', text: 'Based on current trends, next water change recommended in 3–4 days.' });
-
-    return insights;
-  };
+  const activeMetric = metrics.find(m => m.key === selectedMetric);
+  const recommendation = buildRecommendation();
 
   if (loading && !trendData) {
     return (
@@ -281,26 +308,23 @@ function TrendsPage() {
     );
   }
 
-  const activeMetric = metrics.find(m => m.key === selectedMetric);
-
   return (
     <div className={styles.trendsPage}>
+
+      {/* Header */}
       <header className={styles.header}>
         <div>
           <h1><FaChartLine /> Trends & Analysis</h1>
           <p>Track parameter changes over time and understand long-term patterns</p>
         </div>
-        {/* SSE live indicator */}
-        <div
-          className={styles.liveIndicator}
-          title={sseConnected ? 'Live temperature connected' : 'Reconnecting…'}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem' }}
-        >
-          <FaCircle style={{ color: sseConnected ? '#16a34a' : '#ca8a04', fontSize: '0.5rem' }} />
-          {sseConnected ? 'Live' : 'Reconnecting…'}
+        <div className={`${styles.liveIndicator} ${sseConnected ? styles.liveConnected : styles.liveReconnecting}`}>
+          <span className={styles.liveDot} />
+          <FaWifi className={styles.liveWifiIcon} />
+          {sseConnected ? 'Live' : 'Reconnecting'}
         </div>
       </header>
 
+      {/* Controls */}
       <div className={styles.controls}>
         <div className={styles.controlGroup}>
           <label>Tank</label>
@@ -314,7 +338,6 @@ function TrendsPage() {
             ))}
           </select>
         </div>
-
         <div className={styles.controlGroup}>
           <label>Time Period</label>
           <select
@@ -328,96 +351,139 @@ function TrendsPage() {
         </div>
       </div>
 
-      {/* Trend Summary Cards — 3 metrics, no ammonia */}
-      <div className={styles.trendCards}>
-        {metrics.map(metric => {
-          const data = trendData?.[metric.key];
-          const trend = data ? calculateTrend(data.values) : { direction: 'stable', change: 0 };
-          const currentValue = data?.values?.[data.values.length - 1]?.toFixed(1) ?? '--';
-          const isActive = selectedMetric === metric.key;
+      {/* Main grid: param cards (left) + chart (right) */}
+      <div className={styles.mainGrid}>
 
-          return (
-            <Card
-              key={metric.key}
-              className={`${styles.trendCard} ${isActive ? styles.active : ''}`}
-              onClick={() => setSelectedMetric(metric.key)}
-              style={{ '--accent-color': metric.color }}
-            >
-              <div className={styles.cardIcon} style={{ color: metric.color }}>
-                {metric.icon}
+        {/* Parameter cards column */}
+        <div className={styles.paramCol}>
+          {metrics.map(metric => {
+            const data     = trendData?.[metric.key];
+            const trend    = data ? calculateTrend(data.values) : { direction: 'stable', change: 0 };
+            const current  = data?.values?.[data.values.length - 1]?.toFixed(1) ?? '--';
+            const fill     = data ? getFillPercent(metric.key, data.values) : 0;
+            const isActive = selectedMetric === metric.key;
+
+            return (
+              <div
+                key={metric.key}
+                className={`${styles.paramCard} ${isActive ? styles.paramActive : ''}`}
+                onClick={() => setSelectedMetric(metric.key)}
+                style={{ '--card-color': metric.color }}
+              >
+                {/* Animated fill layer */}
+                <div
+                  className={styles.paramFill}
+                  style={{
+                    height: fillsVisible ? `${fill}%` : '0%',
+                    background: metric.color,
+                  }}
+                />
+
+                <div className={styles.paramInner}>
+                  <div className={styles.paramTop}>
+                    <div
+                      className={styles.paramIcon}
+                      style={{ background: metric.bgColor, color: metric.color }}
+                    >
+                      {metric.icon}
+                    </div>
+                    <span className={styles.paramPct} style={{ color: metric.color }}>
+                      {fill}%
+                    </span>
+                  </div>
+
+                  <div className={styles.paramLabelRow} style={{ color: metric.textColor }}>
+                    <span className={styles.paramLabel}>{metric.label}</span>
+                    <InfoTooltip
+                      title={metric.label}
+                      whatIsIt={metric.whatIsIt}
+                      whyItMatters={metric.whyItMatters}
+                      ideal={metric.ideal}
+                      danger={metric.danger}
+                      learnMoreUrl={null}
+                    />
+                  </div>
+
+                  <div className={styles.paramValue} style={{ color: metric.textColor }}>
+                    {current}
+                    {metric.unit && (
+                      <span className={styles.paramUnit} style={{ color: metric.textColor }}>
+                        {metric.unit}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className={styles.paramTarget} style={{ color: metric.textColor }}>
+                    Target {metric.optimal}
+                  </div>
+
+                  <div
+                    className={styles.paramStatus}
+                    style={{ background: `${metric.color}18`, color: metric.statusColor }}
+                  >
+                    <span className={styles.paramDot} style={{ background: metric.color }} />
+                    {getTrendLabel(trend)}
+                  </div>
+                </div>
               </div>
-              <div className={styles.cardContent}>
-                <div className={styles.metricLabelRow}>
-                  <span className={styles.metricLabel}>{metric.label}</span>
-                  <InfoTooltip
-                    title={metric.label}
-                    whatIsIt={metric.whatIsIt}
-                    whyItMatters={metric.whyItMatters}
-                    ideal={metric.ideal}
-                    danger={metric.danger}
-                    learnMoreUrl={metric.learnMoreUrl}
-                  />
-                </div>
-                <div className={styles.cardValue}>
-                  {currentValue}
-                  <span className={styles.unit}>{metric.unit}</span>
-                </div>
-                <div className={styles.cardTrend}>
-                  {getTrendIcon(trend.direction)}
-                  <span className={styles[trend.direction]}>
-                    {trend.direction === 'stable' ? 'Stable' : `${trend.change}%`}
-                  </span>
-                </div>
-                <div className={styles.optimal}>Target: {metric.optimal}</div>
+            );
+          })}
+        </div>
+
+        {/* Chart card */}
+        <Card className={styles.chartCard}>
+          <div className={styles.chartHeader}>
+            <h2>
+              {timeRange === '7d' ? '7-Day' : '30-Day'} Trend: {activeMetric?.label}
+            </h2>
+            <div className={styles.chartLegend}>
+              <span className={styles.legendItem}>
+                <span className={styles.legendDot} style={{ backgroundColor: activeMetric?.color }} />
+                Actual
+              </span>
+              <span className={styles.legendItem}>
+                <span className={styles.legendLine} />
+                Moving Average
+              </span>
+            </div>
+          </div>
+          <div className={styles.chartContainer}>
+            {loading ? (
+              <div className={styles.loadingChart}>
+                <div className={styles.spinner} />
+                <p>Loading chart…</p>
               </div>
-            </Card>
-          );
-        })}
+            ) : getChartData() ? (
+              <Line data={getChartData()} options={chartOptions} />
+            ) : (
+              <div className={styles.emptyChart}><p>No data available</p></div>
+            )}
+          </div>
+        </Card>
       </div>
 
-      {/* Main Chart */}
-      <Card className={styles.chartCard}>
-        <div className={styles.chartHeader}>
-          <h2>
-            {timeRange === '7d' ? '7-Day' : '30-Day'} Trend: {activeMetric?.label}
-          </h2>
-          <div className={styles.chartLegend}>
-            <span className={styles.legendItem}>
-              <span className={styles.legendDot} style={{ backgroundColor: activeMetric?.color }}></span>
-              Actual
-            </span>
-            <span className={styles.legendItem}>
-              <span className={styles.legendLine}></span>
-              Moving Average
-            </span>
+      {/* Recommendation */}
+      {recommendation && (
+        <div className={styles.recoCard}>
+          <div className={styles.recoAvatar}>
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="7" r="3.5" fill="white" />
+              <path
+                d="M4 18c0-3.3 2.7-6 6-6s6 2.7 6 6"
+                stroke="white"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                fill="none"
+              />
+            </svg>
+          </div>
+          <div className={styles.recoBody}>
+            <span className={styles.recoEyebrow}>Recommendation</span>
+            <p className={styles.recoText}>{recommendation}</p>
           </div>
         </div>
-        <div className={styles.chartContainer}>
-          {loading ? (
-            <div className={styles.loadingChart}>
-              <div className={styles.spinner}></div>
-              <p>Loading chart…</p>
-            </div>
-          ) : getChartData() ? (
-            <Line data={getChartData()} options={chartOptions} />
-          ) : (
-            <div className={styles.emptyChart}><p>No data available</p></div>
-          )}
-        </div>
-      </Card>
+      )}
 
-      {/* Insights */}
-      <Card className={styles.insightsCard}>
-        <h2><FaLightbulb /> Insights & Recommendations</h2>
-        <div className={styles.insightsList}>
-          {generateInsights().map((insight, index) => (
-            <div key={index} className={`${styles.insight} ${styles[insight.type]}`}>
-              <span className={styles.insightIcon}>{insight.icon}</span>
-              <p>{insight.text}</p>
-            </div>
-          ))}
-        </div>
-      </Card>
     </div>
   );
 }

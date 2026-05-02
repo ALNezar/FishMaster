@@ -27,12 +27,21 @@ export default defineConfig(({ command, mode }) => {
     plugins: [
       react(),
       runtimeInfoPlugin({ command, mode, apiBaseUrl }),
+
       VitePWA({
         registerType: 'autoUpdate',
+
         devOptions: {
           enabled: true
         },
-        includeAssets: ['favicon.ico', 'robots.txt', 'Fishtyi.png'],
+
+        includeAssets: [
+          'favicon.ico',
+          'robots.txt',
+          'android/launchericon-192x192.png',
+          'android/launchericon-512x512.png'
+        ],
+
         manifest: {
           name: 'FishMaster - Aquarium Management',
           short_name: 'FishMaster',
@@ -42,27 +51,28 @@ export default defineConfig(({ command, mode }) => {
           background_color: '#2580ff',
           theme_color: '#e90e2b',
           orientation: 'portrait',
+
           icons: [
             {
-              src: 'pwa-192x192.png',
+              src: 'android/launchericon-192x192.png',
               sizes: '192x192',
               type: 'image/png'
             },
             {
-              src: 'pwa-512x512.png',
+              src: 'android/launchericon-512x512.png',
               sizes: '512x512',
               type: 'image/png'
             },
             {
-              src: 'pwa-512x512.png',
+              src: 'android/launchericon-512x512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'maskable'
             }
           ]
         },
+
         workbox: {
-          // Cache API calls with network-first strategy
           runtimeCaching: [
             {
               urlPattern: /^http:\/\/localhost:8080\/.*$/,
@@ -71,7 +81,7 @@ export default defineConfig(({ command, mode }) => {
                 cacheName: 'api-cache',
                 expiration: {
                   maxEntries: 50,
-                  maxAgeSeconds: 60 * 60 * 24 // 24 hours
+                  maxAgeSeconds: 60 * 60 * 24
                 },
                 cacheableResponse: {
                   statuses: [0, 200]
@@ -85,12 +95,12 @@ export default defineConfig(({ command, mode }) => {
                 cacheName: 'image-cache',
                 expiration: {
                   maxEntries: 100,
-                  maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+                  maxAgeSeconds: 60 * 60 * 24 * 30
                 }
               }
             }
           ],
-          // Pre-cache app shell
+
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}']
         }
       })

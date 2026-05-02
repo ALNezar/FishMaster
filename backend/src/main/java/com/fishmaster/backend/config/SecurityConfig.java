@@ -65,7 +65,8 @@ public class SecurityConfig {
         config.setAllowCredentials(true); // allows cookies if needed
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "http://127.0.0.1:5173"
+                "http://127.0.0.1:5173",
+                "https://fishmastero.up.railway.app"
         ));
         config.setAllowedHeaders(List.of("*")); // allow all headers
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // allowed HTTP methods

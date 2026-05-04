@@ -53,7 +53,7 @@ FishMaster uses a hybrid IoT architecture with two main data flows:
 - 🔴 **Control commands:** Dashboard sends commands via REST API → backend publishes to MQTT → ESP32 subscribes and acts (including triggering the servo feeder)
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/408c22ea-22b2-4d84-8277-161244a971b1" width="100%" alt="Fishmaster Cloud Architecture Diagram">
+<img width="808" height="857" alt="Fishmaster_architecture_diagram" src="https://github.com/user-attachments/assets/6d2af1ae-e75f-4115-ae4f-6d043bce648a" />
   <br>
   <em>Figure 2: Fishmaster Cloud Architecture — ESP32 → HiveMQ → Spring Boot → React</em>
 </p>

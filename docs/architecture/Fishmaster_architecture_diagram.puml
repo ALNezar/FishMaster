@@ -1,90 +1,73 @@
 @startuml
 !theme vibrant
-left to right direction
 skinparam componentStyle rectangle
 skinparam NoteBackgroundColor #f9f9f9
+skinparam linetype ortho
 
-title Fishmaster Cloud ArchitecturenPSM 2 — IoT Aquarium Monitoring
-
-' --- Hardware Layer ---
-package Hardware Layer {
-    node ESP32n(tank_1) as esp
-    component Temp as temp
-    component pH as ph
-    component Turbidity as turb
-
-    esp -down- temp  reads
-    esp -down- ph
-    esp -down- turb
-}
-
-' --- Cloud Services ---
-package Cloud Services {
-
-    package MQTT Broker (HiveMQ) {
-        node HiveMQ Cloud as hivemq
-        note bottom of hivemq
-            Topics
-            QoS 1 — Free Tier
-             FishMaster{tankId}sensor
-             FishMaster{tankId}control
-             FishMaster{tankId}alert
-        end note
-    }
-
-    package Backend (Spring Boot - Railway) {
-        component ((o)) MQTT Listener as listener
-        component Service  Logic as logic
-        component REST API as rest
-        component WebSocket as ws
-        database PostgreSQLnids [tank_id, ts] as db
-
-        listener -down- logic
-        logic -down- rest
-        logic -down- ws
-        logic -[#green]down- db  colorgreenpersistcolor
-    }
-
-    package Frontend (React - Vercel) {
-        component React Dashboard as react
-    }
-}
+title Fishmaster Cloud Architecture\nPSM 2 — IoT Aquarium Monitoring (Railway Monolith)
 
 ' --- User ---
-package User Group {
-    actor Evaluator  User as user
+actor "User" as user
+
+' --- Cloud Services ---
+package "Cloud Services (Railway)" {
+    component "React Dashboard" as react #LightGreen
+    component "REST API" as rest
+    component "Service Logic" as logic
+    component "MQTT Listener" as listener
+    database "PostgreSQL\n[tank_id, ts]" as db
+    
+    ' Internal Flow
+    react ..> rest : REST Polling / POST
+    rest --> logic
+    logic -[#green]-> db : **persist**
+    listener --> logic
 }
 
-' --- Layout Anchors ---
-Hardware Layer  -[hidden]- Cloud Services
-Cloud Services  -[hidden]- User Group
-hivemq -[hidden]- listener
+package "MQTT Broker (HiveMQ)" {
+    node "HiveMQ Cloud" as hivemq
+    note right of hivemq
+        **Topics** (QoS 1)
+        FishMaster/{tankId}/sensor
+        FishMaster/{tankId}/control
+        FishMaster/{tankId}/alert
+    end note
+}
 
-' --- 1. Sensor Data Flows (Blue - Solid) ---
-esp    -[#blue]-  hivemq    Publish Sensor DatanFishMaster{tankId}sensor
-hivemq -[#blue]-  listener  Subscribe Sensor DatanFishMaster{tankId}sensor
-ws     -[#blue]-  react     WebSocket live stream
+' --- Hardware Layer ---
+package "Hardware Layer" {
+    node "ESP32 (tank_1)" as esp
+    component "Temp" as temp
+    component "pH" as ph
+    component "Turbidity" as turb
 
-' --- 2. Control Flows (Red - Dashed) ---
-react  .[#red].  rest    GET apitanksnPOST apidevice
-logic  .[#red].  hivemq
-hivemq .[#red].  esp     Subscribe ControlnFishMaster{tankId}control
+    esp -- temp
+    esp -- ph
+    esp -- turb
+}
 
-' --- 3. User Interactions ---
-react - user  view dashboard
-user  .  react  actions
+' --- Cross-Boundary Connections ---
+user --> react : views dashboard\n& triggers actions
+
+' 1. Sensor Data (Blue)
+esp -[#blue]up-> hivemq : Publish Sensor Data
+hivemq -[#blue]up-> listener : Subscribe Sensor Data
+rest -[#blue]up-> react : Fetch Data
+
+' 2. Control Flows (Red)
+logic -[#red]down-> hivemq : Publish Command
+hivemq -[#red]down-> esp : Subscribe Control
 
 ' --- Legend ---
 note as Legend
-    Legend
-    colorblue■color Sensor Data (device - cloud - UI)
-    colorred■color Control Commands (UI - cloud - device)
-    colorgreen■color Persistence
+    **Legend**
+    <color:blue>■</color> Sensor Data Flow (Upwards)
+    <color:red>■</color> Control Command Flow (Downwards)
+    <color:green>■</color> Persistence
 
-    Reliability
-     MQTT QoS 1 (at-least-once)
-     Auto-reconnect on ESP32 & backend
-     DB index (tank_id, timestamp)
+    **Deployment**
+    - **Frontend:** Built into Spring Boot static resources
+    - **Backend:** Spring Boot monolith on Railway
 end note
 
 @enduml

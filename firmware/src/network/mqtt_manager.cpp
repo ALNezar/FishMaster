@@ -11,6 +11,16 @@ static WiFiClientSecure espClient;
 static PubSubClient mqttClient(espClient);
 static unsigned long lastReconnectAttemptMs = 0;
 
+static void printDeviceInfoPayload(const char* payload)
+{
+    Serial.println("[MQTT] Device info snapshot");
+    Serial.print("[MQTT] Topic -> ");
+    Serial.println(FM_MQTT_DEVICE_TOPIC);
+    Serial.print("[MQTT] Payload -> ");
+    Serial.println(payload);
+}
+
+// Helper function to convert MQTT state codes to human-readable strings shroter comment? 
 static const char* mqttStateToString(int state)
 {
     switch (state)
@@ -69,7 +79,7 @@ void mqttReconnect(void)
 
 void mqttSetup(void)
 {
-    if (MQTT_TLS_INSECURE)
+    if (MQTT_TLS_INSECURE) 
     {
         espClient.setInsecure();
         Serial.println("[MQTT] TLS mode: insecure (testing only)");
@@ -78,6 +88,8 @@ void mqttSetup(void)
     mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
     Serial.print("[MQTT] Publish topic -> ");
     Serial.println(FM_MQTT_TOPIC);
+    Serial.print("[MQTT] Device info topic -> ");
+    Serial.println(FM_MQTT_DEVICE_TOPIC);
     mqttReconnect();
 }
 
@@ -112,10 +124,10 @@ bool mqttPublishTemperature(float temp)
             return false;
         }
     }
-
+    // Format the temperature as a JSON string
     char payload[64];
     snprintf(payload, sizeof(payload), "{\"temperature\": %.1f}", temp);
-
+    
     bool ok = mqttClient.publish(FM_MQTT_TOPIC, payload);
     if (ok)
     {
@@ -124,6 +136,66 @@ bool mqttPublishTemperature(float temp)
     else
     {
         Serial.println("[MQTT] Failed to publish message D: !");
+    }
+
+    return ok;
+}
+
+bool mqttPublishDeviceInfo(void)
+{
+    if (WiFi.status() != WL_CONNECTED)
+    {
+        Serial.println("[MQTT] Skip device info publish: WiFi is not connected");
+        return false;
+    }
+
+    if (!mqttClient.connected())
+    {
+        mqttReconnect();
+        if (!mqttClient.connected())
+        {
+            Serial.print("[MQTT] Skip device info publish: not connected, state=");
+            Serial.print(mqttClient.state());
+            Serial.print(" (");
+            Serial.print(mqttStateToString(mqttClient.state()));
+            Serial.println(")");
+            return false;
+        }
+    }
+
+    const String macAddress = WiFi.macAddress();
+    const String ipAddress = WiFi.localIP().toString();
+    const String wifiNetwork = WiFi.SSID();
+    char chipIdBuffer[17];
+    snprintf(chipIdBuffer, sizeof(chipIdBuffer), "%llX", static_cast<unsigned long long>(ESP.getEfuseMac()));
+
+    char payload[384];
+    snprintf(
+        payload,
+        sizeof(payload),
+        "{\"device_id\":\"%s\",\"firmware_version\":\"%s\",\"cpu_mhz\":%u,\"free_heap\":%u,\"heap_total\":%u,\"mac_address\":\"%s\",\"ip_address\":\"%s\",\"wifi_ssid\":\"%s\",\"rssi_dbm\":%d,\"uptime_ms\":%lu,\"chip_id\":\"0x%s\"}",
+        MQTT_CLIENT_ID,
+        FM_FIRMWARE_VERSION,
+        ESP.getCpuFreqMHz(),
+        static_cast<unsigned int>(ESP.getFreeHeap()),
+        static_cast<unsigned int>(ESP.getHeapSize()),
+        macAddress.c_str(),
+        ipAddress.c_str(),
+        wifiNetwork.c_str(),
+        WiFi.RSSI(),
+        static_cast<unsigned long>(millis()),
+        chipIdBuffer);
+
+    printDeviceInfoPayload(payload);
+
+    bool ok = mqttClient.publish(FM_MQTT_DEVICE_TOPIC, payload, true);
+    if (ok)
+    {
+        Serial.println("[MQTT] Device info published successfully");
+    }
+    else
+    {
+        Serial.println("[MQTT] Failed to publish device info");
     }
 
     return ok;

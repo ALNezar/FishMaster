@@ -5,6 +5,7 @@
 #include "sensors/temp_sensor.h"
 
 unsigned long sensorTimer = 0; 
+unsigned long deviceInfoTimer = 0;
 
 void setup() {
     Serial.begin(115200);
@@ -15,12 +16,16 @@ void setup() {
 
     wifiConnect();
     mqttSetup();
+    mqttPublishDeviceInfo();
 }
 
 void loop() {
     mqttLoop();
 
-    // Much cleaner logic
+    if (checkTime(deviceInfoTimer, 60000)) {
+        mqttPublishDeviceInfo();
+    }
+
     if (checkTime(sensorTimer, 2000)) {
         Serial.println("--- SENSOR ---");
         float temp = tempSensorReadC();

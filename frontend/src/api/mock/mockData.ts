@@ -170,6 +170,12 @@ export let mockFeedingSchedules: FeedingSchedule[] = [
 
 export let nextScheduleId = 4;
 
+export function consumeNextScheduleId() {
+  const id = nextScheduleId;
+  nextScheduleId += 1;
+  return id;
+}
+
 // Mock feeding history
 export const mockFeedingHistory = [
   {

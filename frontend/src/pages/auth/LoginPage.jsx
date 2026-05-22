@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { login, getOnboardingStatus } from '../../api';
+import { login, getOnboardingStatus, getApiMode } from '../../api';
 import Button from '../../components/common/button/button.jsx';
 import Card from '../../components/common/card/card.jsx';
 import Wave from 'react-wavify';
@@ -27,17 +27,24 @@ function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!formData.email.trim() || !formData.password) {
+
+    const isMockMode = getApiMode() === 'mock';
+    const emailInput = formData.email.trim();
+    const passwordInput = formData.password;
+
+    if (!isMockMode && (!emailInput || !passwordInput)) {
       setError('Please enter your email and password');
       return;
     }
+
+    const loginEmail = emailInput || 'dev@fishmaster.app';
+    const loginPassword = passwordInput || 'password';
 
     setLoading(true);
     setError('');
 
     try {
-      await login(formData.email, formData.password);
+      await login(loginEmail, loginPassword);
       
       // Check if onboarding is complete
       try {
@@ -45,7 +52,7 @@ function LoginPage() {
         if (status.completed) {
           navigate('/dashboard');
         } else {
-          navigate('/onboarding', { state: { email: formData.email } });
+          navigate('/onboarding', { state: { email: loginEmail } });
         }
       } catch {
         // If status check fails, default to dashboard

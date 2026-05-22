@@ -6,10 +6,10 @@ import {
   mockTanks,
   nextFishId,
   consumeNextFishId,
+  consumeNextScheduleId,
   mockAlertThresholds,
   defaultAlertThresholds,
   mockFeedingSchedules,
-  nextScheduleId,
   mockFeedingHistory,
   mockFishTypes,
   mockDeviceInfo,
@@ -161,6 +161,31 @@ export function generateMockSensorData(timeRange: string, tankId: any): any {
 export const getMockResponse = (endpoint: string, options: any = {}): any => {
   const method = (options?.method || 'GET').toUpperCase();
 
+  // Authentication
+  if (endpoint === '/auth/signup' && method === 'POST') {
+    try {
+      const body = options.body ? JSON.parse(options.body) : {};
+      mockUser.id = defaultMockUser.id;
+      mockUser.username = body.username || defaultMockUser.username;
+      mockUser.name = body.username || defaultMockUser.name;
+      mockUser.email = body.email || defaultMockUser.email;
+      mockUser.contactNumber = '';
+      mockUser.emailNotifications = false;
+      mockUser.smsNotifications = false;
+      return { token: 'dev-token', user: { ...mockUser } };
+    } catch (e) {
+      return { error: 'Invalid signup data' };
+    }
+  }
+
+  if (endpoint === '/auth/verify' && method === 'POST') {
+    return { success: true };
+  }
+
+  if (endpoint === '/auth/resend' && method === 'POST') {
+    return { success: true };
+  }
+
   // Sensor endpoints
   const sensorMatch = endpoint.match(/^\/tanks\/(\d+)\/sensors/);
   if (sensorMatch) {
@@ -271,6 +296,30 @@ export const getMockResponse = (endpoint: string, options: any = {}): any => {
     return tank;
   }
 
+  // Create tank - POST
+  if (endpoint === '/tanks' && method === 'POST') {
+    try {
+      const data = options.body ? JSON.parse(options.body) : {};
+      const tankId = mockTanks.length > 0 ? Math.max(...mockTanks.map((t) => t.id)) + 1 : 1;
+      const tank = {
+        id: tankId,
+        name: data.name || `Tank ${tankId}`,
+        sizeLiters: data.sizeLiters || 100,
+        fish: [],
+        waterParameters: data.waterParameters || {
+          targetPh: 7.0,
+          targetTemperature: 25,
+          ph: 7.0,
+          temperature: 25,
+        },
+      };
+      mockTanks.push(tank);
+      return tank;
+    } catch (e) {
+      return { error: 'Invalid tank data' };
+    }
+  }
+
   // Update tank - PUT
   if (endpoint.match(/^\/tanks\/\d+$/) && method === 'PUT') {
     const tankId = parseInt(endpoint.split('/')[2]);
@@ -316,12 +365,17 @@ export const getMockResponse = (endpoint: string, options: any = {}): any => {
       const body = options.body ? JSON.parse(options.body) : {};
       const { email, password } = body;
 
-      if (!email || !password) {
-        throw new Error('Email and password are required.');
-      }
+      // In mock mode, allow quick access with blank credentials for easier local testing.
+      const normalizedEmail =
+        typeof email === 'string' && email.trim().length > 0
+          ? email.trim().toLowerCase()
+          : mockUser.email.toLowerCase();
 
-      const emailMatch = email.trim().toLowerCase() === mockUser.email.toLowerCase();
-      const passwordMatch = password === mockUserPassword;
+      const providedPassword =
+        typeof password === 'string' && password.length > 0 ? password : mockUserPassword;
+
+      const emailMatch = normalizedEmail === mockUser.email.toLowerCase();
+      const passwordMatch = providedPassword === mockUserPassword;
 
       if (!emailMatch || !passwordMatch) {
         throw new Error('Invalid email or password. Please try again.');
@@ -440,6 +494,96 @@ export const getMockResponse = (endpoint: string, options: any = {}): any => {
       });
     }
     return readings;
+  }
+
+  // Device info
+  if (endpoint === '/device/info' && method === 'GET') {
+    return mockDeviceInfo;
+  }
+
+  if (endpoint === '/device/info' && method === 'PUT') {
+    try {
+      const updates = options.body ? JSON.parse(options.body) : {};
+      Object.assign(mockDeviceInfo, updates);
+      return mockDeviceInfo;
+    } catch (e) {
+      return { error: 'Invalid device data' };
+    }
+  }
+
+  if (endpoint === '/device/reconnect' && method === 'POST') {
+    mockDeviceInfo.status = 'online';
+    mockDeviceInfo.lastSync = new Date().toISOString();
+    return { success: true, status: 'online' };
+  }
+
+  // Feeding schedules and history
+  if (endpoint === '/device/schedules' && method === 'GET') {
+    return mockFeedingSchedules;
+  }
+
+  if (endpoint === '/device/schedules' && method === 'POST') {
+    try {
+      const schedule = options.body ? JSON.parse(options.body) : {};
+      const newSchedule = {
+        id: consumeNextScheduleId(),
+        time: schedule.time || '08:00',
+        portionSize: schedule.portionSize || 'medium',
+        enabled: schedule.enabled ?? true,
+        daysOfWeek: schedule.daysOfWeek || [0, 1, 2, 3, 4, 5, 6],
+        label: schedule.label || 'New Feed',
+      };
+      mockFeedingSchedules.push(newSchedule);
+      return newSchedule;
+    } catch (e) {
+      return { error: 'Invalid schedule data' };
+    }
+  }
+
+  const scheduleMatch = endpoint.match(/^\/device\/schedules\/(\d+)$/);
+  if (scheduleMatch && method === 'PUT') {
+    const scheduleId = parseInt(scheduleMatch[1]);
+    const schedule = mockFeedingSchedules.find((item) => item.id === scheduleId);
+    if (!schedule) return { error: 'Schedule not found' };
+    try {
+      const updates = options.body ? JSON.parse(options.body) : {};
+      Object.assign(schedule, updates);
+      return schedule;
+    } catch (e) {
+      return { error: 'Invalid schedule data' };
+    }
+  }
+
+  if (scheduleMatch && method === 'DELETE') {
+    const scheduleId = parseInt(scheduleMatch[1]);
+    const index = mockFeedingSchedules.findIndex((item) => item.id === scheduleId);
+    if (index === -1) return { error: 'Schedule not found' };
+    mockFeedingSchedules.splice(index, 1);
+    return { success: true };
+  }
+
+  if (endpoint === '/device/feed' && method === 'POST') {
+    try {
+      const body = options.body ? JSON.parse(options.body) : {};
+      const entry = {
+        id: mockFeedingHistory.length > 0 ? Math.max(...mockFeedingHistory.map((item) => item.id)) + 1 : 1,
+        time: new Date().toISOString(),
+        portionSize: body.portionSize || 'medium',
+        status: 'completed',
+        type: 'manual',
+        scheduleName: null,
+      };
+      mockFeedingHistory.unshift(entry);
+      return entry;
+    } catch (e) {
+      return { error: 'Invalid feeding request' };
+    }
+  }
+
+  if (endpoint.startsWith('/device/history') && method === 'GET') {
+    const limitMatch = endpoint.match(/limit=(\d+)/);
+    const limit = limitMatch ? parseInt(limitMatch[1]) : 10;
+    return mockFeedingHistory.slice(0, limit);
   }
 
   return null;

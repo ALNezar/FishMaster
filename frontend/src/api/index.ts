@@ -52,7 +52,17 @@ export { normalizeResponse } from './utils/normalize';
 export type * from './types';
 
 // Config (for advanced usage)
-export { DEV_MODE, API_BASE_URL, TOKEN_KEY, LEARNING_PROGRESS_KEY } from './config';
+export {
+  DEV_MODE,
+  API_BASE_URL,
+  TOKEN_KEY,
+  LEARNING_PROGRESS_KEY,
+  API_MODE_KEY,
+  getApiMode,
+  setApiMode,
+  clearApiMode,
+  isMockApiEnabled,
+} from './config';
 
 // Default export for backward compatibility
 import * as authApi from './auth.api';

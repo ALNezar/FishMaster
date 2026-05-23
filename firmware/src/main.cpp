@@ -3,8 +3,10 @@
 #include "network/wifi_manager.h"
 #include "network/mqtt_manager.h"
 #include "sensors/temp_sensor.h"
+#include "sensors/turbidity_sensor.h"
 
 unsigned long sensorTimer = 0; 
+unsigned long turbidityTimer = 0;
 unsigned long deviceInfoTimer = 0;
 
 void setup() {
@@ -13,6 +15,9 @@ void setup() {
     Serial.println("--- SENSOR ---");
     Serial.println("[SENSOR] Booting temp sensor<^_^>");
     tempSensorInit();
+    Serial.println("[SENSOR] Booting turbidity sensor<^_^>");
+    turbiditySensorInit();
+    Serial.println("[TEST] Open the serial monitor to watch turbidity raw and NTU values");
 
     wifiConnect();
     mqttSetup();
@@ -24,6 +29,20 @@ void loop() {
 
     if (checkTime(deviceInfoTimer, 60000)) {
         mqttPublishDeviceInfo();
+    }
+
+    if (checkTime(turbidityTimer, 5000)) {
+        Serial.println("--- TURBIDITY ---");
+        int rawValue = turbiditySensorReadRaw();
+        float ntu = turbiditySensorReadNtu();
+
+        Serial.print("[SENSOR] Turbidity raw -> ");
+        Serial.println(rawValue);
+        Serial.print("[SENSOR] Turbidity -> ");
+        Serial.print(ntu, 2);
+        Serial.println(" NTU");
+
+        mqttPublishTurbidity(ntu, rawValue);
     }
 
     if (checkTime(sensorTimer, 2000)) {

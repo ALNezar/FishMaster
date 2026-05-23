@@ -20,6 +20,19 @@ static void printDeviceInfoPayload(const char* payload)
     Serial.println(payload);
 }
 
+static void printTurbidityPayload(float ntu, int rawValue, const char* payload)
+{
+    Serial.println("[MQTT] Turbidity snapshot");
+    Serial.print("[MQTT] Topic -> ");
+    Serial.println(FM_MQTT_TURBIDITY_TOPIC);
+    Serial.print("[MQTT] Raw -> ");
+    Serial.println(rawValue);
+    Serial.print("[MQTT] NTU -> ");
+    Serial.println(ntu, 2);
+    Serial.print("[MQTT] Payload -> ");
+    Serial.println(payload);
+}
+
 // Helper function to convert MQTT state codes to human-readable strings shroter comment? 
 static const char* mqttStateToString(int state)
 {
@@ -136,6 +149,40 @@ bool mqttPublishTemperature(float temp)
     else
     {
         Serial.println("[MQTT] Failed to publish message D: !");
+    }
+
+    return ok;
+}
+
+bool mqttPublishTurbidity(float ntu, int rawValue)
+{
+    if (!mqttClient.connected())
+    {
+        mqttReconnect();
+        if (!mqttClient.connected())
+        {
+            Serial.print("[MQTT] Skip turbidity publish: not connected, state=");
+            Serial.print(mqttClient.state());
+            Serial.print(" (");
+            Serial.print(mqttStateToString(mqttClient.state()));
+            Serial.println(")");
+            return false;
+        }
+    }
+
+    char payload[96];
+    snprintf(payload, sizeof(payload), "{\"raw_adc\":%d,\"ntu\":%.2f}", rawValue, ntu);
+
+    printTurbidityPayload(ntu, rawValue, payload);
+
+    bool ok = mqttClient.publish(FM_MQTT_TURBIDITY_TOPIC, payload);
+    if (ok)
+    {
+        Serial.println("[MQTT] Turbidity published successfully");
+    }
+    else
+    {
+        Serial.println("[MQTT] Failed to publish turbidity");
     }
 
     return ok;

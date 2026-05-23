@@ -99,6 +99,8 @@ void mqttSetup(void)
     }
 
     mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
+    mqttClient.setBufferSize(1024);
+    Serial.println("[MQTT] Buffer size set to 1024 bytes");
     Serial.print("[MQTT] Publish topic -> ");
     Serial.println(FM_MQTT_TOPIC);
     Serial.print("[MQTT] Device info topic -> ");
@@ -234,6 +236,8 @@ bool mqttPublishDeviceInfo(void)
         chipIdBuffer);
 
     printDeviceInfoPayload(payload);
+    Serial.print("[MQTT] Device info payload length -> ");
+    Serial.println(strlen(payload));
 
     bool ok = mqttClient.publish(FM_MQTT_DEVICE_TOPIC, payload, true);
     if (ok)
@@ -242,7 +246,12 @@ bool mqttPublishDeviceInfo(void)
     }
     else
     {
-        Serial.println("[MQTT] Failed to publish device info");
+        Serial.print("[MQTT] Failed to publish device info, state=");
+        Serial.print(mqttClient.state());
+        Serial.print(" (");
+        Serial.print(mqttStateToString(mqttClient.state()));
+        Serial.println(")");
+        Serial.println("[MQTT] Hint: if state is Connected, the packet may still exceed broker/client limits.");
     }
 
     return ok;

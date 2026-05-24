@@ -126,11 +126,41 @@ public class MqttSubscriberService implements MqttCallbackExtended {
         log.info("[MQTT] Connected and subscribed to topics: {}", String.join(", ", topics));
     }
 
+    /**
+     * Manually trigger a reconnect to the MQTT broker. Useful for admin endpoints or ops tooling.
+     */
+    public synchronized void reconnectNow() {
+        log.info("[MQTT] Manual reconnect requested");
+        try {
+            if (client != null) {
+                try { if (client.isConnected()) client.disconnect(); } catch (Exception ignored) {}
+                try { client.close(); } catch (Exception ignored) {}
+                client = null;
+            }
+        } catch (Exception e) {
+            log.warn("[MQTT] Error while closing client during manual reconnect: {}", e.getMessage());
+        }
+        // Schedule a new connection attempt
+        scheduler.execute(this::connectWithRetry);
+    }
+
     private void onMessage(String topic, MqttMessage message) {
         try {
             String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
             log.debug("[MQTT] Received on {}: {} (qos={}, retained={})", topic, payload, message.getQos(), message.isRetained());
-            telemetryService.handleTemperaturePayload(payload);
+            String t = topic == null ? "" : topic;
+            if (t.endsWith("/Temperature") || t.equals("FishMaster/Temperature")) {
+                telemetryService.handleTemperaturePayload(payload);
+            } else if (t.endsWith("/Turbidity") || t.equals("FishMaster/Turbidity")) {
+                // Source client id is this subscriber's client id; device id is expected via DeviceInfo retained msg
+                String sourceClientId = mqttProps.getClientId();
+                telemetryService.handleTurbidityPayload(payload, sourceClientId);
+            } else if (t.endsWith("/DeviceInfo") || t.equals("FishMaster/DeviceInfo")) {
+                telemetryService.handleDeviceInfoPayload(payload);
+            } else {
+                // Fallback: try parsing as temperature to not lose data in case of misconfig
+                telemetryService.handleTemperaturePayload(payload);
+            }
         } catch (Exception e) {
             log.error("[MQTT] Failed processing message from {}: {}", topic, e.getMessage(), e);
         }

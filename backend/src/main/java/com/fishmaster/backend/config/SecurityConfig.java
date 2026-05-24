@@ -28,19 +28,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain appSecurity(HttpSecurity http) throws Exception {
         http
-                // 1. Explicitly enable CORS using the configuration source defined below
+                // Explicitly enable CORS using the configuration source defined below
                 .cors(Customizer.withDefaults())
 
                 // Turn off CSRF since we use JWT, not sessions
                 .csrf(csrf -> csrf.disable())
 
-                // Enable CORS with default configuration
-                .cors(Customizer.withDefaults())
-
                 // Allow /auth/** for public access, protect everything else
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api/telemetry/**").permitAll()
+                        .requestMatchers("/api/devices/**").permitAll()
+                        .requestMatchers("/device/**").permitAll()
                         .anyRequest().authenticated()
                 )
 
@@ -62,15 +61,19 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true); // allows cookies if needed
-        config.setAllowedOrigins(List.of(
-                "http://localhost:5173",
-                "http://127.0.0.1:5173",
-                "http://localhost:8080",
+        // Telemetry endpoints are public and don't need cookies; disabling credentials simplifies CORS
+        config.setAllowCredentials(false);
+        // Allow common local dev and Railway origins; patterns also enable port-agnostic localhost
+        config.setAllowedOriginPatterns(List.of(
+                "http://localhost:*",
+                "http://127.0.0.1:*",
+                "https://*.railway.app",
                 "https://fishmastero.up.railway.app"
         ));
         config.setAllowedHeaders(List.of("*")); // allow all headers
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // allowed HTTP methods
+        // Helpful when using custom headers with SSE though not strictly required
+        config.setExposedHeaders(List.of("Cache-Control", "Content-Type"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

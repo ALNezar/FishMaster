@@ -1,52 +1,45 @@
 package com.fishmaster.backend.controllers;
 
-import com.fishmaster.backend.model.TemperatureReading;
-import com.fishmaster.backend.repositories.TemperatureReadingRepository;
+import com.fishmaster.backend.model.TurbidityReading;
+import com.fishmaster.backend.repositories.TurbidityReadingRepository;
 import com.fishmaster.backend.service.TelemetryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/telemetry/temperature")
+@RequestMapping("/api/telemetry/turbidity")
 @RequiredArgsConstructor
-public class TelemetryController {
+public class TurbidityController {
 
     private final TelemetryService telemetryService;
-    private final TemperatureReadingRepository repository;
+    private final TurbidityReadingRepository repository;
 
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter stream(HttpServletResponse response) {
-        // Help some proxies and browsers handle SSE correctly
         response.setHeader("Cache-Control", "no-store");
         response.setHeader("X-Accel-Buffering", "no");
-        SseEmitter emitter = telemetryService.registerEmitter();
+        SseEmitter emitter = telemetryService.registerTurbidityEmitter();
         try {
-            // Send an initial heartbeat so client knows the stream is open
             emitter.send(SseEmitter.event().name("ready").data("ok"));
         } catch (Exception ignored) { }
         return emitter;
     }
 
     @GetMapping("/latest")
-    public Optional<TemperatureReading> latest(@RequestParam(defaultValue = "tank1") String tankId) {
+    public Optional<TurbidityReading> latest(@RequestParam(defaultValue = "tank1") String tankId) {
         return repository.findTopByTankIdOrderByServerTimestampDesc(tankId);
     }
 
     @GetMapping("/recent")
-    public List<TemperatureReading> recent(@RequestParam(defaultValue = "tank1") String tankId,
-                                           @RequestParam(defaultValue = "50") int limit) {
+    public List<TurbidityReading> recent(@RequestParam(defaultValue = "tank1") String tankId,
+                                         @RequestParam(defaultValue = "50") int limit) {
         int safeLimit = Math.max(1, Math.min(500, limit));
         return repository.findByTankIdOrderByServerTimestampDesc(tankId, PageRequest.of(0, safeLimit));
     }
@@ -54,6 +47,6 @@ public class TelemetryController {
     // Optional HTTP ingest for testing or when MQTT is not available in the runtime
     @PostMapping(value = "/ingest", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void ingest(@RequestBody String payload) {
-        telemetryService.handleTemperaturePayload(payload);
+        telemetryService.handleTurbidityPayload(payload, "http-ingest");
     }
 }

@@ -22,8 +22,48 @@ function runtimeInfoPlugin({ command, mode, apiBaseUrl }) {
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const apiBaseUrl = env.VITE_API_BASE_URL || 'http://localhost:8080'
+  const proxyTarget = apiBaseUrl
 
   return {
+    server: {
+      proxy: {
+        '/api': {
+          target: proxyTarget,
+          changeOrigin: true,
+          secure: false,
+        },
+        '/auth': {
+          target: proxyTarget,
+          changeOrigin: true,
+          secure: false,
+        },
+        '/device': {
+          target: proxyTarget,
+          changeOrigin: true,
+          secure: false,
+        },
+        '/tanks': {
+          target: proxyTarget,
+          changeOrigin: true,
+          secure: false,
+        },
+        '/users': {
+          target: proxyTarget,
+          changeOrigin: true,
+          secure: false,
+        },
+        '/learning': {
+          target: proxyTarget,
+          changeOrigin: true,
+          secure: false,
+        },
+        '/onboarding': {
+          target: proxyTarget,
+          changeOrigin: true,
+          secure: false,
+        }
+      }
+    },
     plugins: [
       react(),
       runtimeInfoPlugin({ command, mode, apiBaseUrl }),

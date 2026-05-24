@@ -50,12 +50,38 @@ export interface AuthResponse {
 }
 
 export interface TemperatureReading {
-  id?: string;
+  id: number;
   tankId: string;
-  temperature: number;
-  deviceTimestamp?: string;
+  temperature: number | string;
+  deviceTimestamp?: string | null;
   serverTimestamp: string;
 }
+
+export interface TurbidityReading {
+  id: number;
+  tankId: string;
+  rawAdc: number;
+  ntu: number | string;
+  serverTimestamp: string;
+}
+
+export interface DeviceInfoSnapshot {
+  id: number;
+  deviceId: string;
+  firmwareVersion?: string;
+  cpuMhz?: number;
+  freeHeap?: number;
+  heapTotal?: number;
+  macAddress?: string;
+  ipAddress?: string;
+  wifiSsid?: string;
+  rssiDbm?: number;
+  uptimeMs?: number;
+  chipId?: string;
+  serverTimestamp: string;
+}
+
+export type TelemetryKind = 'temperature' | 'turbidity';
 
 export interface SensorReading {
   value: number;

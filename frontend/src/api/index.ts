@@ -18,6 +18,9 @@ export * from './telemetry.api';
 // Sensor API
 export * from './sensor.api';
 
+// Generic SSE hook
+export { useSseEvent } from './hooks/useSseEvent';
+
 // Alert Thresholds API
 export * from './threshold.api';
 
@@ -57,11 +60,6 @@ export {
   API_BASE_URL,
   TOKEN_KEY,
   LEARNING_PROGRESS_KEY,
-  API_MODE_KEY,
-  getApiMode,
-  setApiMode,
-  clearApiMode,
-  isMockApiEnabled,
 } from './config';
 
 // Default export for backward compatibility
@@ -76,6 +74,7 @@ import * as deviceApi from './device.api';
 import * as feedingApi from './feeding.api';
 import * as onboardingApi from './onboarding.api';
 import * as learningApi from './learning.api';
+import { useSseEvent } from './hooks/useSseEvent';
 import { useTemperatureStream } from './hooks/useTemperatureStream';
 import { apiRequest } from './client';
 import { setToken, removeToken, isAuthenticated } from './utils/token';
@@ -92,6 +91,7 @@ export default {
   ...feedingApi,
   ...onboardingApi,
   ...learningApi,
+  useSseEvent,
   useTemperatureStream,
   apiRequest,
   setToken,

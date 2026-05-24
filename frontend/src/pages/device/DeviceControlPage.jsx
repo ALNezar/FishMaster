@@ -102,15 +102,24 @@ export default function DeviceControlPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [deviceData, schedulesData, historyData] = await Promise.all([
+      const [deviceResult, schedulesResult, historyResult] = await Promise.allSettled([
         getDeviceInfo(),
         getFeedingSchedules(),
         getFeedingHistory(10),
       ]);
-      setDevice(deviceData);
-      setSchedules(schedulesData);
-      setHistory(historyData);
-      setNewDeviceName(deviceData.name);
+
+      if (deviceResult.status === 'fulfilled') {
+        setDevice(deviceResult.value);
+        setNewDeviceName(deviceResult.value.name);
+      }
+
+      if (schedulesResult.status === 'fulfilled') {
+        setSchedules(schedulesResult.value);
+      }
+
+      if (historyResult.status === 'fulfilled') {
+        setHistory(historyResult.value);
+      }
     } catch (err) {
       console.error('Failed to load device data:', err);
     } finally {

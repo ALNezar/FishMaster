@@ -3,7 +3,13 @@
 import { TOKEN_KEY } from '../config';
 
 export const getToken = (): string | null => {
-  return localStorage.getItem(TOKEN_KEY);
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (token === 'dev-preview-token') {
+    localStorage.removeItem(TOKEN_KEY);
+    return null;
+  }
+
+  return token;
 };
 
 export const setToken = (token: string): void => {

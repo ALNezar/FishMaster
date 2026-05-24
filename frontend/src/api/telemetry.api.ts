@@ -1,21 +1,53 @@
-// Telemetry and temperature streaming API endpoints
+// Telemetry API endpoints
 
 import { apiRequest } from './client';
-import { TemperatureReading } from './types';
+import {
+  TemperatureReading,
+  TurbidityReading,
+  TelemetryKind,
+} from './types';
+
+export const fetchLatestTelemetry = async <T = TemperatureReading | TurbidityReading>(
+  kind: TelemetryKind,
+  tankId: string = 'tank1'
+): Promise<T | null> => {
+  return apiRequest(
+    `/api/telemetry/${kind}/latest?tankId=${encodeURIComponent(tankId)}`
+  );
+};
+
+export const fetchRecentTelemetry = async <T = TemperatureReading | TurbidityReading>(
+  kind: TelemetryKind,
+  tankId: string = 'tank1',
+  limit: number = 50
+): Promise<T[]> => {
+  return apiRequest(
+    `/api/telemetry/${kind}/recent?tankId=${encodeURIComponent(tankId)}&limit=${limit}`
+  );
+};
 
 export const fetchLatestTemperature = async (
   tankId: string = 'tank1'
 ): Promise<TemperatureReading | null> => {
-  return apiRequest(
-    `/api/telemetry/temperature/latest?tankId=${encodeURIComponent(tankId)}`
-  );
+  return fetchLatestTelemetry<TemperatureReading>('temperature', tankId);
 };
 
 export const fetchRecentTemperature = async (
   tankId: string = 'tank1',
   limit: number = 50
 ): Promise<TemperatureReading[]> => {
-  return apiRequest(
-    `/api/telemetry/temperature/recent?tankId=${encodeURIComponent(tankId)}&limit=${limit}`
-  );
+  return fetchRecentTelemetry<TemperatureReading>('temperature', tankId, limit);
+};
+
+export const fetchLatestTurbidity = async (
+  tankId: string = 'tank1'
+): Promise<TurbidityReading | null> => {
+  return fetchLatestTelemetry<TurbidityReading>('turbidity', tankId);
+};
+
+export const fetchRecentTurbidity = async (
+  tankId: string = 'tank1',
+  limit: number = 50
+): Promise<TurbidityReading[]> => {
+  return fetchRecentTelemetry<TurbidityReading>('turbidity', tankId, limit);
 };

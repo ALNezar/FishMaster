@@ -1,4 +1,4 @@
-// React hook for SSE temperature streaming
+// React hook for temperature streaming
 
 import { useEffect, useRef, useState } from 'react';
 import { API_BASE_URL } from '../config';
@@ -19,6 +19,7 @@ export function useTemperatureStream(): UseTemperatureStreamResult {
   const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
+
     const url = `${API_BASE_URL}/api/telemetry/temperature/stream`;
     const es = new EventSource(url, { withCredentials: false });
     esRef.current = es;

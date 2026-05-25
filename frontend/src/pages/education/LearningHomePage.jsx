@@ -173,24 +173,33 @@ function LearningHomePage() {
     if (value >= 6.8 && value <= 7.4) {
       return {
         status: 'safe',
-        explanation: 'pH is in a healthy range for common community species.',
-        tips: ['✅ Keep current buffering routine.', '✅ Recheck after water changes only.'],
-        why: 'Stable pH protects fish from osmotic stress and keeps biofilter activity consistent.',
+        explanation: 'This reading is healthy, but the glass probe still needs careful handling and storage to stay accurate.',
+        tips: [
+          '✅ Soak a new or dry probe in its 3M KCl storage solution for at least 8 hours before calibration.',
+          '✅ Keep the BNC connector bone dry and return the wet storage cap after removal.',
+        ],
+        why: 'The probe needs a hydrated gel layer on the glass bulb. If it dries out or the connector gets wet, readings can become erratic even when the pH is fine.',
       };
     }
     if ((value >= 6.5 && value < 6.8) || (value > 7.4 && value <= 7.8)) {
       return {
         status: 'caution',
-        explanation: 'pH is slightly off and should be adjusted slowly.',
-        tips: ['⚠ Adjust pH in small steps over 24-48h.', '⚠ Re-test before applying a second correction.'],
-        why: 'Gradual corrections are safer than quick swings that can shock fish and bacteria.',
+        explanation: 'The pH is drifting, so this is a good time to check probe handling and calibration technique.',
+        tips: [
+          '⚠ Rinse the bulb with distilled or deionized water between buffer solutions and blot it gently dry.',
+          '⚠ Never carry tank water into pH 4.0, 7.0, or 9.18 buffer cups.',
+        ],
+        why: 'Cross-contamination changes the chemistry of the calibration fluid and gives false readings on the dashboard.',
       };
     }
     return {
       status: 'danger',
-      explanation: 'pH is outside the safe operating range.',
-      tips: ['🚨 Start staged correction now.', '🚨 Double-check sensor and test kit for confirmation.'],
-      why: 'Significant pH imbalance can affect breathing, appetite, and long-term fish health.',
+      explanation: 'This reading is outside the safe range, so the probe, storage cap, and calibration steps should all be checked immediately.',
+      tips: [
+        '🚨 Confirm the probe was soaked in KCl if it was new, dry, or unused for a while.',
+        '🚨 Never leave the glass bulb dry; always store it wet when the probe is out of the tank.',
+      ],
+      why: 'A dry bulb, wet BNC connector, or ignored calibration routine can make the probe look broken even when the water is not the real problem.',
     };
   };
 

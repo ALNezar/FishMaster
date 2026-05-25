@@ -1,62 +1,103 @@
 #include <Arduino.h>
-#include "utility/timer.h" 
+
+#include "utility/timer.h"
 #include "network/wifi_manager.h"
 #include "network/mqtt_manager.h"
+
 #include "sensors/temp_sensor.h"
 #include "sensors/turbidity_sensor.h"
 
-unsigned long sensorTimer = 0; 
+// Timers
+unsigned long temperatureTimer = 0;
 unsigned long turbidityTimer = 0;
 unsigned long deviceInfoTimer = 0;
 
-void setup() {
+void setup()
+{
     Serial.begin(115200);
+    delay(1000);
 
-    Serial.println("--- SENSOR ---");
-    Serial.println("[SENSOR] Booting temp sensor<^_^>");
+    Serial.println();
+    Serial.println("=================================");
+    Serial.println(" FishMaster ESP32 Starting...");
+    Serial.println("=================================");
+
+    // Initialize sensors
+    Serial.println("[BOOT] Initializing temperature sensor...");
     tempSensorInit();
-    Serial.println("[SENSOR] Booting turbidity sensor<^_^>");
-    turbiditySensorInit();
-    Serial.println("[TEST] Open the serial monitor to watch turbidity raw and NTU values");
 
+    Serial.println("[BOOT] Initializing turbidity sensor...");
+    turbiditySensorInit();
+
+    // Connect WiFi
+    Serial.println("[BOOT] Connecting WiFi...");
     wifiConnect();
+
+    // Setup MQTT
+    Serial.println("[BOOT] Setting up MQTT...");
     mqttSetup();
+
+    // Publish initial device info
     mqttPublishDeviceInfo();
+
+    Serial.println("[BOOT] System ready ✔");
 }
 
-void loop() {
+void loop()
+{
+    // Maintain MQTT connection
     mqttLoop();
 
-    if (checkTime(deviceInfoTimer, 60000)) {
+    // Publish device info every 60 seconds
+    if (checkTime(deviceInfoTimer, 60000))
+    {
         mqttPublishDeviceInfo();
     }
 
-    if (checkTime(turbidityTimer, 5000)) {
-        Serial.println("--- TURBIDITY ---");
+    // Read turbidity every 5 seconds
+    if (checkTime(turbidityTimer, 5000))
+    {
+        Serial.println();
+        Serial.println("------ TURBIDITY SENSOR ------");
+
         int rawValue = turbiditySensorReadRaw();
         float ntu = turbiditySensorReadNtu();
 
-        Serial.print("[SENSOR] Turbidity raw -> ");
+        Serial.print("[TURBIDITY] Raw ADC -> ");
         Serial.println(rawValue);
-        Serial.print("[SENSOR] Turbidity -> ");
+
+        Serial.print("[TURBIDITY] NTU -> ");
         Serial.print(ntu, 2);
         Serial.println(" NTU");
 
         mqttPublishTurbidity(ntu, rawValue);
     }
 
-    if (checkTime(sensorTimer, 2000)) {
-        Serial.println("--- SENSOR ---");
-        float temp = tempSensorReadC();
-        
-        if (temp == TEMP_SENSOR_ERROR) {
-            Serial.println("[SENSOR] Error! Check wiring .... <@_@>");
-            return; 
-        }
+    // Read temperature every 2 seconds
+    if (checkTime(temperatureTimer, 2000))
+    {
+        Serial.println();
+        Serial.println("------ TEMPERATURE SENSOR ------");
 
-        Serial.print("[SENSOR] Temp -> ");
-        Serial.print(temp);
-        Serial.println(" C");
-        mqttPublishTemperature(temp);
+        float temp = tempSensorReadC();
+
+        // DS18B20 failed
+        if (temp == TEMP_SENSOR_ERROR)
+        {
+            Serial.println("[TEMP] Failed to read sensor!");
+            Serial.println("[TEMP] Check:");
+            Serial.println("  - Wiring");
+            Serial.println("  - GPIO pin");
+            Serial.println("  - 4.7k pull-up resistor");
+            Serial.println("  - Sensor power");
+        }
+        else
+        {
+            Serial.print("[TEMP] Temperature -> ");
+            Serial.print(temp, 2);
+            Serial.println(" C");
+
+            mqttPublishTemperature(temp);
+        }
     }
 }

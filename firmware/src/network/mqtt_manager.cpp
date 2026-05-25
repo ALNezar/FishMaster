@@ -4,6 +4,7 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 
 #include "network_parameter.h"
 
@@ -252,6 +253,44 @@ bool mqttPublishDeviceInfo(void)
         Serial.print(mqttStateToString(mqttClient.state()));
         Serial.println(")");
         Serial.println("[MQTT] Hint: if state is Connected, the packet may still exceed broker/client limits.");
+    }
+
+    return ok;
+}
+
+bool mqttPublishPh(float ph, float moduleVoltage, float internalChipTemp)
+{
+    if (!mqttClient.connected())
+    {
+        mqttReconnect();
+        if (!mqttClient.connected())
+        {
+            Serial.print("[MQTT] Skip pH publish: not connected, state=");
+            Serial.print(mqttClient.state());
+            Serial.println();
+            return false;
+        }
+    }
+    StaticJsonDocument<128> doc;
+    doc["ph_voltage"] = moduleVoltage;
+    doc["ph_value"] = ph;
+    doc["internal_chip_temp"] = internalChipTemp;
+    doc["uptime_ms"] = static_cast<unsigned long>(millis());
+
+    char payload[256];
+    size_t n = serializeJson(doc, payload, sizeof(payload));
+
+    Serial.println("[MQTT] pH payload -> ");
+    Serial.println(payload);
+
+    bool ok = mqttClient.publish(FM_MQTT_PH_TOPIC, payload);
+    if (ok)
+    {
+        Serial.println("[MQTT] pH published successfully");
+    }
+    else
+    {
+        Serial.println("[MQTT] Failed to publish pH");
     }
 
     return ok;

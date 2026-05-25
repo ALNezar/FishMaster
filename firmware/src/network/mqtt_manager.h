@@ -5,3 +5,4 @@ void mqttLoop(void);
 bool mqttPublishTemperature(float temp);
 bool mqttPublishTurbidity(float ntu, int rawValue);
 bool mqttPublishDeviceInfo(void);
+bool mqttPublishPh(float ph, float moduleVoltage, float internalChipTemp);

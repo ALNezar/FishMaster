@@ -1,8 +1,11 @@
 #include <Arduino.h>
+#include <WiFi.h>
 
 #include "utility/timer.h"
 #include "network/wifi_manager.h"
 #include "network/mqtt_manager.h"
+
+#include "ui/dashboard_ui.h"
 
 #include "sensors/temp_sensor.h"
 #include "sensors/turbidity_sensor.h"
@@ -27,6 +30,19 @@ unsigned long phTimer = 0;
 
 bool phRequested = false;
 
+static bool waterTempValid = false;
+static bool turbidityValid = false;
+static bool phValid = false;
+static bool chipTempValid = false;
+
+static float currentWaterTemp = NAN;
+static float currentTurbidityNtu = NAN;
+static int currentTurbidityRaw = 0;
+static float currentPh = NAN;
+static float currentPhVoltage = NAN;
+static float currentPhRawAdc = NAN;
+static float currentChipTemp = NAN;
+
 void setup()
 {
     Serial.begin(115200);
@@ -46,6 +62,9 @@ void setup()
 
     Serial.println("[BOOT] Initializing turbidity sensor...");
     turbiditySensorInit();
+
+    Serial.println("[BOOT] Initializing dashboard UI...");
+    dashboardInit();
 
     // Connect WiFi
     Serial.println("[BOOT] Connecting WiFi...");
@@ -69,6 +88,8 @@ void loop()
     // Maintain MQTT connection
     mqttLoop();
 
+    dashboardSetWifiConnected(WiFi.status() == WL_CONNECTED);
+
     // Publish device info every 60 seconds
     if (checkTime(deviceInfoTimer, 60000))
     {
@@ -83,6 +104,11 @@ void loop()
 
         int rawValue = turbiditySensorReadRaw();
         float ntu = turbiditySensorReadNtu();
+
+        currentTurbidityRaw = rawValue;
+        currentTurbidityNtu = ntu;
+        turbidityValid = true;
+        dashboardSetTurbidity(currentTurbidityNtu, currentTurbidityRaw, turbidityValid);
 
         Serial.print("[TURBIDITY] Raw ADC -> ");
         Serial.println(rawValue);
@@ -109,6 +135,12 @@ void loop()
         float ph = phSensorGetPh();
         float v = phSensorLastVoltage();
         float raw = phSensorLastRawAdc();
+        const bool phIsValid = (ph >= 0.0f);
+
+        currentPh = ph;
+        currentPhVoltage = v;
+        currentPhRawAdc = raw;
+        phValid = phIsValid;
 
         Serial.println();
         Serial.println("------ pH SENSOR ------");
@@ -122,6 +154,7 @@ void loop()
 
         // Read internal chip temperature using driver/temp_sensor.h if available
         float chipTemp = NAN;
+        chipTempValid = false;
 #if HAVE_TSENS
         {
             temp_sensor_config_t cfg = TSENS_CONFIG_DEFAULT();
@@ -134,6 +167,8 @@ void loop()
                     if (temp_sensor_get_celsius(handle, &celsius) == ESP_OK)
                     {
                         chipTemp = celsius;
+                        currentChipTemp = celsius;
+                        chipTempValid = true;
                         Serial.print("[PH] Internal chip temp -> ");
                         Serial.print(celsius, 2);
                         Serial.println(" C");
@@ -148,6 +183,8 @@ void loop()
 #endif
 
         mqttPublishPh(ph, v, chipTemp);
+        dashboardSetInternalTemp(currentChipTemp, chipTempValid);
+        dashboardSetPh(currentPh, currentPhVoltage, currentPhRawAdc, phValid);
         phRequested = false;
     }
 
@@ -162,6 +199,8 @@ void loop()
         // DS18B20 failed
         if (temp == TEMP_SENSOR_ERROR)
         {
+            waterTempValid = false;
+            dashboardSetWaterTemp(NAN, false);
             Serial.println("[TEMP] Failed to read sensor!");
             Serial.println("[TEMP] Check:");
             Serial.println("  - Wiring");
@@ -171,6 +210,10 @@ void loop()
         }
         else
         {
+            currentWaterTemp = temp;
+            waterTempValid = true;
+            dashboardSetWaterTemp(currentWaterTemp, waterTempValid);
+
             Serial.print("[TEMP] Temperature -> ");
             Serial.print(temp, 2);
             Serial.println(" C");
@@ -178,4 +221,6 @@ void loop()
             mqttPublishTemperature(temp);
         }
     }
+
+    dashboardLoop();
 }

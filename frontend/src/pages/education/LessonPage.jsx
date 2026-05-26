@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { completeLesson, getLearningProgress, getLesson } from '../../api';
-import { FaLightbulb, FaClipboardList, FaPaw, FaCheckCircle, FaArrowRight } from 'react-icons/fa';
+import { FaLightbulb, FaClipboardList, FaPaw, FaCheckCircle, FaArrowRight, FaClock, FaShieldAlt } from 'react-icons/fa';
 import styles from './LessonPage.module.scss';
 
 function LessonPage() {
@@ -48,76 +48,92 @@ function LessonPage() {
 
   return (
     <div className={styles.wrapper}>
-      {/* Hero Section */}
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <div className={styles.badge}>{lesson.difficulty}</div>
           <h1>{lesson.title}</h1>
           <p className={styles.heroSummary}>{lesson.summary}</p>
           <div className={styles.meta}>
-            <span>⏱️ {lesson.durationMin} min</span>
+            <span><FaClock /> {lesson.durationMin} min</span>
+            <span><FaShieldAlt /> Practical guide</span>
           </div>
+        </div>
+        <div className={styles.heroMedia}>
+          {lesson.images?.[0] && <img src={lesson.images[0].src} alt={lesson.images[0].caption} />}
         </div>
       </section>
 
-      {/* Why It Matters Card */}
-      <section className={styles.cardSection}>
-        <div className={styles.card}>
+      <section className={styles.summaryGrid}>
+        <article className={styles.summaryCard}>
           <div className={styles.cardHeader}>
             <FaLightbulb className={styles.cardIcon} />
             <h2>Why It Matters</h2>
           </div>
           <p className={styles.cardContent}>{lesson.why}</p>
-        </div>
+        </article>
+
+        <article className={styles.summaryCard}>
+          <div className={styles.cardHeader}>
+            <FaClipboardList className={styles.cardIcon} />
+            <h2>At a Glance</h2>
+          </div>
+          <ul className={styles.bulletList}>
+            {lesson.checks.slice(0, 3).map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </article>
       </section>
 
-      {/* What to Check - Interactive Cards */}
       <section className={styles.cardSection}>
         <div className={styles.sectionTitle}>
           <FaClipboardList />
           <h2>What to Check</h2>
         </div>
-        <p className={styles.sectionHint}>Tap each item to expand</p>
-        <div className={styles.expandableCards}>
+        <div className={styles.compactCards}>
           {lesson.checks.map((check, index) => (
-            <button
-              key={check}
-              className={`${styles.expandableCard} ${expandedCheck === index ? styles.expanded : ''}`}
-              onClick={() => setExpandedCheck(expandedCheck === index ? null : index)}
-            >
+            <article key={check} className={styles.compactCard}>
               <div className={styles.cardNumber}>{index + 1}</div>
-              <div className={styles.cardText}>{check}</div>
-              <div className={styles.expandIcon}>{expandedCheck === index ? '−' : '+'}</div>
-            </button>
+              <p>{check}</p>
+            </article>
           ))}
         </div>
       </section>
 
-      {/* Action Steps - Interactive Cards */}
       <section className={styles.cardSection}>
         <div className={styles.sectionTitle}>
           <FaPaw />
           <h2>Action Steps</h2>
         </div>
-        <p className={styles.sectionHint}>Tap to see details</p>
         <div className={styles.actionCards}>
           {lesson.actions.map((action, index) => (
-            <button
-              key={action}
-              className={`${styles.actionCard} ${expandedAction === index ? styles.expanded : ''}`}
-              onClick={() => setExpandedAction(expandedAction === index ? null : index)}
-            >
+            <article key={action} className={styles.actionCard}>
               <div className={styles.actionNumber}>{index + 1}</div>
               <div className={styles.actionContent}>
                 <p className={styles.actionText}>{action}</p>
               </div>
-              <div className={styles.actionArrow}>{expandedAction === index ? '▼' : '▶'}</div>
-            </button>
+            </article>
           ))}
         </div>
       </section>
 
-      {/* Call to Action */}
+      {lesson.images?.length > 1 && (
+        <section className={styles.gallerySection}>
+          <div className={styles.sectionTitle}>
+            <FaLightbulb />
+            <h2>Simple Infographics</h2>
+          </div>
+          <div className={styles.galleryGrid}>
+            {lesson.images.map((image) => (
+              <figure key={image.src} className={styles.galleryCard}>
+                <img src={image.src} alt={image.caption} loading="lazy" />
+                <figcaption>{image.caption}</figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className={styles.ctaSection}>
         <button
           className={styles.ctaButton}
@@ -128,7 +144,6 @@ function LessonPage() {
         </button>
       </section>
 
-      {/* Complete Lesson Button */}
       <footer className={styles.footer}>
         {completed ? (
           <div className={styles.completedMessage}>

@@ -198,7 +198,7 @@ $transition:   .25s ease;               // matches trends .paramCard transition
 // ─── Current Readings Grid ─────────────────────────────────────────────────────
 .currentReadings {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   margin-bottom: 1.2rem;
 
@@ -217,10 +217,30 @@ $transition:   .25s ease;               // matches trends .paramCard transition
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  cursor: default;
+  cursor: pointer;
   transition: $transition;
 
   &:hover { transform: translateY(-2px); }
+
+  &:hover::after {
+    content: attr(data-hover-label);
+    position: absolute;
+    right: 0.85rem;
+    top: 0.85rem;
+    padding: 0.3rem 0.55rem;
+    border-radius: $radius-pill;
+    background: rgba($primary, 0.12);
+    color: $primary-dark;
+    font-size: 0.72rem;
+    font-weight: 700;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px $primary-glow;
+  }
 
   &.statusOptimal {
     border-left-color: $success;
@@ -238,6 +258,23 @@ $transition:   .25s ease;               // matches trends .paramCard transition
     background: $danger-bg;
     animation: pulse-ring 2s ease-out infinite;
     .readingIcon { background: rgba($danger, 0.1); color: $danger; }
+  }
+}
+
+.readingCardActive {
+  transform: translateY(-3px);
+  background: linear-gradient(135deg, rgba($primary, 0.14), rgba($primary, 0.05));
+  box-shadow: 0 16px 34px rgba($primary, 0.18);
+  border-color: rgba($primary, 0.55);
+
+  .readingLabel,
+  .readingValue {
+    color: $primary-dark;
+  }
+
+  .readingIcon {
+    background: rgba($primary, 0.18);
+    color: $primary-dark;
   }
 }
 
@@ -321,11 +358,11 @@ $transition:   .25s ease;               // matches trends .paramCard transition
 
 .chartCard {
   @extend %grid-card;
-  grid-column: span 4;
+  grid-column: span 8;
   transition: $transition;
   &:hover { transform: translateY(-2px); }
 
-  @media (max-width: 1200px) { grid-column: span 6; }
+  @media (max-width: 1200px) { grid-column: span 12; }
   @media (max-width: 768px)  { grid-column: span 12; }
 }
 
@@ -336,6 +373,87 @@ $transition:   .25s ease;               // matches trends .paramCard transition
   &:hover { transform: translateY(-2px); }
 
   h3 { font-size: 1.2rem; margin-bottom: 1rem; }
+}
+
+.summaryDonutWrap {
+  margin: 1rem 0 0.5rem;
+}
+
+.chartModeTabs {
+  display: inline-flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.chartModeTab {
+  border: 1px solid rgba($primary, 0.15);
+  background: rgba($primary, 0.04);
+  color: $text-dark;
+  padding: 0.5rem 0.8rem;
+  border-radius: $radius-pill;
+  font-family: $font-body;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: $transition;
+
+  &:hover {
+    border-color: rgba($primary, 0.35);
+    transform: translateY(-1px);
+  }
+
+  &:hover::after {
+    content: attr(data-hover-label);
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.7rem;
+    color: $primary-dark;
+    font-weight: 700;
+  }
+}
+
+.chartModeTabActive {
+  background: linear-gradient(135deg, $primary, $primary-dark);
+  border-color: $primary-dark;
+  color: white;
+  box-shadow: 0 10px 22px rgba($primary, 0.25);
+
+  &:hover {
+    transform: translateY(-1px);
+    border-color: $primary-dark;
+  }
+}
+
+.chartSurface {
+  width: 100%;
+}
+
+.chartHeaderRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.chartSubtitle {
+  margin: -0.35rem 0 0;
+  color: $text-muted;
+  font-size: 0.82rem;
+}
+
+.activeMetricPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.75rem;
+  border-radius: $radius-pill;
+  background: rgba($primary, 0.08);
+  color: $primary-dark;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 // ─── Tank Health Score ─────────────────────────────────────────────────────────
@@ -443,4 +561,30 @@ $transition:   .25s ease;               // matches trends .paramCard transition
 // ─── Mobile ───────────────────────────────────────────────────────────────────
 @media (max-width: 900px) {
   .currentReadings { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .chartHeaderRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .chartModeTabs {
+    justify-content: flex-start;
+  }
+
+  .chartModeTab {
+    flex: 1 1 auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .chartModeTabs {
+    width: 100%;
+  }
+
+  .chartModeTab {
+    flex: 1 1 0;
+    text-align: center;
+  }
 }

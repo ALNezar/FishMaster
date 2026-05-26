@@ -1,19 +1,22 @@
 .wrapper {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
   padding-bottom: 2rem;
   font-family: 'DM Sans', sans-serif;
 }
 
 // ============= HERO HEADER =============
 .hero {
-  background: linear-gradient(135deg, #1277b0 0%, #0d5a8f 100%);
+  background: linear-gradient(135deg, #03334f 0%, #1277b0 58%, #65b6dc 100%);
   border-radius: 24px;
-  padding: 2rem;
+  padding: 1.5rem;
   color: #fff;
   position: relative;
   overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(200px, 0.8fr);
+  gap: 1rem;
 
   &::before {
     content: '';
@@ -28,10 +31,9 @@
   }
 }
 
-.heroContent {
+.heroCopy {
   position: relative;
   z-index: 1;
-  margin-bottom: 1.5rem;
 }
 
 .badge {
@@ -50,7 +52,7 @@
 
 .hero h1 {
   margin: 0;
-  font-size: 2rem;
+  font-size: 1.9rem;
   font-weight: 800;
   line-height: 1.2;
   margin-bottom: 0.8rem;
@@ -61,6 +63,35 @@
   font-size: 1.05rem;
   line-height: 1.5;
   opacity: 0.95;
+}
+
+.heroStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin: 0.9rem 0;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.84rem;
+    font-weight: 700;
+  }
+}
+
+.heroImage {
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  object-fit: cover;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 // ============= PROGRESS BAR =============
@@ -90,23 +121,40 @@
   z-index: 1;
 }
 
+.sectionIntro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #203345;
+  }
+
+  p {
+    margin: 0;
+    color: #63798a;
+  }
+}
+
 // ============= LESSON GRID =============
 .lessonGrid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
 .lessonCard {
   background: linear-gradient(135deg, #fff 0%, #f8fbfd 100%);
-  border: 2px solid #e0ecf5;
+  border: 1px solid #dce8f1;
   border-radius: 20px;
-  padding: 1.5rem;
+  padding: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.9rem;
   text-align: left;
   font-family: inherit;
   position: relative;
@@ -128,7 +176,7 @@
   &:hover {
     border-color: #1277b0;
     background: linear-gradient(135deg, #f0f8fc 0%, #e8f3fa 100%);
-    transform: translateY(-6px);
+    transform: translateY(-4px);
     box-shadow: 0 12px 32px rgba(18, 119, 176, 0.15);
   }
 
@@ -144,19 +192,48 @@
   }
 }
 
+.lessonMedia {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #e9f4fb;
+
+  img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    display: block;
+  }
+}
+
 .lessonNumber {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  width: 44px;
+  height: 44px;
   background: linear-gradient(135deg, #1277b0 0%, #0d5a8f 100%);
   color: #fff;
   border-radius: 50%;
   font-weight: 800;
-  font-size: 1.4rem;
-  position: relative;
+  font-size: 1.1rem;
+  position: absolute;
+  top: 0.7rem;
+  left: 0.7rem;
   z-index: 2;
+}
+
+.lessonTag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(18, 119, 176, 0.1);
+  color: #1277b0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .lessonCard.completed .lessonNumber {
@@ -166,10 +243,17 @@
 .lessonContent {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.5rem;
   position: relative;
   z-index: 2;
   flex: 1;
+}
+
+.lessonMetaRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .lessonTopic {
@@ -188,7 +272,7 @@
 .lessonCard h3 {
   margin: 0;
   color: #203345;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 700;
   line-height: 1.3;
 }
@@ -243,10 +327,8 @@
   border-radius: 50%;
   font-size: 1rem;
   transition: all 0.3s ease;
-  position: absolute;
-  bottom: 1.5rem;
-  right: 1.5rem;
   z-index: 2;
+  align-self: flex-end;
 }
 
 .lessonCard:hover .lessonAction {
@@ -274,9 +356,20 @@
 }
 
 // ============= RESPONSIVE =============
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .lessonGrid {
     grid-template-columns: 1fr;
+  }
+
+  .lessonMetaRow {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .hero h1 {
@@ -300,8 +393,6 @@
   .lessonAction {
     width: 40px;
     height: 40px;
-    bottom: 1.2rem;
-    right: 1.2rem;
     font-size: 0.9rem;
   }
 }

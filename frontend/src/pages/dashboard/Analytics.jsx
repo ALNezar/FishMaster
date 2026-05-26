@@ -134,6 +134,18 @@ function mergeTemperatureReading(prev, liveTemp) {
   };
 }
 
+function getMetricChartComponent(metricKey) {
+  switch (metricKey) {
+    case 'ph':
+      return PhChart;
+    case 'turbidity':
+      return TurbidityChart;
+    case 'temperature':
+    default:
+      return TemperatureChart;
+  }
+}
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function TrendIcon({ trend }) {
@@ -142,11 +154,20 @@ function TrendIcon({ trend }) {
   return                          <FaMinus      className={styles.trendStable} />;
 }
 
-function ReadingCard({ icon, label, info, reading }) {
+function ReadingCard({ icon, label, info, reading, onClick, active }) {
   const statusClass = reading?.status ? styles[`status${capitalize(reading.status)}`] : '';
+  const hoverLabel = `View ${label} chart`;
 
   return (
-    <Card className={`${styles.readingCard} ${statusClass}`}>
+    <Card
+      className={`${styles.readingCard} ${statusClass} ${active ? styles.readingCardActive : ''}`}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => (e.key === 'Enter' || e.key === ' ' ? onClick() : null) : undefined}
+      title={hoverLabel}
+      data-hover-label={hoverLabel}
+    >
       <div className={styles.readingIcon}>{icon}</div>
       <div className={styles.readingInfo}>
         <div className={styles.labelRow}>
@@ -195,6 +216,8 @@ function Analytics() {
   const [selectedTank, setSelectedTank] = useState(null);
   const [timeRange,    setTimeRange   ] = useState('24h');
   const [sensorData,   setSensorData  ] = useState(null);
+  const [selectedMetric, setSelectedMetric] = useState('temperature');
+  const [chartMode, setChartMode] = useState('individual');
   const [loading,      setLoading     ] = useState(true);
   const [error,        setError       ] = useState(null);
   const [lastRefresh,  setLastRefresh ] = useState(new Date());
@@ -204,9 +227,10 @@ function Analytics() {
 
   // ── Data fetching ──────────────────────────────────────────────────────────
 
-  const fetchSensorData = useCallback(async (tankId, range) => {
+  const fetchSensorData = useCallback(async (tankId, range, options = {}) => {
+    const { silent = false } = options;
     if (!tankId) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     setError(null);
     try {
       const data = await getSensorData(tankId, range);
@@ -216,7 +240,7 @@ function Analytics() {
       setError('Failed to load sensor data. Please try again.');
       console.error(err);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
@@ -238,6 +262,17 @@ function Analytics() {
   // Refetch when tank or time range changes
   useEffect(() => {
     fetchSensorData(selectedTank, timeRange);
+  }, [selectedTank, timeRange, fetchSensorData]);
+
+  // Keep the data live without forcing a manual refresh.
+  useEffect(() => {
+    if (!selectedTank) return undefined;
+
+    const intervalId = window.setInterval(() => {
+      fetchSensorData(selectedTank, timeRange, { silent: true });
+    }, 15000);
+
+    return () => window.clearInterval(intervalId);
   }, [selectedTank, timeRange, fetchSensorData]);
 
   // Merge live SSE temperature into sensorData
@@ -268,11 +303,28 @@ function Analytics() {
     [timeRange],
   );
 
+  const activeMetricConfig = useMemo(
+    () => READING_CONFIGS.find(({ key }) => key === selectedMetric) ?? READING_CONFIGS[0],
+    [selectedMetric],
+  );
+
+  const ActiveChartComponent = useMemo(
+    () => getMetricChartComponent(selectedMetric),
+    [selectedMetric],
+  );
+
+  const chartModeOptions = useMemo(() => [
+    { value: 'individual', label: 'Individual' },
+    { value: 'combined', label: 'Combined' },
+  ], []);
+
   // ── Handlers ───────────────────────────────────────────────────────────────
 
   const handleRefresh    = useCallback(() => fetchSensorData(selectedTank, timeRange), [fetchSensorData, selectedTank, timeRange]);
   const handleTankChange = useCallback((e) => setSelectedTank(Number(e.target.value)), []);
   const handleRangeChange= useCallback((e) => setTimeRange(e.target.value), []);
+  const handleMetricSelect = useCallback((metricKey) => setSelectedMetric(metricKey), []);
+  const handleChartModeChange = useCallback((mode) => setChartMode(mode), []);
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -368,6 +420,8 @@ function Analytics() {
                 label={label}
                 info={info}
                 reading={sensorData.currentReadings?.[key]}
+                onClick={() => handleMetricSelect(key)}
+                active={selectedMetric === key}
               />
             ))}
           </div>
@@ -402,6 +456,10 @@ function Analytics() {
                 </div>
               )}
 
+              <div className={styles.summaryDonutWrap}>
+                <WaterQualitySummary data={sensorData.summary} />
+              </div>
+
               <ul className={styles.summaryLegend} aria-label="Status legend">
                 {STATUS_LEGEND.map(({ color, label }) => (
                   <li key={label} className={styles.legendItem}>
@@ -412,26 +470,45 @@ function Analytics() {
               </ul>
             </Card>
 
-            {/* Individual Parameter Charts */}
+            {/* Focus Chart */}
             <Card className={styles.chartCard}>
-              <h3><FaThermometerHalf /> Temperature</h3>
-              <TemperatureChart data={sensorData.temperature} timeRange={timeRangeLabel} />
-            </Card>
+              <div className={styles.chartHeaderRow}>
+                <div>
+                  <h3>
+                    {chartMode === 'combined' ? <FaChartLine /> : activeMetricConfig.icon}
+                    {chartMode === 'combined' ? ' Health Overview' : ` ${activeMetricConfig.label}`}
+                  </h3>
+                  <p className={styles.chartSubtitle}>
+                    {chartMode === 'combined'
+                      ? 'Normalized view helps compare all parameters at a glance.'
+                      : 'Tap a metric card to switch the focused sensor.'}
+                  </p>
+                </div>
+                <div className={styles.chartModeTabs} role="tablist" aria-label="Chart mode">
+                  {chartModeOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      role="tab"
+                      aria-selected={chartMode === option.value}
+                      className={`${styles.chartModeTab} ${chartMode === option.value ? styles.chartModeTabActive : ''}`}
+                      onClick={() => handleChartModeChange(option.value)}
+                      title={`Switch to ${option.label.toLowerCase()} chart mode`}
+                      data-hover-label={`Switch to ${option.label.toLowerCase()} view`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-            <Card className={styles.chartCard}>
-              <h3><FaTint /> pH Level</h3>
-              <PhChart data={sensorData.ph} timeRange={timeRangeLabel} />
-            </Card>
-
-            <Card className={styles.chartCard}>
-              <h3><FaWater /> Turbidity</h3>
-              <TurbidityChart data={sensorData.turbidity} timeRange={timeRangeLabel} />
-            </Card>
-
-            {/* Multi-Parameter Overview */}
-            <Card className={styles.wideCard}>
-              <h3><FaChartLine /> All Parameters Overview</h3>
-              <MultiParameterChart data={sensorData.multiParam} timeRange={timeRangeLabel} />
+              <div className={styles.chartSurface}>
+                {chartMode === 'combined' ? (
+                  <MultiParameterChart data={sensorData.multiParam} timeRange={timeRangeLabel} />
+                ) : (
+                  <ActiveChartComponent data={sensorData[selectedMetric]} timeRange={timeRangeLabel} />
+                )}
+              </div>
             </Card>
 
           </div>

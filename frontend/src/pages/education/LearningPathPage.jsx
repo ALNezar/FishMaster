@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getLearningPaths, getLessons, getLearningProgress } from '../../api';
-import { FaArrowRight, FaCheckCircle } from 'react-icons/fa';
+import { FaArrowRight, FaCheckCircle, FaClock, FaLayerGroup } from 'react-icons/fa';
 import styles from './LearningPathPage.module.scss';
+import placeholderImage from '../../assets/images/learning/placeholder.svg';
 
 function LearningPathPage() {
   const navigate = useNavigate();
@@ -45,22 +46,38 @@ function LearningPathPage() {
 
   return (
     <div className={styles.wrapper}>
-      {/* Hero Header */}
       <header className={styles.hero}>
-        <div className={styles.heroContent}>
+        <div className={styles.heroCopy}>
           <div className={styles.badge}>{path.level}</div>
           <h1>{path.title}</h1>
           <p className={styles.heroDesc}>{path.description}</p>
+          <div className={styles.heroStats}>
+            <span><FaLayerGroup /> {path.lessonsCount} lessons</span>
+            <span><FaClock /> {path.durationMin} min</span>
+            <span>{progressPercent}% complete</span>
+          </div>
+          <div className={styles.progressBar}>
+            <div className={styles.progressFill} style={{ width: `${progressPercent}%` }} />
+          </div>
         </div>
-        <div className={styles.progressBar}>
-          <div className={styles.progressFill} style={{ width: `${progressPercent}%` }} />
-        </div>
-        <div className={styles.progressText}>
-          {progressPercent}% Complete
-        </div>
+        <img
+          className={styles.heroImage}
+          src={path.sensorImage}
+          alt={`${path.title} visual`}
+          onError={(e) => {
+            // fallback to local placeholder if the image fails to load
+            // eslint-disable-next-line no-param-reassign
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = placeholderImage;
+          }}
+        />
       </header>
 
-      {/* Lessons Grid */}
+      <section className={styles.sectionIntro}>
+        <h2>Lessons in this path</h2>
+        <p>Short sections, clear visuals, and one action at a time.</p>
+      </section>
+
       <div className={styles.lessonGrid}>
         {lessons.map((lesson, index) => {
           const completed = completedIds.includes(lesson.id);
@@ -70,9 +87,25 @@ function LearningPathPage() {
               className={`${styles.lessonCard} ${completed ? styles.completed : ''}`}
               onClick={() => navigate(`/education/lesson/${lesson.id}`)}
             >
-              <div className={styles.lessonNumber}>{index + 1}</div>
+              <div className={styles.lessonMedia}>
+                <img
+                  src={lesson.image}
+                  alt={`${lesson.title} visual`}
+                  loading="lazy"
+                  onError={(e) => {
+                    // fallback to local placeholder
+                    // eslint-disable-next-line no-param-reassign
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = placeholderImage;
+                  }}
+                />
+                <span className={styles.lessonNumber}>{index + 1}</span>
+              </div>
               <div className={styles.lessonContent}>
-                <p className={styles.lessonTopic}>{lesson.topic}</p>
+                <div className={styles.lessonMetaRow}>
+                  <p className={styles.lessonTopic}>{lesson.topic}</p>
+                  <span className={styles.lessonTag}>{lesson.difficulty}</span>
+                </div>
                 <h3>{lesson.title}</h3>
                 <p className={styles.lessonSummary}>{lesson.summary}</p>
                 <div className={styles.lessonFooter}>
@@ -84,9 +117,7 @@ function LearningPathPage() {
                   )}
                 </div>
               </div>
-              <div className={styles.lessonAction}>
-                <FaArrowRight />
-              </div>
+              <div className={styles.lessonAction}><FaArrowRight /></div>
             </button>
           );
         })}

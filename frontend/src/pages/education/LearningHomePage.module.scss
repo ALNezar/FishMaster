@@ -274,6 +274,103 @@
   color: #1f4f6b;
 }
 
+.studySection {
+  background: #fff;
+  border: 1px solid #d7e3ec;
+  border-radius: 12px;
+  padding: 0.95rem;
+}
+
+.studySection .cardHeader span {
+  color: #6d8292;
+  font-size: 0.88rem;
+}
+
+.studyGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.studyCard {
+  border: 1px solid #d9e7f1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f7fbfe;
+  display: flex;
+  flex-direction: column;
+}
+
+.studyCard img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+
+.studyBody {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.studyMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.studyMeta span {
+  font-size: 0.75rem;
+  color: #1e5676;
+  background: #e2f1fa;
+  border-radius: 999px;
+  padding: 0.2rem 0.5rem;
+}
+
+.studyBody h3,
+.studyBody p {
+  margin: 0;
+}
+
+.studyBody h3 {
+  font-size: 1rem;
+  color: #203345;
+}
+
+.studyBody p {
+  color: #546e7e;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.studyFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 0.4rem;
+}
+
+.studyFooter span {
+  color: #5b7484;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.studyFooter button {
+  border: none;
+  background: #0f6d9d;
+  color: #fff;
+  border-radius: 9px;
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+}
+
+.studyFooter button:hover {
+  background: #0c5c85;
+}
+
 .hardwareIntro {
   margin: 0;
   color: #5a7283;
@@ -340,6 +437,10 @@
 
 @media (max-width: 900px) {
   .sensorGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .studyGrid {
     grid-template-columns: 1fr;
   }
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getLearningProgress, getLearningPaths } from '../../api';
-import { FaTrophy, FaFire, FaBook, FaArrowRight } from 'react-icons/fa';
+import { FaTrophy, FaFire, FaBook, FaArrowRight, FaCheckCircle, FaClock } from 'react-icons/fa';
 import styles from './LearningProgressPage.module.scss';
 
 function LearningProgressPage() {
@@ -40,14 +40,12 @@ function LearningProgressPage() {
 
   return (
     <div className={styles.wrapper}>
-      {/* Hero Stats Section */}
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <h1>Your Learning Journey</h1>
-          <p className={styles.subtitle}>Keep it up! You're becoming an expert.</p>
+          <p className={styles.subtitle}>Short lessons, clear visuals, and steady progress across every sensor topic.</p>
         </div>
 
-        {/* Stat Cards */}
         <div className={styles.statGrid}>
           <div className={styles.statCard}>
             <div className={styles.statIcon}>
@@ -64,8 +62,8 @@ function LearningProgressPage() {
               <FaBook />
             </div>
             <div className={styles.statContent}>
-              <div className={styles.statValue}>{progress.completedCount}</div>
-              <div className={styles.statLabel}>Lessons Done</div>
+              <div className={styles.statValue}>{progress.viewedCount}</div>
+              <div className={styles.statLabel}>Sections Viewed</div>
             </div>
           </div>
 
@@ -80,7 +78,6 @@ function LearningProgressPage() {
           </div>
         </div>
 
-        {/* Overall Progress */}
         <div className={styles.overallProgress}>
           <div className={styles.progressMeta}>
             <span>Overall Progress</span>
@@ -95,9 +92,11 @@ function LearningProgressPage() {
         </div>
       </section>
 
-      {/* Learning Paths Section */}
       <section className={styles.pathsSection}>
-        <h2>Learning Paths</h2>
+        <div className={styles.sectionHeader}>
+          <h2>Learning Paths</h2>
+          <p>Tap a path to continue where you left off.</p>
+        </div>
         <div className={styles.pathsGrid}>
           {progress.pathProgress.map((item) => {
             const path = paths.find((entry) => entry.id === item.pathId);
@@ -109,25 +108,23 @@ function LearningProgressPage() {
                 className={`${styles.pathCard} ${isComplete ? styles.pathComplete : ''}`}
                 onClick={() => navigate(`/education/path/${item.pathId}`)}
               >
-                <div className={styles.pathHeader}>
-                  <h3>{path?.title || item.title}</h3>
-                  {isComplete && <div className={styles.completeBadge}>✓ Complete</div>}
-                </div>
+                  <div className={styles.pathHeader}>
+                    <div>
+                      <p className={styles.pathTopic}>{path?.level || 'Path'}</p>
+                      <h3>{path?.title || item.title}</h3>
+                    </div>
+                    {isComplete && <div className={styles.completeBadge}><FaCheckCircle /> Complete</div>}
+                  </div>
 
-                <p className={styles.pathProgress}>
-                  {item.completed} of {item.total} lessons
-                </p>
+                  <p className={styles.pathProgress}>{item.completed} of {item.total} lessons</p>
 
-                <div className={styles.pathProgressBar}>
-                  <div 
-                    className={styles.pathProgressFill} 
-                    style={{ width: `${item.percent}%` }}
-                  />
-                </div>
+                  <div className={styles.pathProgressBar}>
+                    <div className={styles.pathProgressFill} style={{ width: `${item.percent}%` }} />
+                  </div>
 
-                <div className={styles.pathFooter}>
-                  <span className={styles.percent}>{item.percent}%</span>
-                  <FaArrowRight className={styles.arrow} />
+                  <div className={styles.pathFooter}>
+                    <span className={styles.percent}><FaClock /> {item.percent}%</span>
+                    <FaArrowRight className={styles.arrow} />
                 </div>
               </button>
             );

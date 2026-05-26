@@ -39,6 +39,8 @@ export * from './learning.api';
 // Hooks
 export { useTemperatureStream } from './hooks/useTemperatureStream';
 export type { UseTemperatureStreamResult } from './hooks/useTemperatureStream';
+export { usePhStream } from './hooks/usePhStream';
+export type { UsePhStreamResult } from './hooks/usePhStream';
 
 // Core utilities
 export { apiRequest } from './client';
@@ -76,6 +78,7 @@ import * as onboardingApi from './onboarding.api';
 import * as learningApi from './learning.api';
 import { useSseEvent } from './hooks/useSseEvent';
 import { useTemperatureStream } from './hooks/useTemperatureStream';
+import { usePhStream } from './hooks/usePhStream';
 import { apiRequest } from './client';
 import { setToken, removeToken, isAuthenticated } from './utils/token';
 
@@ -93,6 +96,7 @@ export default {
   ...learningApi,
   useSseEvent,
   useTemperatureStream,
+  usePhStream,
   apiRequest,
   setToken,
   removeToken,

@@ -65,6 +65,14 @@ export interface TurbidityReading {
   serverTimestamp: string;
 }
 
+export interface PhReading {
+  id: number;
+  tankId: string;
+  ph: number | string;
+  deviceTimestamp?: string | null;
+  serverTimestamp: string;
+}
+
 export interface DeviceInfoSnapshot {
   id: number;
   deviceId: string;
@@ -81,7 +89,7 @@ export interface DeviceInfoSnapshot {
   serverTimestamp: string;
 }
 
-export type TelemetryKind = 'temperature' | 'turbidity';
+export type TelemetryKind = 'temperature' | 'turbidity' | 'ph';
 
 export interface SensorReading {
   value: number;
@@ -107,6 +115,7 @@ export interface SensorDataResponse {
     labels: string[];
     temperature: number[];
     ph: number[];
+    turbidity: number[];
   };
   summary?: {
     optimal: number;
@@ -211,6 +220,10 @@ export interface LearningSectionPreview {
   sensorImage: string;
   summary: string;
   subsectionCount: number;
+  level: string;
+  description: string;
+  lessonsCount: number;
+  durationMin: number;
 }
 
 export interface LearningProgress {

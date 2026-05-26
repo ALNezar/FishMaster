@@ -14,6 +14,7 @@ $text-muted: #6b7280;
 $border-color: #e5e7eb;
 $bg-cream: #f5f1e3;
 $card-bg: #E8DCC0;
+@use 'sass:color';
 
 // Loading State
 .loadingContainer {
@@ -696,7 +697,7 @@ $card-bg: #E8DCC0;
     cursor: pointer;
 
     &:hover {
-      background: darken($success, 5%);
+      background: color.adjust($success, $lightness: -5%);
     }
   }
 }

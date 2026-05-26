@@ -97,6 +97,7 @@ export default function AlertConfigPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [thresholdsReadOnly, setThresholdsReadOnly] = useState(false);
   const [success, setSuccess] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
 
@@ -127,6 +128,7 @@ export default function AlertConfigPage() {
       setLoading(true);
       setError('');
       setSuccess('');
+      setThresholdsReadOnly(false);
       try {
         const data = await getAlertThresholds(selectedTankId);
         const merged = { ...DEFAULT_THRESHOLDS, ...data };
@@ -134,7 +136,14 @@ export default function AlertConfigPage() {
         setOriginalThresholds(merged);
       } catch (err) {
         console.error('Failed to fetch thresholds:', err);
-        // Use defaults for new tanks
+        // If the backend forbids access (403), surface read-only defaults
+        if (err && err.status === 403) {
+          setError('You do not have permission to view thresholds for this tank. Using defaults in read-only mode.');
+          setThresholdsReadOnly(true);
+        } else {
+          setError('Failed to fetch thresholds. Using defaults.');
+        }
+        // Use defaults for new tanks or permission failures
         setThresholds({ ...DEFAULT_THRESHOLDS });
         setOriginalThresholds({ ...DEFAULT_THRESHOLDS });
       } finally {
@@ -420,7 +429,7 @@ export default function AlertConfigPage() {
                       max={param.maxBound}
                       value={paramData.min}
                       onChange={(e) => handleParamChange(param.key, 'min', e.target.value)}
-                      disabled={isDisabled}
+                      disabled={isDisabled || thresholdsReadOnly}
                       className={hasError ? styles.inputError : ''}
                     />
                   </div>
@@ -435,7 +444,7 @@ export default function AlertConfigPage() {
                       max={param.maxBound}
                       value={paramData.max}
                       onChange={(e) => handleParamChange(param.key, 'max', e.target.value)}
-                      disabled={isDisabled}
+                      disabled={isDisabled || thresholdsReadOnly}
                       className={hasError ? styles.inputError : ''}
                     />
                   </div>
@@ -460,7 +469,7 @@ export default function AlertConfigPage() {
         <Button
           onClick={handleSave}
           className={styles.saveBtn}
-          disabled={saving || !hasChanges}
+          disabled={saving || !hasChanges || thresholdsReadOnly}
         >
           {saving ? (
             <>Saving...</>

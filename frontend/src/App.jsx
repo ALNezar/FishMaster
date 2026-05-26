@@ -17,7 +17,10 @@ import TrendsPage from './pages/dashboard/TrendsPage.jsx';
 import DataPage from './pages/dashboard/DataPage.jsx';
 import AlertConfigPage from './pages/alerts/AlertConfigPage.jsx';
 import DeviceControlPage from './pages/device/DeviceControlPage.jsx';
-import LearningPage from './pages/learning/LearningPage.jsx';
+import LearningHomePage from './pages/education/LearningHomePage.jsx';
+import LearningPathPage from './pages/education/LearningPathPage.jsx';
+import LessonPage from './pages/education/LessonPage.jsx';
+import LearningProgressPage from './pages/education/LearningProgressPage.jsx';
 
 // Layouts
 import MyTanksPage from './pages/tanks/MyTanksPage.jsx';
@@ -50,10 +53,12 @@ function App() {
         <Route path="/analytics" element={<DataPage />} />
         <Route path="/alerts" element={<AlertConfigPage />} />
         <Route path="/notifications" element={<PlaceholderPage title="Notifications" />} />
-        <Route path="/education" element={<Navigate to="/learning" replace />} />
-        <Route path="/education/*" element={<Navigate to="/learning" replace />} />
-        <Route path="/learning" element={<LearningPage />} />
-        <Route path="/learning/:sectionId" element={<LearningPage />} />
+        <Route path="/education" element={<LearningHomePage />} />
+        <Route path="/education/path/:pathId" element={<LearningPathPage />} />
+        <Route path="/education/lesson/:lessonId" element={<LessonPage />} />
+        <Route path="/education/progress" element={<LearningProgressPage />} />
+        <Route path="/learning" element={<Navigate to="/education" replace />} />
+        <Route path="/learning/:sectionId" element={<Navigate to="/education" replace />} />
         <Route path="/device" element={<DeviceControlPage />} />
       </Route>
     </Routes>

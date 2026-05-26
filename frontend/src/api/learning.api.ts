@@ -4,9 +4,82 @@ import {
   LearningSectionPreview,
   LearningSection,
   LearningProgress,
-  LearningSectionPreview as SectionPreview,
-} from '../types';
+} from './types';
 import { LEARNING_PROGRESS_KEY } from './config';
+import tempProbeImage from '../assets/images/learning/temperature-probe.svg';
+import phSensorImage from '../assets/images/learning/ph-sensor.svg';
+import turbiditySensorImage from '../assets/images/learning/turbidity-sensor.svg';
+import placeholderImage from '../assets/images/learning/placeholder.svg';
+import { API_BASE_URL } from './config';
+
+type LearningLesson = {
+  id: string;
+  sectionId: string;
+  topic: string;
+  title: string;
+  summary: string;
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  durationMin: number;
+  why: string;
+  checks: string[];
+  actions: string[];
+  cta: {
+    label: string;
+    route: string;
+  };
+  images: Array<{
+    src: string;
+    caption: string;
+  }>;
+};
+
+function createSvgDataUri(title: string, accent: string, subtitle: string) {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="960" height="640" viewBox="0 0 960 640" role="img" aria-label="${title}">
+      <defs>
+        <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0%" stop-color="#f7fbfd" />
+          <stop offset="100%" stop-color="#e8f3fa" />
+        </linearGradient>
+      </defs>
+      <rect width="960" height="640" rx="40" fill="url(#bg)" />
+      <circle cx="810" cy="120" r="110" fill="${accent}" fill-opacity="0.12" />
+      <circle cx="130" cy="500" r="150" fill="${accent}" fill-opacity="0.09" />
+      <rect x="90" y="90" width="780" height="460" rx="32" fill="#ffffff" stroke="${accent}" stroke-opacity="0.14" stroke-width="4" />
+      <rect x="132" y="132" width="240" height="34" rx="17" fill="${accent}" fill-opacity="0.12" />
+      <text x="150" y="325" fill="#203345" font-family="Arial, sans-serif" font-size="54" font-weight="700">${title}</text>
+      <text x="150" y="385" fill="#4d6575" font-family="Arial, sans-serif" font-size="30">${subtitle}</text>
+      <g transform="translate(150 440)">
+        <rect width="170" height="18" rx="9" fill="${accent}" fill-opacity="0.78" />
+        <rect x="190" width="250" height="18" rx="9" fill="${accent}" fill-opacity="0.34" />
+        <rect x="460" width="140" height="18" rx="9" fill="${accent}" fill-opacity="0.18" />
+      </g>
+      <g transform="translate(630 210)">
+        <circle cx="80" cy="80" r="72" fill="${accent}" fill-opacity="0.14" stroke="${accent}" stroke-width="8" />
+        <rect x="70" y="30" width="20" height="100" rx="10" fill="${accent}" />
+        <rect x="35" y="74" width="90" height="20" rx="10" fill="${accent}" />
+      </g>
+    </svg>`;
+
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+function createLessonEntry({ sectionId, topic, title, summary, difficulty, durationMin, why, checks, actions, cta, images }: Omit<LearningLesson, 'id'>): LearningLesson {
+  return {
+    id: `${sectionId}:${topic.toLowerCase().replace(/\s+/g, '-')}`,
+    sectionId,
+    topic,
+    title,
+    summary,
+    difficulty,
+    durationMin,
+    why,
+    checks,
+    actions,
+    cta,
+    images,
+  };
+}
 
 // Learning sections data
 const learningSections: LearningSection[] = [
@@ -14,64 +87,52 @@ const learningSections: LearningSection[] = [
     id: 'temperature',
     title: 'Temperature Sensor',
     icon: 'temperature',
-    sensorImage: '/sensor-temp.png',
-    summary: 'Measures tank water warmth in °C or °F',
+    sensorImage: tempProbeImage,
+    summary: 'Tracks tank warmth so you can keep fish in their comfort zone.',
     subsections: [
       {
         id: 'what-it-does',
         title: 'What It Does',
         description:
-          'Thermometers (usually a probe submerged in the tank) measure how warm or cold the water is. Fish are cold-blooded—their metabolism, immunity, and digestion all depend on stable temperature. Most tropical freshwater fish need 24-26°C (75-79°F).',
+          'The temperature probe measures water warmth in real time. Fish depend on stable heat for breathing, feeding, and immunity, so even small swings matter.',
         images: [
-          { src: '/temp-probe-full.png', caption: 'Complete temperature probe assembly' },
-          { src: '/temp-sensor-close.png', caption: 'Close-up of sensor tip' },
-          { src: '/temp-reading-display.png', caption: 'How readings appear on FishMaster' },
+          { src: tempProbeImage, caption: 'Probe placement for accurate readings' },
         ],
       },
       {
         id: 'how-to-read',
         title: 'How to Read It',
         description:
-          'Look at the current value in Analytics or on the Dashboard card. Check the trend line—steady line = stable (good), wandering up or down = drifting (investigate heater or environment). Compare against your target range set during onboarding.',
+          'Read the live value and the trend together. A flat line means your tank is steady. A climb or drop means the heater or room conditions need attention.',
         images: [
-          { src: '/temp-reading-stable.png', caption: 'A stable, steady temperature line' },
-          { src: '/temp-reading-drift.png', caption: 'Temperature drifting upward (action needed)' },
-          { src: '/temp-dashboard-card.png', caption: 'Quick glance at current temp on Dashboard' },
+          { src: createSvgDataUri('Stable reading', '#16a34a', 'Flat line, healthy water temperature'), caption: 'Stable temperature line' },
         ],
       },
       {
         id: 'ranges',
         title: 'Normal Ranges',
         description:
-          'Most tropical fish: 24-26°C (75-79°F). Coldwater fish: 18-22°C (64-72°F). Discus: 26-28°C (79-82°F). Check your fish species in the app—safe range is shown to help.',
+          'Most tropical fish stay comfortable at 24–26°C. Coldwater species need less heat, while discus and other specialist fish prefer slightly warmer water.',
         images: [
-          { src: '/temp-range-tropical.png', caption: 'Tropical fish Safe Zone' },
-          { src: '/temp-range-coldwater.png', caption: 'Coldwater fish Safe Zone' },
-          { src: '/temp-range-chart.png', caption: 'Full temperature range guide' },
+          { src: createSvgDataUri('Safe range', '#0e5a85', 'Comfort zone for fish species'), caption: 'Recommended range guide' },
         ],
       },
       {
         id: 'why-high',
         title: 'Why Is It High?',
         description:
-          'Heater stuck ON, broken thermostat, room is too warm, direct sunlight on tank, or electrical issue. High temp speeds up fish metabolism (fish breathe faster, need more oxygen). Stress, disease, and algae blooms follow quickly.',
+          'Heat spikes usually come from a stuck heater, bright sunlight, or a room that is too warm. High temperatures raise stress and reduce oxygen.',
         images: [
-          { src: '/temp-high-heater.png', caption: 'Broken heater causing spike' },
-          { src: '/temp-high-sunlight.png', caption: 'Window sunlight warming tank' },
-          { src: '/temp-high-stress.png', caption: 'Fish stress symptoms from high temp' },
-          { src: '/temp-high-fix-steps.png', caption: 'Quick steps to lower temperature' },
+          { src: createSvgDataUri('Heat spike', '#dc2626', 'Too much heat pushes fish out of range'), caption: 'How a temperature spike looks' },
         ],
       },
       {
         id: 'why-low',
         title: 'Why Is It Low?',
         description:
-          'Heater off or malfunctioning, room is cold, AC is too strong, or water change with unheated water added. Low temp slows everything—less feed uptake, weaker immunity, lethargy. Fish may pile at the surface or huddle on the bottom.',
+          'Low temperature usually means the heater is off, the room is cold, or cool water was added too quickly during a change.',
         images: [
-          { src: '/temp-low-heater-off.png', caption: 'Heater powered off or unplugged' },
-          { src: '/temp-low-cold-room.png', caption: 'Cold room temperature impact' },
-          { src: '/temp-low-behavior.png', caption: 'Fish behavior during low temp stress' },
-          { src: '/temp-low-fix-steps.png', caption: 'How to safely warm the tank' },
+          { src: createSvgDataUri('Low heat', '#1277b0', 'Cold water slows fish activity'), caption: 'Low temperature warning' },
         ],
       },
     ],
@@ -80,65 +141,52 @@ const learningSections: LearningSection[] = [
     id: 'ph',
     title: 'pH Sensor',
     icon: 'ph',
-    sensorImage: '/sensor-ph.png',
-    summary: 'Measures how acidic or alkaline your water is (0–14 scale)',
+    sensorImage: phSensorImage,
+    summary: 'Shows how acidic or alkaline the water is and whether the probe needs care.',
     subsections: [
       {
         id: 'what-it-does',
         title: 'What It Does',
         description:
-          'pH is the measure of acidity vs. alkalinity (0 = most acidic, 7 = neutral, 14 = most alkaline). Fish are sensitive to shifts. Most freshwater fish prefer neutral to slightly acidic (6.5–7.5). Small pH swings stress fish and damage gills.',
+          'A glass pH probe measures acidity and alkalinity on a 0–14 scale. Fish usually need a stable, near-neutral range, and the probe needs a wet gel layer to work correctly.',
         images: [
-          { src: '/ph-probe.png', caption: 'pH electrode probe' },
-          { src: '/ph-scale.png', caption: 'pH scale explained (0–14)' },
-          { src: '/ph-reading.png', caption: 'pH reading displayed in-app' },
+          { src: phSensorImage, caption: 'pH range overview' },
         ],
       },
       {
         id: 'how-to-read',
         title: 'How to Read It',
         description:
-          'Check the numeric value (e.g., 7.2). Compare to your species target range (usually 6.5–7.5). If the trend line is climbing or dropping, your water is shifting—investigate decay (ammonia build-up), driftwood, or tap water changes.',
+          'Read the number and watch the trend. A calm line means the tank is stable. Drift means something changed in the water or the probe needs recalibration.',
         images: [
-          { src: '/ph-reading-safe.png', caption: 'Stable pH in Safe Zone' },
-          { src: '/ph-reading-climbing.png', caption: 'pH trending upward (investigate)' },
-          { src: '/ph-trend-7-day.png', caption: '7-day pH trend showing drift' },
-          { src: '/ph-alert-high.png', caption: 'pH alert notification' },
+          { src: createSvgDataUri('Calibrated reading', '#16a34a', 'Stable pH value on the dashboard'), caption: 'Healthy pH reading' },
         ],
       },
       {
         id: 'ranges',
         title: 'Normal Ranges',
         description:
-          'Neutral community fish: 6.8–7.2. Acidic-loving: 5.8–6.8 (e.g., tetras, discus). Alkaline-loving: 7.5–8.5 (e.g., cichlids). Check your tank profile to see your target range.',
+          'Most community fish do well around 6.8–7.4. Some species prefer softer acidic water, while others need a little more alkalinity.',
         images: [
-          { src: '/ph-range-acidic.png', caption: 'Acidic zone (5.5–6.5)' },
-          { src: '/ph-range-neutral.png', caption: 'Neutral zone (6.8–7.2)' },
-          { src: '/ph-range-alkaline.png', caption: 'Alkaline zone (7.5–8.5)' },
+          { src: createSvgDataUri('pH target zone', '#0e5a85', 'Neutral water band'), caption: 'Target pH band' },
         ],
       },
       {
         id: 'why-high',
         title: 'Why Is It High?',
         description:
-          'Tap water is alkaline, gravel/rockwork leaches minerals, bacterial load is low (new tank), or water hasn\'t cycled properly. High pH stresses acidophilic fish and can cause gill burns, gasping behavior, and poor appetite.',
+          'pH rises when tap water is alkaline, rocks release minerals, or the tank is still stabilizing after setup.',
         images: [
-          { src: '/ph-high-gravel.png', caption: 'Alkaline gravel raising pH' },
-          { src: '/ph-high-tap-water.png', caption: 'Alkaline tap water impact' },
-          { src: '/ph-high-fish-stress.png', caption: 'Fish showing stress from high pH' },
-          { src: '/ph-high-fix-directions.png', caption: 'Lowering pH: natural methods' },
+          { src: createSvgDataUri('High pH', '#ca8a04', 'Alkaline drift from substrate or tap water'), caption: 'Why pH climbs' },
         ],
       },
       {
         id: 'why-low',
         title: 'Why Is It Low?',
         description:
-          'Driftwood or peat in substrate releasing tannins, decaying plant matter, bacterial urea accumulation, or acidic substrate. Low pH stresses alkaliphilic fish, reduces immune response, and can cause erosion of fish slime coat.',
+          'pH drops when driftwood, peat, or decaying waste releases acids into the water.',
         images: [
-          { src: '/ph-low-driftwood.png', caption: 'Driftwood lowering pH (tannins)' },
-          { src: '/ph-low-decay.png', caption: 'Decaying plants releasing acids' },
-          { src: '/ph-low-buildup.png', caption: 'Bacterial waste acidifying water' },
-          { src: '/ph-low-fix-directions.png', caption: 'Raising pH: rock additions, water change' },
+          { src: createSvgDataUri('Low pH', '#dc2626', 'Acidic drift from organic buildup'), caption: 'Why pH falls' },
         ],
       },
     ],
@@ -147,71 +195,131 @@ const learningSections: LearningSection[] = [
     id: 'turbidity',
     title: 'Turbidity Sensor',
     icon: 'turbidity',
-    sensorImage: '/sensor-turbidity.png',
-    summary: 'Measures water clarity (how cloudy or clear it is)',
+    sensorImage: turbiditySensorImage,
+    summary: 'Shows how clear the water is and whether the filter is keeping up.',
     subsections: [
       {
         id: 'what-it-does',
         title: 'What It Does',
         description:
-          'Turbidity is water cloudiness caused by suspended particles (algae spores, bacteria, uneaten food, dead material). Lower turbidity = clearer water = healthier. High turbidity can reduce light penetration and oxygen, and strains fish gills. Measured in NTU (Nephelometric Turbidity Units).',
+          'Turbidity measures cloudiness caused by particles, food waste, and blooms. Lower numbers mean clearer water and less stress on fish gills.',
         images: [
-          { src: '/turbidity-sensor.png', caption: 'Turbidity sensor probe' },
-          { src: '/turbidity-clear.png', caption: 'Crystal-clear water (low turbidity)' },
-          { src: '/turbidity-cloudy.png', caption: 'Cloudy water (high turbidity)' },
-          { src: '/turbidity-reading.png', caption: 'Turbidity reading in app (NTU)' },
+          { src: turbiditySensorImage, caption: 'Clear tank example' },
         ],
       },
       {
         id: 'how-to-read',
         title: 'How to Read It',
         description:
-          'Lower values = clearer water (better). Typical ranges: <1 NTU = crystal clear, 1–5 NTU = slightly hazy, >5 NTU = noticeably cloudy. Check if turbidity is creeping up—early sign of filter clogging, overfeeding, or bacterial bloom.',
+          'Lower values are better. A small increase means the filter or feeding routine may need a check before the water gets cloudy.',
         images: [
-          { src: '/turbidity-reading-clear.png', caption: 'Low turbidity (good)' },
-          { src: '/turbidity-reading-hazy.png', caption: 'Moderate turbidity (marginal)' },
-          { src: '/turbidity-reading-cloudy.png', caption: 'High turbidity (action needed)' },
-          { src: '/turbidity-trend-rising.png', caption: 'Turbidity trend climbing over 7 days' },
+          { src: createSvgDataUri('Trend up', '#ca8a04', 'Cloudiness creeping upward'), caption: 'Rising turbidity trend' },
         ],
       },
       {
         id: 'ranges',
         title: 'Normal Ranges',
         description:
-          'Target: <1–2 NTU. Acceptable: 1–4 NTU. Concerning: >4 NTU (indicates filter stress or overload). Brand-new tank (first week) may be 3–5 NTU as cycle establishes, then clears within 1–2 weeks.',
+          'Under 1–2 NTU is excellent. A reading above 4 NTU usually means the filter is under pressure or the tank has extra waste.',
         images: [
-          { src: '/turbidity-range-excellent.png', caption: 'Excellent clarity zone' },
-          { src: '/turbidity-range-acceptable.png', caption: 'Acceptable range' },
-          { src: '/turbidity-range-concerning.png', caption: 'Concerning turbidity levels' },
-          { src: '/turbidity-new-tank-timeline.png', caption: 'How clarity improves over 2 weeks' },
+          { src: createSvgDataUri('Safe clarity', '#16a34a', 'Recommended turbidity band'), caption: 'Healthy clarity range' },
         ],
       },
       {
         id: 'why-high',
         title: 'Why Is It High?',
         description:
-          'Overfeeding (uneaten particles decay), bacterial or algae bloom, filter clogged or needs priming, gravel stirred up during maintenance, new tank cycling, or excess decor waste.',
+          'Cloudy water usually comes from overfeeding, a clogged filter, a bloom, or debris stirred up during maintenance.',
         images: [
-          { src: '/turbidity-high-overfeeding.png', caption: 'Cloudiness from overfeeding' },
-          { src: '/turbidity-high-bloom.png', caption: 'Bacterial/algae bloom example' },
-          { src: '/turbidity-high-clogged-filter.png', caption: 'Clogged filter causing cloudiness' },
-          { src: '/turbidity-high-fix-steps.png', caption: 'Steps to clear cloudy water' },
+          { src: createSvgDataUri('Cloudy water', '#dc2626', 'Particles and blooms reduce clarity'), caption: 'Cloudy water warning' },
         ],
       },
       {
         id: 'why-low',
-        title: 'Why Is It Low',
+        title: 'Why Is It Low?',
         description:
-          'Excellent! Filter is working well, feeding quantity is right, no algae or bacterial bloom, and water changes are regular. Maintain it by feeding carefully, cleaning the filter periodically, and doing weekly water changes.',
+          'Low turbidity means the filter is working and the tank is being fed and cleaned in a controlled way.',
         images: [
-          { src: '/turbidity-low-perfect.png', caption: 'Ideal crystal-clear tank' },
-          { src: '/turbidity-low-maintenance.png', caption: 'Maintenance routine that keeps it clear' },
-          { src: '/turbidity-low-comparison.png', caption: 'Before/after filter cleaning' },
-          { src: '/turbidity-low-tips.png', caption: 'Tips to maintain low turbidity' },
+          { src: createSvgDataUri('Crystal clear', '#1277b0', 'Low turbidity and healthy filter action'), caption: 'Excellent clarity' },
         ],
       },
     ],
   },
+];
+
+const lessonPlans: LearningLesson[] = [
+  createLessonEntry({
+    sectionId: 'temperature',
+    topic: 'Temperature',
+    title: 'Keep Heat Stable',
+    summary: 'Learn how to read the temperature probe and keep the tank in the safe comfort zone.',
+    difficulty: 'Beginner',
+    durationMin: 5,
+    why: 'Temperature swings can make fish stressed, sluggish, or oxygen-starved.',
+    checks: [
+      'Confirm the probe is fully submerged but away from heater output.',
+      'Compare the live reading to your species target range.',
+      'Watch the trend for sudden spikes or dips after water changes.',
+    ],
+    actions: [
+      'Move heaters or lights if the tank is being warmed unevenly.',
+      'Raise or lower temperature slowly in small steps.',
+      'Recheck after the water has stabilized.',
+    ],
+    cta: { label: 'Open Temperature Dashboard', route: '/dashboard' },
+    images: [
+        { src: tempProbeImage, caption: 'Temperature overview' },
+        { src: tempProbeImage, caption: 'Safe range band' },
+    ],
+  }),
+  createLessonEntry({
+    sectionId: 'ph',
+    topic: 'pH',
+    title: 'Handle the Glass Probe Carefully',
+    summary: 'Learn the activation soak, dry connector rule, and buffer rinse routine that keeps pH readings trustworthy.',
+    difficulty: 'Intermediate',
+    durationMin: 7,
+    why: 'A dry bulb, wet connector, or dirty buffer cup can make the probe read wildly wrong.',
+    checks: [
+      'If the probe is new or dry, soak it in the storage solution before calibration.',
+      'Keep the BNC connector dry at all times.',
+      'Rinse with distilled water between buffers and blot gently.',
+    ],
+    actions: [
+      'Return the storage cap with liquid when the probe is out of the tank.',
+      'Use clean pH 4.0, 7.0, or 9.18 solutions without cross-contamination.',
+      'Recalibrate if the reading drifts after handling.',
+    ],
+    cta: { label: 'Open pH Maintenance', route: '/education/progress' },
+    images: [
+      { src: phSensorImage, caption: 'Probe care reminder' },
+      { src: phSensorImage, caption: 'Calibration flow' },
+    ],
+  }),
+  createLessonEntry({
+    sectionId: 'turbidity',
+    topic: 'Turbidity',
+    title: 'Read Water Clarity Early',
+    summary: 'Spot rising cloudiness before it becomes a filter or feeding problem.',
+    difficulty: 'Beginner',
+    durationMin: 5,
+    why: 'Cloudiness often shows up before bigger water quality issues do.',
+    checks: [
+      'Check whether the water looks clear or hazy in the glass and the app.',
+      'See if the trend is climbing after feeding or cleaning.',
+      'Inspect the filter for clogging or low flow.',
+    ],
+    actions: [
+      'Reduce feeding if particles are building up.',
+      'Clean the filter or do a partial water change.',
+      'Watch the trend over the next day.',
+    ],
+    cta: { label: 'Open Water Clarity', route: '/dashboard' },
+    images: [
+      { src: turbiditySensorImage, caption: 'Clear water' },
+      { src: turbiditySensorImage, caption: 'Cloudiness warning' },
+    ],
+  }),
 ];
 
 // Helper: get learning progress from localStorage
@@ -242,8 +350,50 @@ function saveStoredLearningProgress(progress: Partial<LearningProgress>): Learni
 }
 
 // Get all learning sections as previews
+// Learning content is local-first for reliability. Toggle this to true only when
+// backend learning endpoints are stable and publicly accessible.
+const ENABLE_REMOTE_LEARNING = false;
+let learningForbidden = !ENABLE_REMOTE_LEARNING;
+
 export const getLearningSections = async (): Promise<LearningSectionPreview[]> => {
+  // If we've already seen the backend forbid learning, skip network attempts
+  if (!learningForbidden) {
+    try {
+      const resp = await fetch(`${API_BASE_URL}/learning`, { method: 'GET' });
+      if (resp) {
+        if (resp.status === 403) {
+          learningForbidden = true;
+        } else if (resp.ok) {
+          const json = await resp.json();
+          if (Array.isArray(json)) return json;
+        }
+      }
+    } catch (e) {
+      // network failed — we'll continue to return local preview data
+    }
+  }
   await new Promise((resolve) => setTimeout(resolve, 120));
+  const previewMeta: Record<string, { level: string; description: string; lessonsCount: number; durationMin: number }> = {
+    temperature: {
+      level: 'Core',
+      description: 'Learn how to keep water warmth stable and fish comfortable.',
+      lessonsCount: 5,
+      durationMin: 25,
+    },
+    ph: {
+      level: 'Precision',
+      description: 'Understand probe care, calibration, and safe pH ranges.',
+      lessonsCount: 5,
+      durationMin: 35,
+    },
+    turbidity: {
+      level: 'Observation',
+      description: 'Spot cloudiness early and keep water clarity under control.',
+      lessonsCount: 5,
+      durationMin: 25,
+    },
+  };
+
   return learningSections.map((section) => ({
     id: section.id,
     title: section.title,
@@ -251,6 +401,10 @@ export const getLearningSections = async (): Promise<LearningSectionPreview[]> =
     sensorImage: section.sensorImage,
     summary: section.summary,
     subsectionCount: section.subsections.length,
+    level: previewMeta[section.id]?.level || 'Core',
+    description: previewMeta[section.id]?.description || section.summary,
+    lessonsCount: previewMeta[section.id]?.lessonsCount || section.subsections.length,
+    durationMin: previewMeta[section.id]?.durationMin || section.subsections.length * 5,
   }));
 };
 
@@ -258,6 +412,22 @@ export const getLearningSections = async (): Promise<LearningSectionPreview[]> =
 export const getLearningSection = async (
   sectionId: string
 ): Promise<LearningSection | null> => {
+  // Try backend for section details first, short-circuit if forbidden
+  if (!learningForbidden) {
+    try {
+      const resp = await fetch(`${API_BASE_URL}/learning/${encodeURIComponent(sectionId)}`, { method: 'GET' });
+      if (resp) {
+        if (resp.status === 403) {
+          learningForbidden = true;
+        } else if (resp.ok) {
+          const json = await resp.json();
+          return json as LearningSection;
+        }
+      }
+    } catch (e) {
+      // network error — fallback to local below
+    }
+  }
   await new Promise((resolve) => setTimeout(resolve, 100));
 
   const section = learningSections.find((s) => s.id === sectionId);
@@ -292,15 +462,43 @@ export const getLearningPaths = async (): Promise<LearningSectionPreview[]> => {
   return getLearningSections();
 };
 
-// Lesson stub endpoints (for future expansion)
 export const getLessons = async (pathId?: string): Promise<any[]> => {
+  // Try backend lessons endpoint first unless we've seen a 403; fall back to local lesson plans
+  if (!learningForbidden) {
+    try {
+      const url = pathId ? `${API_BASE_URL}/learning/lessons?section=${encodeURIComponent(pathId)}` : `${API_BASE_URL}/learning/lessons`;
+      const resp = await fetch(url, { method: 'GET' });
+      if (resp) {
+        if (resp.status === 403) {
+          learningForbidden = true;
+        } else if (resp.ok) {
+          const json = await resp.json();
+          if (Array.isArray(json)) return json;
+        }
+      }
+    } catch (e) {
+      // network failure, use local lessons
+    }
+  }
   await new Promise((resolve) => setTimeout(resolve, 120));
-  return [];
+  const lessons = pathId
+    ? lessonPlans.filter((lesson) => lesson.sectionId === pathId)
+    : lessonPlans;
+
+  return lessons.map((lesson) => ({
+    id: lesson.id,
+    topic: lesson.topic,
+    title: lesson.title,
+    summary: lesson.summary,
+    durationMin: lesson.durationMin,
+    difficulty: lesson.difficulty,
+    image: lesson.images[0]?.src || placeholderImage,
+  }));
 };
 
 export const getLesson = async (lessonId: string): Promise<any> => {
   await new Promise((resolve) => setTimeout(resolve, 100));
-  return null;
+  return lessonPlans.find((lesson) => lesson.id === lessonId) || null;
 };
 
 export const completeLesson = async (lessonId: string): Promise<LearningProgress> => {

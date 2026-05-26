@@ -19,6 +19,7 @@ import wiresImage from '../../assets/images/learning/wires.svg';
 import resistorImage from '../../assets/images/learning/resistor.svg';
 import multimeterImage from '../../assets/images/learning/multimeter.svg';
 import usbImage from '../../assets/images/learning/usb-cable.svg';
+import placeholderImage from '../../assets/images/learning/placeholder.svg';
 
 const hardwareList = [
   {
@@ -313,7 +314,17 @@ function LearningHomePage() {
         <div className={styles.sensorGrid}>
           {sensorCards.map((sensor) => (
             <article key={sensor.id} className={`${styles.sensorCard} ${styles[sensor.status]}`}>
-              <img src={sensor.image} alt={`${sensor.label} sensor`} loading="lazy" />
+              <img
+                src={sensor.image}
+                alt={`${sensor.label} sensor`}
+                loading="lazy"
+                onError={(e) => {
+                  // fallback to local placeholder
+                  // eslint-disable-next-line no-param-reassign
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = placeholderImage;
+                }}
+              />
               <div className={styles.sensorBody}>
                 <div className={styles.sensorHeader}>
                   <span className={styles.sensorLabel}><sensor.icon /> {sensor.label}</span>
@@ -366,6 +377,42 @@ function LearningHomePage() {
         )}
       </section>
 
+      <section className={styles.studySection}>
+        <div className={styles.cardHeader}>
+          <h2>Study Cards</h2>
+          <span>Quick visual overview</span>
+        </div>
+        <div className={styles.studyGrid}>
+          {paths.map((path) => (
+            <article key={path.id} className={styles.studyCard}>
+              <img
+                src={path.sensorImage}
+                alt={`${path.title} illustration`}
+                loading="lazy"
+                onError={(e) => {
+                  // fallback to local placeholder
+                  // eslint-disable-next-line no-param-reassign
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = placeholderImage;
+                }}
+              />
+              <div className={styles.studyBody}>
+                <div className={styles.studyMeta}>
+                  <span>{path.level}</span>
+                  <span>{path.lessonsCount} lessons</span>
+                </div>
+                <h3>{path.title}</h3>
+                <p>{path.description}</p>
+                <div className={styles.studyFooter}>
+                  <span>{path.durationMin} min</span>
+                  <button onClick={() => navigate(`/education/path/${path.id}`)}>Open</button>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className={styles.hardwareSection}>
         <div className={styles.cardHeader}>
           <h2>FishMaster Hardware Overview</h2>
@@ -376,7 +423,17 @@ function LearningHomePage() {
         <div className={styles.hardwareGrid}>
           {hardwareList.map((item) => (
             <article key={item.id} className={styles.hardwareCard}>
-              <img src={item.image} alt={`${item.label} illustration`} loading="lazy" />
+              <img
+                src={item.image}
+                alt={`${item.label} illustration`}
+                loading="lazy"
+                onError={(e) => {
+                  // fallback to local placeholder
+                  // eslint-disable-next-line no-param-reassign
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = placeholderImage;
+                }}
+              />
               <div className={styles.hardwareBody}>
                 <h3>{item.label}</h3>
                 <p>{item.model}</p>

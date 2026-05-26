@@ -2,6 +2,7 @@
 
 import { apiRequest } from './client';
 import {
+  PhReading,
   TemperatureReading,
   TurbidityReading,
   TelemetryKind,
@@ -50,4 +51,17 @@ export const fetchRecentTurbidity = async (
   limit: number = 50
 ): Promise<TurbidityReading[]> => {
   return fetchRecentTelemetry<TurbidityReading>('turbidity', tankId, limit);
+};
+
+export const fetchLatestPh = async (
+  tankId: string = 'tank1'
+): Promise<PhReading | null> => {
+  return fetchLatestTelemetry<PhReading>('ph', tankId);
+};
+
+export const fetchRecentPh = async (
+  tankId: string = 'tank1',
+  limit: number = 50
+): Promise<PhReading[]> => {
+  return fetchRecentTelemetry<PhReading>('ph', tankId, limit);
 };

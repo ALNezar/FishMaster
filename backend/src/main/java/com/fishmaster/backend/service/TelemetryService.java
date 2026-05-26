@@ -1,10 +1,12 @@
 package com.fishmaster.backend.service;
 
 import com.fishmaster.backend.model.DeviceInfoSnapshot;
+import com.fishmaster.backend.model.PhReading;
 import com.fishmaster.backend.model.TemperatureReading;
 import com.fishmaster.backend.model.TurbidityReading;
 import com.fishmaster.backend.repositories.DeviceInfoSnapshotRepository;
 import com.fishmaster.backend.repositories.TemperatureReadingRepository;
+import com.fishmaster.backend.repositories.PhReadingRepository;
 import com.fishmaster.backend.repositories.TurbidityReadingRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,10 +28,12 @@ public class TelemetryService {
     private final TemperatureReadingRepository temperatureRepository;
     private final TurbidityReadingRepository turbidityRepository;
     private final DeviceInfoSnapshotRepository deviceInfoRepository;
+    private final PhReadingRepository phRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final java.util.Set<SseEmitter> tempEmitters = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
     private final java.util.Set<SseEmitter> turbidityEmitters = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
+    private final java.util.Set<SseEmitter> phEmitters = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
 
     @Value("${TELEMETRY_DEFAULT_TANK_ID:tank1}")
     private String defaultTankId;
@@ -142,6 +146,62 @@ public class TelemetryService {
                 try {
                     emitter.send(SseEmitter.event()
                             .name("turbidity")
+                            .data(reading));
+                } catch (Exception e) {
+                    it.remove();
+                }
+            }
+        }
+    }
+
+    // --- pH handling ---
+    public void handlePhPayload(String payload) {
+        try {
+            JsonNode node = objectMapper.readTree(payload);
+            JsonNode vNode = node.get("ph_voltage");
+            JsonNode pNode = node.get("ph_value");
+            if ((vNode == null || !vNode.isNumber()) && (pNode == null || !pNode.isNumber())) {
+                log.warn("[MQTT] pH payload missing both 'ph_voltage' and 'ph_value': {}", payload);
+                return;
+            }
+
+            PhReading reading = new PhReading();
+            if (vNode != null && vNode.isNumber()) reading.setPhVoltage(vNode.decimalValue());
+            if (pNode != null && pNode.isNumber()) reading.setPhValue(pNode.decimalValue());
+            if (node.has("internal_chip_temp") && node.get("internal_chip_temp").isNumber()) {
+                reading.setInternalChipTemp(node.get("internal_chip_temp").decimalValue());
+            }
+            if (node.has("uptime_ms") && node.get("uptime_ms").canConvertToLong()) {
+                reading.setUptimeMs(node.get("uptime_ms").asLong());
+            }
+            reading.setTankId(java.util.Optional.ofNullable(node.path("tankId").asText(null))
+                    .filter(s -> !s.isBlank()).orElse(defaultTankId));
+
+            PhReading saved = phRepository.save(reading);
+            log.info("[TELEMETRY] Stored pH reading: tank={}, ph={}, voltage={}, id={}",
+                    saved.getTankId(), saved.getPhValue(), saved.getPhVoltage(), saved.getId());
+            emitPh(saved);
+        } catch (Exception ex) {
+            log.error("[TELEMETRY] Failed to parse/store pH payload: {}", payload, ex);
+        }
+    }
+
+    public SseEmitter registerPhEmitter() {
+        SseEmitter emitter = new SseEmitter(0L);
+        phEmitters.add(emitter);
+        emitter.onCompletion(() -> phEmitters.remove(emitter));
+        emitter.onTimeout(() -> phEmitters.remove(emitter));
+        return emitter;
+    }
+
+    private void emitPh(PhReading reading) {
+        synchronized (phEmitters) {
+            java.util.Iterator<SseEmitter> it = phEmitters.iterator();
+            while (it.hasNext()) {
+                SseEmitter emitter = it.next();
+                try {
+                    emitter.send(SseEmitter.event()
+                            .name("ph")
                             .data(reading));
                 } catch (Exception e) {
                     it.remove();

@@ -155,6 +155,8 @@ public class MqttSubscriberService implements MqttCallbackExtended {
                 // Source client id is this subscriber's client id; device id is expected via DeviceInfo retained msg
                 String sourceClientId = mqttProps.getClientId();
                 telemetryService.handleTurbidityPayload(payload, sourceClientId);
+            } else if (t.endsWith("/Ph") || t.equals("FishMaster/Ph") || t.equalsIgnoreCase("FishMaster/pH")) {
+                telemetryService.handlePhPayload(payload);
             } else if (t.endsWith("/DeviceInfo") || t.equals("FishMaster/DeviceInfo")) {
                 telemetryService.handleDeviceInfoPayload(payload);
             } else {

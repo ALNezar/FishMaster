@@ -2,7 +2,7 @@
 
 <img width="700" alt="Fish logo" src="https://github.com/user-attachments/assets/4a4d854f-14e6-48f2-ba60-82d6c91dfe55" />
 
-# FishMaster
+# FishMaster 
 ### Aquarium Monitoring and Control System using ESP32
 
 FishMaster is an IoT aquarium monitor that tracks water quality and controls feeding using an ESP32 with a Spring Boot backend and React frontend.
@@ -131,14 +131,14 @@ FishMaster uses a hybrid IoT architecture with two main data flows:
 
 ### Progress
 
-* [ ] Hardware sensor setup
+* [x] Hardware sensor setup
 * [x] Basic backend API
 * [x] Dashboard UI
 * [x] Support for multiple tanks
 * [ ] Servo feeder integration
 * [ ] Condition-based feeding logic
 * [ ] Support for calibration settings
-* [ ] Offline/online mode switching
+* [x] Offline/online mode switching
 
 ---
 

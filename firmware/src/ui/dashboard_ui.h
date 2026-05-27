@@ -10,3 +10,4 @@ void dashboardSetWaterTemp(float tempC, bool valid);
 void dashboardSetPh(float phValue, float phVoltage, float rawAdc, bool valid);
 void dashboardSetTurbidity(float ntu, int rawAdc, bool valid);
 void dashboardSetInternalTemp(float chipTempC, bool valid);
+bool dashboardConsumeManualFeedRequest(void);

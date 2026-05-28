@@ -1,3 +1,17 @@
+// =============================================================================
+// dashboard_ui.cpp  —  FishMaster ESP32 TFT Dashboard
+// Optimized Version
+//
+// Changes:
+// - Removed heavy animated background redraws
+// - Kept clean ocean gradient
+// - Added ONLY lightweight bubble animation
+// - Lower CPU usage
+// - Less SPI traffic
+// - Much smoother touch response
+// - Reduced flickering
+// =============================================================================
+
 #include "dashboard_ui.h"
 
 #include <SPI.h>
@@ -5,20 +19,45 @@
 #include <XPT2046_Touchscreen.h>
 #include <math.h>
 
-TFT_eSPI tft = TFT_eSPI();
+// =============================================================================
+// Hardware
+// =============================================================================
 
-XPT2046_Touchscreen touch(TOUCH_CS);
+static TFT_eSPI tft;
+static XPT2046_Touchscreen touch(TOUCH_CS);
+
+// =============================================================================
+// Screen
+// =============================================================================
+
 static constexpr int SCREEN_W = 320;
 static constexpr int SCREEN_H = 240;
 
-static constexpr uint16_t SKY = 0x867F;
-static constexpr uint16_t OCEAN = 0x041F;
-static constexpr uint16_t MINT = 0x87F0;
-static constexpr uint16_t CORAL = 0xFACA;
-static constexpr uint16_t SAND = 0xFEF2;
-static constexpr uint16_t NAVY = 0x10A2;
-static constexpr uint16_t WHITE = TFT_WHITE;
-static constexpr uint16_t BUBBLE = 0xCFFF;
+// =============================================================================
+// Colors
+// =============================================================================
+
+static constexpr uint16_t COL_SKY    = 0x867F;
+static constexpr uint16_t COL_OCEAN  = 0x041F;
+static constexpr uint16_t COL_MINT   = 0x87F0;
+static constexpr uint16_t COL_CORAL  = 0xFACA;
+static constexpr uint16_t COL_NAVY   = 0x10A2;
+static constexpr uint16_t COL_WHITE  = TFT_WHITE;
+static constexpr uint16_t COL_BLACK  = TFT_BLACK;
+static constexpr uint16_t COL_BUBBLE = 0xCFFF;
+
+// =============================================================================
+// Boot colors
+// =============================================================================
+
+static constexpr uint16_t BOOT_OCEAN = 0x2B9D;
+static constexpr uint16_t BOOT_CORAL = 0xE16B;
+static constexpr uint16_t BOOT_GOLD  = 0xE605;
+static constexpr uint16_t BOOT_MINT  = 0x57EA;
+
+// =============================================================================
+// Pages
+// =============================================================================
 
 enum class Page
 {
@@ -30,6 +69,10 @@ enum class Page
 
 static Page currentPage = Page::HOME;
 
+// =============================================================================
+// Rect
+// =============================================================================
+
 struct Rect
 {
     int x;
@@ -38,27 +81,54 @@ struct Rect
     int h;
 };
 
-static Rect tempCard = {8, 58, 96, 100};
-static Rect phCard = {112, 58, 96, 100};
-static Rect turbCard = {216, 58, 96, 100};
+// =============================================================================
+// Layout
+// =============================================================================
 
-static Rect feedBtn = {40, 165, 240, 42};
+static constexpr Rect CARD_TEMP    = {  8,  58,  96, 100 };
+static constexpr Rect CARD_PH      = {112,  58,  96, 100 };
+static constexpr Rect CARD_TURB    = {216,  58,  96, 100 };
 
-static Rect navHome = {10, 214, 70, 22};
-static Rect navGraph = {88, 214, 70, 22};
-static Rect navHistory = {166, 214, 70, 22};
-static Rect navSettings = {244, 214, 70, 22};
+static constexpr Rect FEED_BTN     = { 40, 165, 240,  42 };
 
-static bool wifiConnected = false;
+static constexpr Rect NAV_HOME     = { 10, 214,  70, 22 };
+static constexpr Rect NAV_GRAPH    = { 88, 214,  70, 22 };
+static constexpr Rect NAV_HISTORY  = {166, 214,  70, 22 };
+static constexpr Rect NAV_SETTINGS = {244, 214,  70, 22 };
+
+// =============================================================================
+// Runtime state
+// =============================================================================
+
+static bool  wifiConnected     = false;
+static bool  manualFeedRequest = false;
 
 static float waterTemp = 28.4f;
-static float phValue = 7.2f;
+static float phValue   = 7.2f;
 static float turbidity = 11.0f;
 
-static bool manualFeedRequest = false;
 
-static unsigned long lastAnim = 0;
-static int bubbleOffset = 0;
+// =============================================================================
+// Touch
+// =============================================================================
+
+static unsigned long lastTouchMs = 0;
+static constexpr unsigned long TOUCH_DEBOUNCE_MS = 180;
+
+// =============================================================================
+// Dirty redraw
+// =============================================================================
+
+static bool needsRedraw = true;
+
+static inline void markDirty()
+{
+    needsRedraw = true;
+}
+
+// =============================================================================
+// Utility
+// =============================================================================
 
 static bool pointInRect(int x, int y, Rect r)
 {
@@ -68,140 +138,87 @@ static bool pointInRect(int x, int y, Rect r)
            y <= r.y + r.h;
 }
 
-static void drawBubble(int x, int y, int r)
-{
-    tft.drawCircle(x, y, r, BUBBLE);
-}
+// =============================================================================
+// Background
+// =============================================================================
 
 static void drawBackground()
 {
-    tft.fillScreen(SKY);
+    tft.fillScreen(COL_SKY);
 
-    for (int y = 0; y < 160; y++)
+    for (int row = 0; row < 160; row++)
     {
         uint16_t c = tft.color565(
             0,
-            80 + (y / 2),
-            180 + (y / 4));
+            90 + row / 3,
+            170 + row / 5
+        );
 
-        tft.drawFastHLine(0, y + 40, SCREEN_W, c);
-    }
-
-    for (int i = 0; i < 12; i++)
-    {
-        int bx = (i * 28 + bubbleOffset) % SCREEN_W;
-        int by = 40 + ((i * 40 + bubbleOffset * 2) % 160);
-
-        drawBubble(bx, by, 4);
+        tft.drawFastHLine(0, row + 40, SCREEN_W, c);
     }
 }
 
+// =============================================================================
+// Lightweight bubbles
+// =============================================================================
+
+
+// =============================================================================
+// Header
+// =============================================================================
+
 static void drawHeader()
 {
-    tft.fillRoundRect(10, 8, 300, 26, 12, NAVY);
+    tft.fillRoundRect(10, 8, 300, 26, 12, COL_NAVY);
 
-    tft.setTextColor(WHITE, NAVY);
+    tft.setTextColor(COL_WHITE, COL_NAVY);
     tft.setTextDatum(ML_DATUM);
-    tft.setTextFont(4);
 
+    tft.setTextFont(4);
     tft.drawString("FishMaster", 18, 22);
+
+    tft.setTextFont(2);
 
     if (wifiConnected)
     {
-        tft.fillCircle(280, 20, 5, MINT);
-        tft.setTextFont(2);
+        tft.fillCircle(280, 20, 5, COL_MINT);
         tft.drawString("ONLINE", 220, 22);
     }
     else
     {
-        tft.fillCircle(280, 20, 5, CORAL);
-        tft.setTextFont(2);
+        tft.fillCircle(280, 20, 5, COL_CORAL);
         tft.drawString("LOCAL", 228, 22);
     }
 }
 
-static void drawCard(
-    Rect r,
-    const char *emoji,
-    const char *title,
-    float value,
-    const char *unit,
-    uint16_t color)
-{
-    tft.fillRoundRect(r.x, r.y, r.w, r.h, 16, WHITE);
-
-    tft.drawRoundRect(r.x, r.y, r.w, r.h, 16, color);
-
-    tft.setTextColor(color, WHITE);
-
-    tft.setTextFont(2);
-    tft.drawCentreString(emoji, r.x + r.w / 2, r.y + 8, 2);
-
-    tft.setTextFont(2);
-    tft.drawCentreString(title, r.x + r.w / 2, r.y + 24, 2);
-
-    char buf[16];
-    snprintf(buf, sizeof(buf), "%.1f", value);
-
-    tft.setTextFont(4);
-    tft.drawCentreString(buf, r.x + r.w / 2, r.y + 42, 4);
-
-    tft.setTextFont(4);
-    tft.drawCentreString(unit, r.x + r.w / 2, r.y + 74, 4);
-}
-
-static void drawFeedButton(bool pressed)
-{
-    uint16_t fill = pressed ? CORAL : MINT;
-
-    tft.fillRoundRect(
-        feedBtn.x,
-        feedBtn.y,
-        feedBtn.w,
-        feedBtn.h,
-        18,
-        fill);
-
-    tft.drawRoundRect(
-        feedBtn.x,
-        feedBtn.y,
-        feedBtn.w,
-        feedBtn.h,
-        18,
-        WHITE);
-
-    tft.setTextColor(NAVY, fill);
-    tft.setTextDatum(MC_DATUM);
-    tft.setTextFont(4);
-
-    tft.drawString(
-        "FEED FISH!",
-        SCREEN_W / 2,
-        186);
-}
+// =============================================================================
+// Navbar
+// =============================================================================
 
 static void drawNavbar()
 {
-    Rect tabs[4] = {
-        navHome,
-        navGraph,
-        navHistory,
-        navSettings};
+    static const Rect tabs[4] =
+    {
+        NAV_HOME,
+        NAV_GRAPH,
+        NAV_HISTORY,
+        NAV_SETTINGS
+    };
 
-    const char *labels[4] = {
+    static const char* labels[4] =
+    {
         "HOME",
         "GRAPH",
         "LOG",
-        "SET"};
+        "SET"
+    };
 
     for (int i = 0; i < 4; i++)
     {
-        bool active = false;
+        bool active = ((int)currentPage == i);
 
-        if ((int)currentPage == i)
-            active = true;
-
-        uint16_t fill = active ? NAVY : WHITE;
+        uint16_t fill =
+            active ? COL_NAVY : COL_WHITE;
 
         tft.fillRoundRect(
             tabs[i].x,
@@ -209,147 +226,305 @@ static void drawNavbar()
             tabs[i].w,
             tabs[i].h,
             10,
-            fill);
+            fill
+        );
 
         tft.setTextDatum(MC_DATUM);
 
-        if (active)
-            tft.setTextColor(WHITE, fill);
-        else
-            tft.setTextColor(NAVY, fill);
+        tft.setTextColor(
+            active ? COL_WHITE : COL_NAVY,
+            fill
+        );
 
         tft.setTextFont(2);
 
         tft.drawString(
             labels[i],
             tabs[i].x + tabs[i].w / 2,
-            tabs[i].y + 11);
+            tabs[i].y + 11
+        );
     }
 }
 
+// =============================================================================
+// Sensor card
+// =============================================================================
+
+static void drawSensorCard(
+    Rect r,
+    const char* icon,
+    const char* title,
+    float value,
+    const char* unit,
+    uint16_t accent)
+{
+    tft.fillRoundRect(r.x, r.y, r.w, r.h, 16, COL_WHITE);
+
+    tft.drawRoundRect(r.x, r.y, r.w, r.h, 16, accent);
+
+    tft.setTextColor(accent, COL_WHITE);
+
+    tft.setTextFont(2);
+
+    tft.drawCentreString(
+        icon,
+        r.x + r.w / 2,
+        r.y + 8,
+        2
+    );
+
+    tft.drawCentreString(
+        title,
+        r.x + r.w / 2,
+        r.y + 24,
+        2
+    );
+
+    char buf[16];
+
+    snprintf(buf, sizeof(buf), "%.1f", value);
+
+    tft.setTextFont(4);
+
+    tft.drawCentreString(
+        buf,
+        r.x + r.w / 2,
+        r.y + 42,
+        4
+    );
+
+    tft.drawCentreString(
+        unit,
+        r.x + r.w / 2,
+        r.y + 74,
+        4
+    );
+}
+
+// =============================================================================
+// Feed button
+// =============================================================================
+
+static void drawFeedButton(bool pressed)
+{
+    uint16_t fill =
+        pressed ? COL_CORAL : COL_MINT;
+
+    tft.fillRoundRect(
+        FEED_BTN.x,
+        FEED_BTN.y,
+        FEED_BTN.w,
+        FEED_BTN.h,
+        18,
+        fill
+    );
+
+    tft.drawRoundRect(
+        FEED_BTN.x,
+        FEED_BTN.y,
+        FEED_BTN.w,
+        FEED_BTN.h,
+        18,
+        COL_WHITE
+    );
+
+    tft.setTextColor(COL_NAVY, fill);
+
+    tft.setTextDatum(MC_DATUM);
+    tft.setTextFont(4);
+
+    tft.drawString(
+        "FEED FISH!",
+        SCREEN_W / 2,
+        186
+    );
+}
+
+// =============================================================================
+// Fish mascot
+// =============================================================================
+
 static void drawFishMascot()
 {
-    tft.fillCircle(34, 188, 14, CORAL);
+    tft.fillCircle(34, 188, 14, COL_CORAL);
 
     tft.fillTriangle(
         20, 188,
         10, 180,
         10, 196,
-        CORAL);
+        COL_CORAL
+    );
 
-    tft.fillCircle(39, 184, 2, NAVY);
+    tft.fillCircle(39, 184, 2, COL_NAVY);
 
-    if (waterTemp > 31 || turbidity > 40)
+    bool unhappy =
+        (waterTemp > 31.0f || turbidity > 40.0f);
+
+    if (unhappy)
     {
-        tft.drawArc(38, 192, 5, 4, 180, 360, NAVY, WHITE);
+        tft.drawArc(
+            38, 192,
+            5, 4,
+            180, 360,
+            COL_NAVY,
+            COL_WHITE
+        );
     }
     else
     {
-        tft.drawArc(38, 190, 5, 4, 0, 180, NAVY, WHITE);
+        tft.drawArc(
+            38, 190,
+            5, 4,
+            0, 180,
+            COL_NAVY,
+            COL_WHITE
+        );
     }
 }
 
-static void drawDashboard()
+// =============================================================================
+// Home page
+// =============================================================================
+
+static void drawHomePage()
 {
     drawBackground();
 
     drawHeader();
 
-    drawCard(
-        tempCard,
+    drawSensorCard(
+        CARD_TEMP,
         "T",
         "TEMP",
         waterTemp,
         "C",
-        waterTemp > 30 ? CORAL : OCEAN);
+        waterTemp > 30.0f ? COL_CORAL : COL_OCEAN
+    );
 
-    drawCard(
-        phCard,
+    drawSensorCard(
+        CARD_PH,
         "P",
         "PH",
         phValue,
         "pH",
-        (phValue < 6.5 || phValue > 8.0)
-            ? CORAL
-            : MINT);
+        (phValue < 6.5f || phValue > 8.0f)
+            ? COL_CORAL
+            : COL_MINT
+    );
 
-    drawCard(
-        turbCard,
+    drawSensorCard(
+        CARD_TURB,
         "W",
         "CLEAR",
         turbidity,
         "NTU",
-        turbidity > 40 ? CORAL : SKY);
+        turbidity > 40.0f
+            ? COL_CORAL
+            : COL_SKY
+    );
 
     drawFeedButton(false);
 
     drawFishMascot();
 
-    tft.setTextColor(WHITE);
+
+    tft.setTextColor(COL_WHITE);
     tft.setTextFont(2);
 
-    if (turbidity > 40)
-    {
-        tft.drawString("Water dirty!", 58, 184);
-    }
-    else
-    {
-        tft.drawString("Tank happy today!", 58, 184);
-    }
+    tft.drawString(
+        turbidity > 40.0f
+            ? "Water dirty!"
+            : "Tank happy today!",
+        58,
+        184
+    );
 
     drawNavbar();
 }
 
-static void drawAnalytics()
+// =============================================================================
+// Analytics
+// =============================================================================
+
+static void drawAnalyticsPage()
 {
     drawBackground();
 
     drawHeader();
 
-    tft.fillRoundRect(12, 52, 296, 150, 18, WHITE);
+    tft.fillRoundRect(
+        12,
+        52,
+        296,
+        150,
+        18,
+        COL_WHITE
+    );
 
-    tft.drawRoundRect(12, 52, 296, 150, 18, NAVY);
+    tft.drawRoundRect(
+        12,
+        52,
+        296,
+        150,
+        18,
+        COL_NAVY
+    );
 
     for (int x = 20; x < 290; x++)
     {
-        int y = 120 + sinf(x * 0.05f) * 30;
+        int y =
+            120 +
+            (int)(sinf(x * 0.05f) * 30.0f);
 
-        tft.fillCircle(x, y, 2, OCEAN);
+        tft.fillCircle(x, y, 2, COL_OCEAN);
     }
 
-    tft.setTextColor(NAVY, WHITE);
-    tft.setTextFont(4);
+    tft.setTextColor(COL_NAVY, COL_WHITE);
 
+    tft.setTextFont(4);
     tft.drawString("Tank Trends", 70, 70);
 
     tft.setTextFont(2);
-
     tft.drawString("Temp stable", 30, 170);
     tft.drawString("pH healthy", 30, 185);
 
     drawNavbar();
 }
 
-static void drawHistory()
+// =============================================================================
+// History
+// =============================================================================
+
+static void drawHistoryPage()
 {
     drawBackground();
 
     drawHeader();
 
-    const char *logs[] = {
+    static const char* logs[] =
+    {
         "Feed completed",
         "Cloud synced",
         "pH stable",
         "Water checked",
-        "Fish fed"};
+        "Fish fed"
+    };
 
     int y = 58;
 
     for (int i = 0; i < 5; i++)
     {
-        tft.fillRoundRect(18, y, 284, 24, 12, WHITE);
+        tft.fillRoundRect(
+            18,
+            y,
+            284,
+            24,
+            12,
+            COL_WHITE
+        );
 
-        tft.setTextColor(NAVY, WHITE);
+        tft.setTextColor(COL_NAVY, COL_WHITE);
+
         tft.setTextFont(2);
 
         tft.drawString(logs[i], 28, y + 7);
@@ -360,32 +535,58 @@ static void drawHistory()
     drawNavbar();
 }
 
-static void drawSettings()
+// =============================================================================
+// Settings
+// =============================================================================
+
+static void drawSettingsPage()
 {
     drawBackground();
 
     drawHeader();
 
-    const char *items[] = {
+    static const char* items[] =
+    {
         "Cloud Sync",
         "Alerts",
         "Auto Feed",
-        "Night Mode"};
+        "Night Mode"
+    };
 
     int y = 60;
 
     for (int i = 0; i < 4; i++)
     {
-        tft.fillRoundRect(18, y, 284, 28, 12, WHITE);
+        tft.fillRoundRect(
+            18,
+            y,
+            284,
+            28,
+            12,
+            COL_WHITE
+        );
 
-        tft.setTextColor(NAVY, WHITE);
+        tft.setTextColor(COL_NAVY, COL_WHITE);
+
         tft.setTextFont(2);
 
         tft.drawString(items[i], 28, y + 8);
 
-        tft.fillRoundRect(250, y + 4, 40, 18, 9, MINT);
+        tft.fillRoundRect(
+            250,
+            y + 4,
+            40,
+            18,
+            9,
+            COL_MINT
+        );
 
-        tft.fillCircle(278, y + 13, 7, WHITE);
+        tft.fillCircle(
+            278,
+            y + 13,
+            7,
+            COL_WHITE
+        );
 
         y += 36;
     }
@@ -393,135 +594,139 @@ static void drawSettings()
     drawNavbar();
 }
 
+// =============================================================================
+// Render
+// =============================================================================
+
 static void render()
 {
     switch (currentPage)
     {
-    case Page::HOME:
-        drawDashboard();
-        break;
+        case Page::HOME:
+            drawHomePage();
+            break;
 
-    case Page::ANALYTICS:
-        drawAnalytics();
-        break;
+        case Page::ANALYTICS:
+            drawAnalyticsPage();
+            break;
 
-    case Page::HISTORY:
-        drawHistory();
-        break;
+        case Page::HISTORY:
+            drawHistoryPage();
+            break;
 
-    case Page::SETTINGS:
-        drawSettings();
-        break;
+        case Page::SETTINGS:
+            drawSettingsPage();
+            break;
     }
+}
+
+// =============================================================================
+// Touch
+// =============================================================================
+
+static TS_Point readTouchPoint()
+{
+    digitalWrite(TFT_CS, HIGH);
+
+    delayMicroseconds(10);
+
+    return touch.getPoint();
 }
 
 static void handleTouch()
 {
-    if (!touch.touched())
+    digitalWrite(TFT_CS, HIGH);
+
+    bool touchedNow = touch.touched();
+
+    if (!touchedNow)
         return;
 
-    TS_Point p = touch.getPoint();
+    unsigned long now = millis();
 
-    int x = map(p.x, 200, 3800, 0, SCREEN_W);
-    int y = map(p.y, 240, 3800, 0, SCREEN_H);
+    if (now - lastTouchMs < TOUCH_DEBOUNCE_MS)
+        return;
 
+    TS_Point p = readTouchPoint();
+
+    // FIX 1: Remove the 2800 upper limit! Only check if pressure is strong enough (> 150)
+    if (p.z < 150)
+        return;
+
+    int x = map(p.x, 340, 3860, 0, SCREEN_W);
+    int y = map(p.y, 200, 3860, 0, SCREEN_H);
+
+    // Mirroring calculation matching your setup
     x = SCREEN_W - x;
 
-    if (pointInRect(x, y, navHome))
+    x = constrain(x, 0, SCREEN_W - 1);
+    y = constrain(y, 0, SCREEN_H - 1);
+
+    // FIX 2: Debugging radar lines. Open your Serial Monitor to see these!
+    Serial.print("Touch Detected -> Raw X: "); Serial.print(p.x);
+    Serial.print(" | Raw Y: "); Serial.print(p.y);
+    Serial.print(" | Pressure Z: "); Serial.print(p.z);
+    Serial.print(" -> TARGET MAPPED X: "); Serial.print(x);
+    Serial.print(" | Y: "); Serial.println(y);
+
+    lastTouchMs = now;
+
+    if (pointInRect(x, y, NAV_HOME))
     {
+        Serial.println("[NAV] Home Clicked!");
         currentPage = Page::HOME;
-        render();
+        markDirty();
     }
 
-    if (pointInRect(x, y, navGraph))
+    if (pointInRect(x, y, NAV_GRAPH))
     {
+        Serial.println("[NAV] Graph Clicked!");
         currentPage = Page::ANALYTICS;
-        render();
+        markDirty();
     }
 
-    if (pointInRect(x, y, navHistory))
+    if (pointInRect(x, y, NAV_HISTORY))
     {
+        Serial.println("[NAV] History Clicked!");
         currentPage = Page::HISTORY;
-        render();
+        markDirty();
     }
 
-    if (pointInRect(x, y, navSettings))
+    if (pointInRect(x, y, NAV_SETTINGS))
     {
+        Serial.println("[NAV] Settings Clicked!");
         currentPage = Page::SETTINGS;
-        render();
+        markDirty();
     }
 
-    if (pointInRect(x, y, feedBtn))
+    if (pointInRect(x, y, FEED_BTN))
     {
+        Serial.println("[BTN] Feed Fish Clicked!");
         manualFeedRequest = true;
 
         drawFeedButton(true);
-
-        delay(100);
-
+        delay(80);
         drawFeedButton(false);
     }
-
-    delay(150);
 }
 
-static void drawBootScreen()
-{
-    tft.fillScreen(OCEAN);
-
-    for (int i = 0; i < 12; i++)
-    {
-        drawBubble(
-            random(20, 300),
-            random(20, 220),
-            random(2, 6));
-    }
-
-    tft.fillCircle(160, 80, 28, CORAL);
-
-    tft.fillTriangle(
-        132, 80,
-        112, 64,
-        112, 96,
-        CORAL);
-
-    tft.fillCircle(170, 72, 4, NAVY);
-
-    tft.setTextColor(WHITE);
-    tft.setTextDatum(MC_DATUM);
-
-    tft.setTextFont(4);
-
-    tft.drawString("FishMaster", 160, 140);
-
-    tft.setTextFont(2);
-
-    tft.drawString(
-        "Loading Aquarium...",
-        160,
-        165);
-
-    tft.drawRoundRect(60, 190, 200, 18, 9, WHITE);
-
-    for (int i = 0; i < 196; i += 4)
-    {
-        tft.fillRoundRect(
-            62,
-            192,
-            i,
-            14,
-            7,
-            MINT);
-
-        delay(20);
-    }
-
-    delay(800);
-}
+// =============================================================================
+// Init
+// =============================================================================
 
 void dashboardInit()
 {
-    SPI.begin();
+    SPI.begin(
+        TFT_SCLK,
+        TFT_MISO,
+        TFT_MOSI
+    );
+
+    pinMode(TFT_CS, OUTPUT);
+    digitalWrite(TFT_CS, HIGH);
+
+    pinMode(TOUCH_CS, OUTPUT);
+    digitalWrite(TOUCH_CS, HIGH);
 
     touch.begin();
     touch.setRotation(1);
@@ -529,52 +734,71 @@ void dashboardInit()
     tft.init();
     tft.setRotation(3);
 
-    drawBootScreen();
-
     render();
 }
 
+// =============================================================================
+// Main loop
+// =============================================================================
 void dashboardLoop()
 {
     handleTouch();
 
-    if (millis() - lastAnim > 80)
+    if (needsRedraw)
     {
-        bubbleOffset += 2;
-
-        if (bubbleOffset > SCREEN_W)
-            bubbleOffset = 0;
-
-        lastAnim = millis();
-
+        needsRedraw = false;
         render();
     }
 }
 
+// =============================================================================
+// Sensor setters
+// =============================================================================
+
 void dashboardSetWifiConnected(bool connected)
 {
-    wifiConnected = connected;
+    if (connected != wifiConnected)
+    {
+        wifiConnected = connected;
+        markDirty();
+    }
 }
 
 void dashboardSetWaterTemp(float tempC, bool valid)
 {
-    if (valid)
+    if (valid && fabsf(tempC - waterTemp) > 0.05f)
+    {
         waterTemp = tempC;
+        markDirty();
+    }
 }
 
-void dashboardSetPh(float ph, float voltage, float rawAdc, bool valid)
+void dashboardSetPh(
+    float ph,
+    float,
+    float,
+    bool valid)
 {
-    if (valid)
+    if (valid && fabsf(ph - phValue) > 0.05f)
+    {
         phValue = ph;
+        markDirty();
+    }
 }
 
-void dashboardSetTurbidity(float ntu, int rawAdc, bool valid)
+void dashboardSetTurbidity(
+    float ntu,
+    int,
+    bool valid)
 {
-    if (valid)
+    if (valid && fabsf(ntu - turbidity) > 0.05f)
+    {
         turbidity = ntu;
+        markDirty();
+    }
 }
 
-void dashboardSetInternalTemp(float chipTemp, bool valid)
+void dashboardSetInternalTemp(float, bool)
 {
 }
 

@@ -27,9 +27,9 @@ unsigned long temperatureTimer = 0;
 unsigned long turbidityTimer = 0;
 unsigned long deviceInfoTimer = 0;
 unsigned long phTimer = 0;
+unsigned long chipTempTimer = 0;
 
-bool phRequested = false;
-
+// State
 static bool waterTempValid = false;
 static bool turbidityValid = false;
 static bool phValid = false;
@@ -38,186 +38,140 @@ static bool chipTempValid = false;
 static float currentWaterTemp = NAN;
 static float currentTurbidityNtu = NAN;
 static int currentTurbidityRaw = 0;
+
 static float currentPh = NAN;
 static float currentPhVoltage = NAN;
 static float currentPhRawAdc = NAN;
+
 static float currentChipTemp = NAN;
+
+static bool phSampling = false;
+
+// TSENS handle (IMPORTANT FIX)
+#if HAVE_TSENS
+static temp_sensor_handle_t tsens_handle = NULL;
+#endif
 
 void setup()
 {
     Serial.begin(115200);
     delay(1000);
 
-    Serial.println();
-    Serial.println("=================================");
-    Serial.println(" FishMaster ESP32 Starting...");
-    Serial.println("=================================");
+    Serial.println("FishMaster Starting...");
 
-    // Initialize sensors
-    Serial.println("[BOOT] Initializing temperature sensor...");
     tempSensorInit();
-
-    Serial.println("[BOOT] Initializing pH sensor...");
     phSensorInit();
-
-    Serial.println("[BOOT] Initializing turbidity sensor...");
     turbiditySensorInit();
 
-    Serial.println("[BOOT] Initializing dashboard UI...");
     dashboardInit();
 
-    // Connect WiFi
-    Serial.println("[BOOT] Connecting WiFi...");
-    wifiConnect();
+#if HAVE_TSENS
+    temp_sensor_config_t cfg = TSENS_CONFIG_DEFAULT();
+    temp_sensor_install(&cfg, &tsens_handle);
+    temp_sensor_start(tsens_handle);
+#endif
 
-    // Setup MQTT
-    Serial.println("[BOOT] Setting up MQTT...");
+    wifiConnect();
     mqttSetup();
 
-    // Publish initial device info
     mqttPublishDeviceInfo();
 
-    Serial.println("[BOOT] System ready ✔");
+    Serial.println("System ready ✔");
 }
 
 void loop()
 {
-    // Progress non-blocking pH sampler
     phSensorLoop();
-
-    // Maintain MQTT connection
     mqttLoop();
 
     dashboardSetWifiConnected(WiFi.status() == WL_CONNECTED);
 
-    // Publish device info every 60 seconds
+    // DEVICE INFO
     if (checkTime(deviceInfoTimer, 60000))
     {
         mqttPublishDeviceInfo();
     }
 
-    // Read turbidity every 5 seconds
+    // TURBIDITY
     if (checkTime(turbidityTimer, 5000))
     {
-        Serial.println();
-        Serial.println("------ TURBIDITY SENSOR ------");
-
-        int rawValue = turbiditySensorReadRaw();
+        int raw = turbiditySensorReadRaw();
         float ntu = turbiditySensorReadNtu();
 
-        currentTurbidityRaw = rawValue;
+        currentTurbidityRaw = raw;
         currentTurbidityNtu = ntu;
         turbidityValid = true;
-        dashboardSetTurbidity(currentTurbidityNtu, currentTurbidityRaw, turbidityValid);
 
-        Serial.print("[TURBIDITY] Raw ADC -> ");
-        Serial.println(rawValue);
-
-        Serial.print("[TURBIDITY] NTU -> ");
-        Serial.print(ntu, 2);
-        Serial.println(" NTU");
-
-        mqttPublishTurbidity(ntu, rawValue);
+        dashboardSetTurbidity(ntu, raw, true);
+        mqttPublishTurbidity(ntu, raw);
     }
 
-    // Request pH sample every 5 seconds (non-blocking)
+    // pH REQUEST
     if (checkTime(phTimer, 5000))
     {
-        Serial.println();
-        Serial.println("------ pH SENSOR (start sample) ------");
         phSensorRequestSample();
-        phRequested = true;
+        phSampling = true;
     }
 
-    // When a pH sample completes, publish it
-    if (phRequested && phSensorSampleReady())
+    // pH READY
+    if (phSampling && phSensorSampleReady())
     {
-        float ph = phSensorGetPh();
-        float v = phSensorLastVoltage();
-        float raw = phSensorLastRawAdc();
-        const bool phIsValid = (ph >= 0.0f);
+        currentPh = phSensorGetPh();
+        currentPhVoltage = phSensorLastVoltage();
+        currentPhRawAdc = phSensorLastRawAdc();
 
-        currentPh = ph;
-        currentPhVoltage = v;
-        currentPhRawAdc = raw;
-        phValid = phIsValid;
+        phValid = (currentPh >= 0.0f);
 
-        Serial.println();
-        Serial.println("------ pH SENSOR ------");
-        Serial.print("[PH] Raw ADC (avg) -> ");
-        Serial.println((int)raw);
-        Serial.print("[PH] Module voltage -> ");
-        Serial.print(v, 3);
-        Serial.println(" V");
-        Serial.print("[PH] pH -> ");
-        Serial.println(ph, 3);
+        dashboardSetPh(currentPh, currentPhVoltage, currentPhRawAdc, phValid);
 
-        // Read internal chip temperature using driver/temp_sensor.h if available
         float chipTemp = NAN;
-        chipTempValid = false;
+
 #if HAVE_TSENS
+        if (tsens_handle)
         {
-            temp_sensor_config_t cfg = TSENS_CONFIG_DEFAULT();
-            temp_sensor_handle_t handle = NULL;
-            if (temp_sensor_install(&cfg, &handle) == ESP_OK)
+            if (temp_sensor_get_celsius(tsens_handle, &chipTemp) == ESP_OK)
             {
-                if (temp_sensor_start(handle) == ESP_OK)
-                {
-                    float celsius = 0.0f;
-                    if (temp_sensor_get_celsius(handle, &celsius) == ESP_OK)
-                    {
-                        chipTemp = celsius;
-                        currentChipTemp = celsius;
-                        chipTempValid = true;
-                        Serial.print("[PH] Internal chip temp -> ");
-                        Serial.print(celsius, 2);
-                        Serial.println(" C");
-                    }
-                    temp_sensor_stop(handle);
-                }
-                temp_sensor_uninstall(handle);
+                currentChipTemp = chipTemp;
+                chipTempValid = true;
+                dashboardSetInternalTemp(chipTemp, true);
             }
         }
-#else
-        Serial.println("[PH] Internal chip temp -> N/A (driver not available)");
 #endif
 
-        mqttPublishPh(ph, v, chipTemp);
-        dashboardSetInternalTemp(currentChipTemp, chipTempValid);
-        dashboardSetPh(currentPh, currentPhVoltage, currentPhRawAdc, phValid);
-        phRequested = false;
+        mqttPublishPh(currentPh, currentPhVoltage, chipTemp);
+
+        phSampling = false;
     }
 
-    // Read temperature every 2 seconds
+    // CHIP TEMP (separate timer FIX)
+    if (checkTime(chipTempTimer, 15000))
+    {
+#if HAVE_TSENS
+        float t = NAN;
+        if (tsens_handle && temp_sensor_get_celsius(tsens_handle, &t) == ESP_OK)
+        {
+            currentChipTemp = t;
+            dashboardSetInternalTemp(t, true);
+        }
+#endif
+    }
+
+    // WATER TEMP
     if (checkTime(temperatureTimer, 2000))
     {
-        Serial.println();
-        Serial.println("------ TEMPERATURE SENSOR ------");
-
         float temp = tempSensorReadC();
 
-        // DS18B20 failed
         if (temp == TEMP_SENSOR_ERROR)
         {
             waterTempValid = false;
             dashboardSetWaterTemp(NAN, false);
-            Serial.println("[TEMP] Failed to read sensor!");
-            Serial.println("[TEMP] Check:");
-            Serial.println("  - Wiring");
-            Serial.println("  - GPIO pin");
-            Serial.println("  - 4.7k pull-up resistor");
-            Serial.println("  - Sensor power");
         }
         else
         {
             currentWaterTemp = temp;
             waterTempValid = true;
-            dashboardSetWaterTemp(currentWaterTemp, waterTempValid);
 
-            Serial.print("[TEMP] Temperature -> ");
-            Serial.print(temp, 2);
-            Serial.println(" C");
-
+            dashboardSetWaterTemp(temp, true);
             mqttPublishTemperature(temp);
         }
     }

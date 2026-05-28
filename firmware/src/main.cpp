@@ -22,14 +22,18 @@
 #  define HAVE_TSENS 0
 #endif
 
-// Timers
+// =====================
+// TIMERS
+// =====================
 unsigned long temperatureTimer = 0;
 unsigned long turbidityTimer = 0;
 unsigned long deviceInfoTimer = 0;
 unsigned long phTimer = 0;
 unsigned long chipTempTimer = 0;
 
-// State
+// =====================
+// STATE
+// =====================
 static bool waterTempValid = false;
 static bool turbidityValid = false;
 static bool phValid = false;
@@ -47,10 +51,15 @@ static float currentChipTemp = NAN;
 
 static bool phSampling = false;
 
-// TSENS handle (IMPORTANT FIX)
+// TSENS
 #if HAVE_TSENS
 static temp_sensor_handle_t tsens_handle = NULL;
 #endif
+
+// =====================
+// UI THROTTLE TIMER
+// =====================
+static unsigned long uiTimer = 0;
 
 void setup()
 {
@@ -81,18 +90,25 @@ void setup()
 
 void loop()
 {
+    // =====================
+    // BACKGROUND TASKS
+    // =====================
     phSensorLoop();
     mqttLoop();
 
     dashboardSetWifiConnected(WiFi.status() == WL_CONNECTED);
 
+    // =====================
     // DEVICE INFO
+    // =====================
     if (checkTime(deviceInfoTimer, 60000))
     {
         mqttPublishDeviceInfo();
     }
 
+    // =====================
     // TURBIDITY
+    // =====================
     if (checkTime(turbidityTimer, 5000))
     {
         int raw = turbiditySensorReadRaw();
@@ -106,14 +122,18 @@ void loop()
         mqttPublishTurbidity(ntu, raw);
     }
 
+    // =====================
     // pH REQUEST
+    // =====================
     if (checkTime(phTimer, 5000))
     {
         phSensorRequestSample();
         phSampling = true;
     }
 
-    // pH READY
+    // =====================
+    // pH RESULT
+    // =====================
     if (phSampling && phSensorSampleReady())
     {
         currentPh = phSensorGetPh();
@@ -139,11 +159,12 @@ void loop()
 #endif
 
         mqttPublishPh(currentPh, currentPhVoltage, chipTemp);
-
         phSampling = false;
     }
 
-    // CHIP TEMP (separate timer FIX)
+    // =====================
+    // CHIP TEMP
+    // =====================
     if (checkTime(chipTempTimer, 15000))
     {
 #if HAVE_TSENS
@@ -156,7 +177,9 @@ void loop()
 #endif
     }
 
+    // =====================
     // WATER TEMP
+    // =====================
     if (checkTime(temperatureTimer, 2000))
     {
         float temp = tempSensorReadC();
@@ -176,5 +199,13 @@ void loop()
         }
     }
 
-    dashboardLoop();
+    // =====================
+    // UI UPDATE (FIXED)
+    // =====================
+    if (millis() - uiTimer >= 33) // ~30 FPS
+    {
+        uiTimer = millis();
+
+        dashboardLoop();
+    }
 }

@@ -12,7 +12,7 @@ Paste this into your TFT_eSPI `User_Setup.h` file for the FishMaster dashboard d
 #define TFT_DC   2
 #define TFT_RST  4
 
-#define TOUCH_CS 21
+#define TOUCH_CS 5
 
 #define LOAD_GLCD
 #define LOAD_FONT2

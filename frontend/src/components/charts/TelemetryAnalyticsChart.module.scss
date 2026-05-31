@@ -1,0 +1,137 @@
+.chartShell {
+  position: relative;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.chartShellFullscreen {
+  min-height: 70vh;
+}
+
+.chartHeader {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.chartEyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.chartHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.2;
+}
+
+.chartCopy {
+  margin: 0.35rem 0 0;
+  color: #64748b;
+  max-width: 60ch;
+  font-size: 0.92rem;
+}
+
+.chartActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.segmentedControl {
+  display: inline-flex;
+  padding: 0.25rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.12);
+  gap: 0.2rem;
+}
+
+.segmentedButton {
+  border: 0;
+  background: transparent;
+  color: #475569;
+  min-height: 44px;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  text-transform: capitalize;
+  font-weight: 700;
+}
+
+.segmentedButtonActive {
+  background: #0f172a;
+  color: #f8fafc;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.18);
+}
+
+.iconButton {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 14px;
+  background: #fff;
+  color: #0f172a;
+}
+
+.metricToggleRow {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.metricToggle {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  background: rgba(255, 255, 255, 0.82);
+  color: #475569;
+  padding: 0.55rem 0.9rem;
+  font-weight: 700;
+}
+
+.metricToggleActive {
+  border-color: rgba(59, 130, 246, 0.35);
+  background: rgba(59, 130, 246, 0.1);
+  color: #0f172a;
+}
+
+@media (min-width: 1024px) {
+  .chartShell {
+    min-height: 520px;
+  }
+}
+
+/* Mobile-specific adjustments to ensure chart occupies visible viewport */
+@media (max-width: 600px) {
+  .chartShell {
+    min-height: 36vh;
+    padding: 0.5rem 0.5rem 0.6rem 0.5rem;
+  }
+
+  .chartShellFullscreen {
+    min-height: 78vh;
+  }
+
+  .iconButton {
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .segmentedButton {
+    min-height: 40px;
+    padding: 0.45rem 0.7rem;
+  }
+}

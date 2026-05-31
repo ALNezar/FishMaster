@@ -194,6 +194,21 @@ export interface FeedingHistoryEntry {
   scheduleName: string | null;
 }
 
+export type HistoryEventType = 'parameter' | 'alert' | 'maintenance' | 'feeding' | 'system';
+
+export type HistoryEventStatus = 'success' | 'warning' | 'info' | 'critical';
+
+export interface HistoryEvent {
+  id: string;
+  tankId: number | string;
+  type: HistoryEventType;
+  status: HistoryEventStatus;
+  title: string;
+  description: string;
+  timestamp: string;
+  source: 'history' | 'feeding' | 'telemetry';
+}
+
 export interface LearningSubsection {
   id: string;
   title: string;

@@ -1,208 +1,68 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  getSensorData,
-  getTanks,
-  getLearningPaths,
-  getLearningProgress,
-} from '../../api';
+import { getLearningPaths, getLearningProgress, getSensorData, getTanks } from '../../api';
 import styles from './LearningHomePage.module.scss';
-import { FaThermometerHalf, FaTint, FaFlask } from 'react-icons/fa';
-import esp32Image from '../../assets/images/learning/esp32.svg';
+import { FaArrowRight, FaChartLine, FaCheckCircle, FaClock, FaExclamationTriangle, FaFlask, FaRedo, FaThermometerHalf, FaTint, FaWater } from 'react-icons/fa';
+import placeholderImage from '../../assets/images/learning/placeholder.svg';
+import temperatureProbeImage from '../../assets/images/learning/temperature-probe.svg';
 import phSensorImage from '../../assets/images/learning/ph-sensor.svg';
 import turbiditySensorImage from '../../assets/images/learning/turbidity-sensor.svg';
-import temperatureProbeImage from '../../assets/images/learning/temperature-probe.svg';
-import tftDisplayImage from '../../assets/images/learning/tft-display.svg';
-import servoImage from '../../assets/images/learning/servo.svg';
-import breadboardImage from '../../assets/images/learning/breadboard.svg';
-import wiresImage from '../../assets/images/learning/wires.svg';
-import resistorImage from '../../assets/images/learning/resistor.svg';
-import multimeterImage from '../../assets/images/learning/multimeter.svg';
-import usbImage from '../../assets/images/learning/usb-cable.svg';
-import placeholderImage from '../../assets/images/learning/placeholder.svg';
 
-const hardwareList = [
-  {
-    id: 'esp32',
-    label: 'ESP32',
-    model: 'ESP32-DevKitC-32E (38-pin, CP2102)',
-    quantity: '1',
-    purpose: 'Main microcontroller',
-    image: esp32Image,
-  },
-  {
-    id: 'ph',
-    label: 'pH Sensor',
-    model: 'PH 0-14 Liquid Monitoring Sensor (Arduino-compatible)',
-    quantity: '1',
-    purpose: 'Water pH detection',
-    image: phSensorImage,
-  },
-  {
-    id: 'turbidity',
-    label: 'Turbidity Sensor',
-    model: 'FARDUINO Water Turbidity Module (Full Set)',
-    quantity: '1',
-    purpose: 'Water clarity detection',
-    image: turbiditySensorImage,
-  },
-  {
-    id: 'temperature',
-    label: 'Temperature Sensor',
-    model: 'DS18B20 Waterproof Probe',
-    quantity: '1',
-    purpose: 'Water temperature',
+const GUIDE_DETAILS = {
+  temperature: {
+    label: 'Temperature',
+    icon: FaThermometerHalf,
     image: temperatureProbeImage,
+    pathId: 'temperature',
+    action: 'Open temperature guide',
   },
-  {
-    id: 'tft',
-    label: 'TFT LCD Display',
-    model: '2.8 inch ILI9341 SPI Touch Panel 240x320',
-    quantity: '1',
-    purpose: 'Local display',
-    image: tftDisplayImage,
+  ph: {
+    label: 'pH',
+    icon: FaFlask,
+    image: phSensorImage,
+    pathId: 'ph',
+    action: 'Open pH guide',
   },
-  {
-    id: 'servo',
-    label: 'Servo Motor',
-    model: 'SG90 180 degree',
-    quantity: '1',
-    purpose: 'Auto feeder mechanism',
-    image: servoImage,
+  turbidity: {
+    label: 'Turbidity',
+    icon: FaWater,
+    image: turbiditySensorImage,
+    pathId: 'turbidity',
+    action: 'Open turbidity guide',
   },
-  {
-    id: 'breadboard',
-    label: 'Breadboard',
-    model: 'MB-102 830-point Solderless',
-    quantity: '1',
-    purpose: 'Prototyping',
-    image: breadboardImage,
-  },
-  {
-    id: 'wires',
-    label: 'Dupont Wires',
-    model: 'M-F 10cm, M-M 10cm, F-F 30cm (40pcs each)',
-    quantity: '3 sets',
-    purpose: 'Connections',
-    image: wiresImage,
-  },
-  {
-    id: 'resistors',
-    label: 'Resistors',
-    model: '4.7k 0.25W 5%',
-    quantity: '50pcs',
-    purpose: 'Pull-up for DS18B20',
-    image: resistorImage,
-  },
-  {
-    id: 'multimeter',
-    label: 'Multimeter',
-    model: 'HABOTEST HT109L',
-    quantity: '1',
-    purpose: 'Testing and debugging',
-    image: multimeterImage,
-  },
-  {
-    id: 'usb',
-    label: 'USB Cable',
-    model: 'Micro USB 30cm',
-    quantity: '1',
-    purpose: 'ESP32 power/programming',
-    image: usbImage,
-  },
-];
+};
+
+const getStatusTone = (value, kind) => {
+  if (kind === 'temperature') {
+    if (value >= 24 && value <= 26) return 'safe';
+    if ((value >= 22 && value < 24) || (value > 26 && value <= 28)) return 'caution';
+    return 'danger';
+  }
+
+  if (kind === 'ph') {
+    if (value >= 6.8 && value <= 7.4) return 'safe';
+    if ((value >= 6.5 && value < 6.8) || (value > 7.4 && value <= 7.8)) return 'caution';
+    return 'danger';
+  }
+
+  if (value < 3) return 'safe';
+  if (value <= 5) return 'caution';
+  return 'danger';
+};
+
+const toneLabel = {
+  safe: 'Stable',
+  caution: 'Watch',
+  danger: 'Fix now',
+};
 
 function LearningHomePage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [paths, setPaths] = useState([]);
   const [progress, setProgress] = useState(null);
-  const [activePathId, setActivePathId] = useState('');
   const [sensorReadings, setSensorReadings] = useState(null);
-
-  const getTemperatureState = (value) => {
-    if (value >= 24 && value <= 26) {
-      return {
-        status: 'safe',
-        explanation: 'Water temperature is within the safe comfort zone for most freshwater fish.',
-        tips: ['✅ Keep heater settings steady.', '✅ Continue monitoring at normal intervals.'],
-        why: 'Stable temperature supports fish metabolism and lowers stress-driven behavior changes.',
-      };
-    }
-    if ((value >= 22 && value < 24) || (value > 26 && value <= 28)) {
-      return {
-        status: 'caution',
-        explanation: 'Temperature is drifting and should be corrected gradually.',
-        tips: ['⚠ Move tank away from direct sunlight.', '⚠ Adjust heater by small increments only.'],
-        why: 'Quick temperature swings can shock fish, so controlled correction is safer than sudden changes.',
-      };
-    }
-    return {
-      status: 'danger',
-      explanation: 'Temperature is outside the safe range and needs urgent attention.',
-      tips: ['🚨 Stabilize heater and room conditions now.', '🚨 Verify thermometer/sensor readings immediately.'],
-      why: 'Extreme temperatures can reduce oxygen availability and stress fish quickly.',
-    };
-  };
-
-  const getTurbidityState = (value) => {
-    if (value < 3) {
-      return {
-        status: 'safe',
-        explanation: 'Water clarity looks healthy and stable.',
-        tips: ['✅ Keep your current filtration routine.', '✅ Continue weekly maintenance checks.'],
-        why: 'Low turbidity usually means lower suspended waste and better gill comfort for fish.',
-      };
-    }
-    if (value >= 3 && value <= 5) {
-      return {
-        status: 'caution',
-        explanation: 'Water is getting cloudy and needs early intervention.',
-        tips: ['⚠ Check filter media and flow rate.', '⚠ Reduce feeding amount for the next cycle.'],
-        why: 'Catching turbidity early prevents organic load from becoming an ammonia issue.',
-      };
-    }
-    return {
-      status: 'danger',
-      explanation: 'Cloudiness is high and indicates immediate cleanup is needed.',
-      tips: ['🚨 Perform a partial water change.', '🚨 Inspect filter and remove uneaten food/debris.'],
-      why: 'High turbidity can signal rapid waste buildup and unstable water quality.',
-    };
-  };
-
-  const getPhState = (value) => {
-    if (value >= 6.8 && value <= 7.4) {
-      return {
-        status: 'safe',
-        explanation: 'This reading is healthy, but the glass probe still needs careful handling and storage to stay accurate.',
-        tips: [
-          '✅ Soak a new or dry probe in its 3M KCl storage solution for at least 8 hours before calibration.',
-          '✅ Keep the BNC connector bone dry and return the wet storage cap after removal.',
-        ],
-        why: 'The probe needs a hydrated gel layer on the glass bulb. If it dries out or the connector gets wet, readings can become erratic even when the pH is fine.',
-      };
-    }
-    if ((value >= 6.5 && value < 6.8) || (value > 7.4 && value <= 7.8)) {
-      return {
-        status: 'caution',
-        explanation: 'The pH is drifting, so this is a good time to check probe handling and calibration technique.',
-        tips: [
-          '⚠ Rinse the bulb with distilled or deionized water between buffer solutions and blot it gently dry.',
-          '⚠ Never carry tank water into pH 4.0, 7.0, or 9.18 buffer cups.',
-        ],
-        why: 'Cross-contamination changes the chemistry of the calibration fluid and gives false readings on the dashboard.',
-      };
-    }
-    return {
-      status: 'danger',
-      explanation: 'This reading is outside the safe range, so the probe, storage cap, and calibration steps should all be checked immediately.',
-      tips: [
-        '🚨 Confirm the probe was soaked in KCl if it was new, dry, or unused for a while.',
-        '🚨 Never leave the glass bulb dry; always store it wet when the probe is out of the tank.',
-      ],
-      why: 'A dry bulb, wet BNC connector, or ignored calibration routine can make the probe look broken even when the water is not the real problem.',
-    };
-  };
+  const [activePathId, setActivePathId] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -213,14 +73,16 @@ function LearningHomePage() {
         const [pathsData, progressData, tanksData] = await Promise.all([
           getLearningPaths(),
           getLearningProgress(),
+          getTanks(),
         ]);
 
         const firstTank = tanksData?.[0];
         const sensorData = firstTank ? await getSensorData(firstTank.id, '24h') : null;
 
         if (!mounted) return;
+
         setPaths(pathsData || []);
-        setProgress(progressData);
+        setProgress(progressData || null);
         setSensorReadings(sensorData?.currentReadings || null);
         setActivePathId(pathsData?.[0]?.id || '');
       } catch (err) {
@@ -236,222 +98,247 @@ function LearningHomePage() {
     };
   }, []);
 
-  const activePath = useMemo(() => {
-    return paths.find((item) => item.id === activePathId) || null;
-  }, [paths, activePathId]);
-
-  const sensorCards = useMemo(() => {
-    if (!sensorReadings) return [];
-
-    const tempValue = sensorReadings.temperature?.value ?? 0;
-    const turbidityValue = sensorReadings.turbidity?.value ?? 0;
-    const phValue = sensorReadings.ph?.value ?? 0;
-
-    const tempState = getTemperatureState(tempValue);
-    const turbidityState = getTurbidityState(turbidityValue);
-    const phState = getPhState(phValue);
+  const liveGuidance = useMemo(() => {
+    const temperature = Number(sensorReadings?.temperature?.value ?? 25);
+    const ph = Number(sensorReadings?.ph?.value ?? 7);
+    const turbidity = Number(sensorReadings?.turbidity?.value ?? 0);
 
     return [
       {
-        id: 'temperature',
-        label: 'Temperature',
-        icon: FaThermometerHalf,
-        value: `${tempValue.toFixed(1)}°C`,
-        image: temperatureProbeImage,
-        ...tempState,
+        kind: 'temperature',
+        value: `${temperature.toFixed(1)}°C`,
+        tone: getStatusTone(temperature, 'temperature'),
+        title: 'Temperature',
+        detail: temperature >= 24 && temperature <= 26
+          ? 'Comfortable range for most tropical tanks.'
+          : 'Adjust heating gradually and recheck the trend.',
+        action: 'Open temperature guide',
       },
       {
-        id: 'turbidity',
-        label: 'Turbidity',
-        icon: FaTint,
-        value: `${turbidityValue.toFixed(1)} NTU`,
-        image: turbiditySensorImage,
-        ...turbidityState,
+        kind: 'ph',
+        value: ph.toFixed(2),
+        tone: getStatusTone(ph, 'ph'),
+        title: 'pH',
+        detail: ph >= 6.8 && ph <= 7.4
+          ? 'Balanced and safe for most community fish.'
+          : 'Stabilize chemistry and avoid sudden corrections.',
+        action: 'Open pH guide',
       },
       {
-        id: 'ph',
-        label: 'pH',
-        icon: FaFlask,
-        value: `${phValue.toFixed(2)}`,
-        image: phSensorImage,
-        ...phState,
+        kind: 'turbidity',
+        value: `${turbidity.toFixed(1)} NTU`,
+        tone: getStatusTone(turbidity, 'turbidity'),
+        title: 'Turbidity',
+        detail: turbidity < 3
+          ? 'Water is clear and the filter is keeping up.'
+          : 'Inspect filtration and feeding before cloudiness grows.',
+        action: 'Open turbidity guide',
       },
     ];
   }, [sensorReadings]);
 
+  const currentPath = useMemo(
+    () => paths.find((path) => path.id === activePathId) || paths[0] || null,
+    [paths, activePathId]
+  );
+
+  const viewedSectionIds = progress?.viewedSectionIds || [];
+
+  const quickActions = [
+    {
+      title: 'Recheck sensors',
+      description: 'Refresh the latest tank readings and guidance cards.',
+      icon: FaRedo,
+      onClick: () => window.location.reload(),
+    },
+    {
+      title: 'Review alerts',
+      description: 'Jump to alert thresholds and open issues.',
+      icon: FaExclamationTriangle,
+      onClick: () => navigate('/alerts'),
+    },
+    {
+      title: 'View progress',
+      description: 'See what you have already completed.',
+      icon: FaCheckCircle,
+      onClick: () => navigate('/education/progress'),
+    },
+  ];
+
   if (loading) {
     return (
-      <div className={styles.wrapper}>
-        <div className={styles.loading}>Loading learning hub...</div>
+      <div className={styles.page}>
+        <div className={styles.loadingCard}>Loading learning hub...</div>
       </div>
     );
   }
 
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.page}>
       <header className={styles.hero}>
-        <p className={styles.kicker}>Learn & Care</p>
-        <h1>Training for Better Tank Decisions</h1>
-        <p className={styles.subtext}>
-          Friendly practical guidance based on your live readings, with simple actions first.
-        </p>
-        <div className={styles.progressRow}>
-          <div className={styles.progressMeta}>
-            <span>{progress?.completionRate || 0}% completed</span>
-            <span>{progress?.streakDays || 1}-day streak</span>
+        <div className={styles.heroCopy}>
+          <p className={styles.kicker}>Learn & Care</p>
+          <h1>Understand your tank using live data and guided actions</h1>
+          <p className={styles.subtext}>
+            See the current readings, decide what needs attention now, and open a learning path only when you want deeper context.
+          </p>
+          <div className={styles.heroMeta}>
+            <span>{progress?.completionRate || 0}% complete</span>
+            <span>{progress?.streakDays || 0}-day streak</span>
           </div>
-          <div className={styles.progressTrack} aria-label="Learning progress">
-            <div className={styles.progressFill} style={{ width: `${progress?.completionRate || 0}%` }} />
+          <div className={styles.progressWrap} aria-label="Learning progress">
+            <div className={styles.progressTrack}>
+              <div className={styles.progressFill} style={{ width: `${progress?.completionRate || 0}%` }} />
+            </div>
           </div>
         </div>
+
+        <aside className={styles.heroPanel}>
+          <div className={styles.heroPanelHeader}>
+            <span>Live Guidance</span>
+            <Link to="/education/progress">Progress</Link>
+          </div>
+          <div className={styles.heroPanelBody}>
+            {liveGuidance.map((item) => {
+              const Icon = GUIDE_DETAILS[item.kind].icon;
+              return (
+                <article key={item.kind} className={`${styles.guidanceMiniCard} ${styles[item.tone]}`}>
+                  <div className={styles.guidanceMiniTop}>
+                    <span className={styles.guidanceMiniLabel}><Icon /> {item.title}</span>
+                    <strong>{item.value}</strong>
+                  </div>
+                  <p>{item.detail}</p>
+                  <button type="button" onClick={() => navigate(`/education/path/${GUIDE_DETAILS[item.kind].pathId}`)}>
+                    {item.action} <FaArrowRight />
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+        </aside>
       </header>
 
-      <section className={styles.sensorSection}>
-        <div className={styles.cardHeader}>
-          <h2>Current Readings</h2>
-          <Link to="/education/progress">Progress</Link>
+      <section className={styles.quickActionsSection}>
+        <div className={styles.sectionHeader}>
+          <h2>Quick actions</h2>
+          <p>Choose one fast action before opening a lesson.</p>
         </div>
-        <div className={styles.sensorGrid}>
-          {sensorCards.map((sensor) => (
-            <article key={sensor.id} className={`${styles.sensorCard} ${styles[sensor.status]}`}>
-              <img
-                src={sensor.image}
-                alt={`${sensor.label} sensor`}
-                loading="lazy"
-                onError={(e) => {
-                  // fallback to local placeholder
-                  // eslint-disable-next-line no-param-reassign
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = placeholderImage;
-                }}
-              />
-              <div className={styles.sensorBody}>
-                <div className={styles.sensorHeader}>
-                  <span className={styles.sensorLabel}><sensor.icon /> {sensor.label}</span>
-                  <span className={styles.statusPill}>{sensor.status}</span>
-                </div>
-                <p className={styles.sensorValue}>{sensor.value}</p>
-                <p className={styles.sensorExplanation}>{sensor.explanation}</p>
-                <div className={styles.tipList}>
-                  {sensor.tips.map((tip) => (
-                    <p key={tip}>{tip}</p>
-                  ))}
-                </div>
-                <details className={styles.whyDetails}>
-                  <summary>Why it matters</summary>
-                  <p>{sensor.why}</p>
-                </details>
-              </div>
-            </article>
-          ))}
+        <div className={styles.quickActionGrid}>
+          {quickActions.map((action) => {
+            const Icon = action.icon;
+            return (
+              <button key={action.title} type="button" className={styles.quickActionCard} onClick={action.onClick}>
+                <span className={styles.quickActionIcon}><Icon /></span>
+                <strong>{action.title}</strong>
+                <p>{action.description}</p>
+              </button>
+            );
+          })}
         </div>
       </section>
 
-      <section className={styles.pathSection}>
-        <div className={styles.cardHeader}>
-          <h2>Learning Paths</h2>
+      <section className={styles.guidanceSection}>
+        <div className={styles.sectionHeader}>
+          <h2>Live guidance</h2>
+          <p>What to do now based on your latest readings.</p>
         </div>
-        <div className={styles.pathTabs}>
-          {paths.map((path) => (
-            <button
-              key={path.id}
-              className={`${styles.pathTab} ${activePathId === path.id ? styles.pathTabActive : ''}`}
-              onClick={() => setActivePathId(path.id)}
-            >
-              <span>{path.level}</span>
-              <strong>{path.title}</strong>
-            </button>
-          ))}
-        </div>
-
-        {activePath && (
-          <article className={styles.activePathCard}>
-            <h3>{activePath.title}</h3>
-            <p>{activePath.description}</p>
-            <p className={styles.estimate}>{activePath.lessonsCount} lessons, about {activePath.durationMin} minutes</p>
-            <div className={styles.pathActions}>
-              <button onClick={() => navigate(`/education/path/${activePath.id}`)}>Open Path</button>
-              <button className={styles.secondary} onClick={() => navigate('/education/progress')}>View Progress</button>
-            </div>
-          </article>
-        )}
-      </section>
-
-      <section className={styles.studySection}>
-        <div className={styles.cardHeader}>
-          <h2>Study Cards</h2>
-          <span>Quick visual overview</span>
-        </div>
-        <div className={styles.studyGrid}>
-          {paths.map((path) => (
-            <article key={path.id} className={styles.studyCard}>
-              <img
-                src={path.sensorImage}
-                alt={`${path.title} illustration`}
-                loading="lazy"
-                onError={(e) => {
-                  // fallback to local placeholder
-                  // eslint-disable-next-line no-param-reassign
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = placeholderImage;
-                }}
-              />
-              <div className={styles.studyBody}>
-                <div className={styles.studyMeta}>
-                  <span>{path.level}</span>
-                  <span>{path.lessonsCount} lessons</span>
+        <div className={styles.guidanceGrid}>
+          {liveGuidance.map((item) => {
+            const meta = GUIDE_DETAILS[item.kind];
+            const Icon = meta.icon;
+            return (
+              <article key={item.kind} className={`${styles.guidanceCard} ${styles[item.tone]}`}>
+                <div className={styles.guidanceCardTop}>
+                  <span className={styles.guidanceCardIcon}><Icon /></span>
+                  <div>
+                    <p>{item.title}</p>
+                    <h3>{item.value}</h3>
+                  </div>
+                  <span className={styles.toneBadge}>{toneLabel[item.tone]}</span>
                 </div>
-                <h3>{path.title}</h3>
-                <p>{path.description}</p>
-                <div className={styles.studyFooter}>
-                  <span>{path.durationMin} min</span>
-                  <button onClick={() => navigate(`/education/path/${path.id}`)}>Open</button>
+                <p className={styles.guidanceDetail}>{item.detail}</p>
+                <div className={styles.guidanceFooter}>
+                  <button type="button" onClick={() => navigate(`/education/path/${meta.pathId}`)}>
+                    {meta.action}
+                  </button>
                 </div>
-              </div>
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
       </section>
 
-      <section className={styles.hardwareSection}>
-        <div className={styles.cardHeader}>
-          <h2>FishMaster Hardware Overview</h2>
+      <section className={styles.pathsSection}>
+        <div className={styles.sectionHeader}>
+          <h2>Learning paths</h2>
+          <p>Structured lessons for the topics that matter most.</p>
         </div>
-        <p className={styles.hardwareIntro}>
-          Quick visual catalog of the current stack used by the system.
-        </p>
-        <div className={styles.hardwareGrid}>
-          {hardwareList.map((item) => (
-            <article key={item.id} className={styles.hardwareCard}>
-              <img
-                src={item.image}
-                alt={`${item.label} illustration`}
-                loading="lazy"
-                onError={(e) => {
-                  // fallback to local placeholder
-                  // eslint-disable-next-line no-param-reassign
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = placeholderImage;
-                }}
-              />
-              <div className={styles.hardwareBody}>
-                <h3>{item.label}</h3>
-                <p>{item.model}</p>
-                <div className={styles.hardwareMeta}>
-                  <span>Qty: {item.quantity}</span>
-                  <span>{item.purpose}</span>
+        <div className={styles.pathsGrid}>
+          {paths.map((path) => {
+            const viewed = viewedSectionIds.includes(path.id) || (progress?.pathProgress || []).some((item) => item.pathId === path.id && item.percent > 0);
+            const isActive = currentPath?.id === path.id;
+
+            return (
+              <article key={path.id} className={`${styles.pathCard} ${isActive ? styles.activePath : ''}`}>
+                <div className={styles.pathCardMedia}>
+                  <img
+                    src={path.sensorImage}
+                    alt={`${path.title} visual`}
+                    loading="lazy"
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = placeholderImage;
+                    }}
+                  />
                 </div>
-              </div>
-            </article>
-          ))}
+                <div className={styles.pathCardBody}>
+                  <div className={styles.pathCardMeta}>
+                    <span>{path.level}</span>
+                    <span>{path.lessonsCount} lessons</span>
+                  </div>
+                  <h3>{path.title}</h3>
+                  <p>{path.description}</p>
+                  <div className={styles.pathCardFooter}>
+                    <span><FaClock /> {path.durationMin} min</span>
+                    {viewed ? <strong>Viewed</strong> : <strong>New</strong>}
+                  </div>
+                  <button type="button" onClick={() => navigate(`/education/path/${path.id}`)}>
+                    Open path <FaArrowRight />
+                  </button>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
-      <section className={styles.footerCard}>
-        <p>
-          Flow: check the sensor colors and numbers first, take one action from the tip list, then open a learning path only if you want deeper context.
-        </p>
+      <section className={styles.guidesSection}>
+        <div className={styles.sectionHeader}>
+          <h2>Quick guides</h2>
+          <p>Open a focused guide when you want to go deeper.</p>
+        </div>
+        <div className={styles.guidesGrid}>
+          {Object.values(GUIDE_DETAILS).map((guide) => {
+            const Icon = guide.icon;
+            return (
+              <button key={guide.kind || guide.pathId} type="button" className={styles.guideCard} onClick={() => navigate(`/education/path/${guide.pathId}`)}>
+                <img src={guide.image} alt={`${guide.label} guide`} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = placeholderImage; }} />
+                <div className={styles.guideCardBody}>
+                  <span><Icon /> {guide.label}</span>
+                  <strong>{guide.action}</strong>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </section>
+
+      <footer className={styles.footerCard}>
+        <div>
+          <h2>FishMaster Learn & Care</h2>
+          <p>Check the live guidance first, then use the learning paths when you want a deeper explanation.</p>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -12,8 +12,10 @@ $text-dark: #3d3021;
     height: 220px;
   }
   
-  @media (max-width: 480px) {
-    height: 200px;
+  @media (max-width: 600px) {
+    /* Use viewport height to make charts more prominent on phones */
+    min-height: 32vh;
+    height: auto;
   }
 }
 
@@ -27,6 +29,11 @@ $text-dark: #3d3021;
   
   @media (max-width: 768px) {
     height: 170px;
+  }
+
+  @media (max-width: 600px) {
+    min-height: 22vh;
+    height: auto;
   }
 }
 

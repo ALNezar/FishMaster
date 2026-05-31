@@ -24,18 +24,28 @@ export function useTemperatureStream(): UseTemperatureStreamResult {
     const es = new EventSource(url, { withCredentials: false });
     esRef.current = es;
 
-    es.onopen = () => setConnected(true);
-    es.onerror = () => setConnected(false);
+    es.onopen = () => {
+      console.debug('[SSE][temperature] open', url);
+      setConnected(true);
+    };
 
-    es.addEventListener('temperature', (evt: Event) => {
+    es.onerror = (err) => {
+      console.debug('[SSE][temperature] error', err);
+      setConnected(false);
+    };
+
+    const handleEvent = (evt: MessageEvent) => {
       try {
-        const messageEvent = evt as MessageEvent;
-        const data = JSON.parse(messageEvent.data) as TemperatureReading;
-        setLastReading(data);
+        const data = typeof evt.data === 'string' ? JSON.parse(evt.data) : evt.data;
+        const reading = data as TemperatureReading;
+        setLastReading(reading);
       } catch (e) {
-        console.warn('Bad SSE payload', e);
+        console.warn('[SSE][temperature] Bad payload', e, evt.data);
       }
-    });
+    };
+
+    es.addEventListener('temperature', (evt: Event) => handleEvent(evt as MessageEvent));
+    es.onmessage = (evt) => handleEvent(evt as MessageEvent);
 
     return () => {
       es.close();

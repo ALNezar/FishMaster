@@ -98,6 +98,16 @@ $info: #0ea5e9;
   }
 }
 
+.errorBanner {
+  margin-bottom: 1rem;
+  padding: 0.875rem 1rem;
+  border-radius: 12px;
+  background: rgba($danger, 0.08);
+  color: $danger;
+  border: 1px solid rgba($danger, 0.2);
+  font-weight: 600;
+}
+
 .spinner {
   width: 48px;
   height: 48px;

@@ -133,45 +133,38 @@ function TrendsPage() {
     const phTrend   = calculateTrend(trendData.ph?.values);
     const turbTrend = calculateTrend(trendData.turbidity?.values);
 
-    const issues = [];
-    const good   = [];
+    const describeTrend = (label, trend, highText, lowText) => {
+      if (trend.direction === 'stable') return `${label} is steady`;
+      if (trend.direction === 'rising') return highText;
+      return lowText;
+    };
 
-    if (turbTrend.direction === 'rising')
-      issues.push(`turbidity is climbing ${turbTrend.change}% — check your filter and cut back on feeding`);
-    else
-      good.push('water clarity looks great');
-
-    if (phTrend.direction === 'falling')
-      issues.push('pH is drifting down — keep an eye on your substrate');
-    else if (phTrend.direction === 'rising')
-      issues.push(`pH is creeping up ${phTrend.change}% — check your tap water`);
-    else
-      good.push('pH is holding steady');
-
-    if (tempTrend.direction === 'rising')
-      issues.push(`temperature is trending up ${tempTrend.change}% — check your heater settings`);
-    else if (tempTrend.direction === 'falling')
-      issues.push(`temperature is dropping ${tempTrend.change}% — make sure your heater is on`);
-    else
-      good.push('temperature is stable');
-
-    if (issues.length === 0) {
-      return `Everything looks healthy — ${good.join(' and ')}. Your tank is in great shape. WDYT?`;
-    }
-
-    const issueStr = issues.length === 1
-      ? issues[0]
-      : issues.slice(0, -1).join(', ') + ' and ' + issues[issues.length - 1];
-
-    const goodStr = good.length > 0 ? ` ${good.join(' and ')} though.` : '';
-
-    return `Heads up — ${issueStr}.${goodStr} WDYT?`;
+    return [
+      describeTrend(
+        'Temperature',
+        tempTrend,
+        'Temperature is warming up a little',
+        'Temperature is cooling down a little'
+      ),
+      describeTrend(
+        'pH',
+        phTrend,
+        'pH is moving up a little',
+        'pH is moving down a little'
+      ),
+      describeTrend(
+        'Turbidity',
+        turbTrend,
+        'Turbidity is going up a little',
+        'Turbidity is going down a little'
+      ),
+    ].join('. ') + '.';
   };
 
   const getTrendLabel = (trend) => {
-    if (trend.direction === 'stable') return 'Stable';
-    if (trend.direction === 'rising') return `↑ ${trend.change}%`;
-    return `↓ ${trend.change}%`;
+    if (trend.direction === 'stable') return 'Steady';
+    if (trend.direction === 'rising') return 'Going up a little';
+    return 'Going down a little';
   };
 
   const metrics = [
@@ -180,10 +173,10 @@ function TrendsPage() {
       label: 'Temperature',
       unit: '°C',
       icon: <FaThermometerHalf />,
-      color: '#dc2626',
-      bgColor: 'rgba(220,38,38,0.12)',
-      textColor: '#3d1a1a',
-      statusColor: '#dc2626',
+      color: '#b01222',
+      bgColor: 'rgba(18,119,176,0.10)',
+      textColor: '#3d3021',
+      statusColor: '#a0163b',
       optimal: '24–26°C',
       whatIsIt: 'How warm or cold your water is.',
       whyItMatters: 'Fish are cold-blooded. If water is too hot or cold, they get stressed or sick.',
@@ -196,9 +189,9 @@ function TrendsPage() {
       unit: '',
       icon: <FaTint />,
       color: '#16a34a',
-      bgColor: 'rgba(22,163,74,0.12)',
-      textColor: '#0f2d1a',
-      statusColor: '#15803d',
+      bgColor: 'rgba(22,163,74,0.10)',
+      textColor: '#3d3021',
+      statusColor: '#16a34a',
       optimal: '6.8–7.4',
       whatIsIt: 'How acidic or alkaline your water is. 7 = neutral.',
       whyItMatters: 'Wrong pH hurts fish gills and skin.',
@@ -211,9 +204,9 @@ function TrendsPage() {
       unit: 'NTU',
       icon: <FaWater />,
       color: '#ca8a04',
-      bgColor: 'rgba(202,138,4,0.12)',
-      textColor: '#2d2000',
-      statusColor: '#a16207',
+      bgColor: 'rgba(202,138,4,0.10)',
+      textColor: '#3d3021',
+      statusColor: '#ca8a04',
       optimal: '< 3',
       whatIsIt: 'How cloudy or clear your water looks.',
       whyItMatters: 'Cloudy water = bacteria or dirt.',

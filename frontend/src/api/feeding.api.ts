@@ -1,7 +1,7 @@
 // Feeding schedule API endpoints
 
 import { apiRequest } from './client';
-import { FeedingSchedule, FeedingHistoryEntry } from '../types';
+import { FeedingSchedule, FeedingHistoryEntry } from './types';
 
 export const getFeedingSchedules = async (): Promise<FeedingSchedule[]> => {
   return apiRequest('/device/schedules');
@@ -44,7 +44,14 @@ export const triggerManualFeeding = async (
 };
 
 export const getFeedingHistory = async (
-  limit: number = 10
+  limit: number = 10,
+  tankId?: number | string
 ): Promise<FeedingHistoryEntry[]> => {
-  return apiRequest(`/device/history?limit=${limit}`);
+  const query = new URLSearchParams({ limit: String(limit) });
+
+  if (tankId !== undefined && tankId !== null && String(tankId).trim() !== '') {
+    query.set('tankId', String(tankId));
+  }
+
+  return apiRequest(`/device/history?${query.toString()}`);
 };

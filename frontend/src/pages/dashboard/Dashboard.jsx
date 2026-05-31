@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { getTanks, getSensorData, useTemperatureStream } from '../../api';
+import { getTanks, getSensorData, useTemperatureStream, usePhStream } from '../../api';
 import styles from './Dashboard.module.scss';
 import { FaFish, FaThermometerHalf, FaBell, FaChartLine, FaTint, FaPlus, FaHome, FaWater, FaUtensils, FaWrench, FaCircle } from 'react-icons/fa';
 import Header from "./header.jsx";
@@ -18,6 +18,9 @@ function Dashboard() {
 
   // Live temperature via SSE
   const { lastReading: liveTemp, connected: sseConnected } = useTemperatureStream();
+  
+  // Live pH via SSE
+  const { lastReading: livePh, connected: phConnected } = usePhStream();
 
   useEffect(() => {
     getTanks()
@@ -57,6 +60,31 @@ function Dashboard() {
       };
     });
   }, [liveTemp]);
+
+  // Merge live SSE pH into readings whenever a new event arrives
+  useEffect(() => {
+    if (!livePh) return;
+    const value = Number(livePh.ph);
+    setSensorData(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        currentReadings: {
+          ...prev.currentReadings,
+          ph: {
+            value,
+            unit: '',
+            status: value < 6.5 || value > 7.5 ? 'warning' : 'optimal',
+            trend: prev.currentReadings?.ph?.value != null
+              ? value > prev.currentReadings.ph.value ? 'rising'
+                : value < prev.currentReadings.ph.value ? 'falling'
+                : 'stable'
+              : 'stable',
+          },
+        },
+      };
+    });
+  }, [livePh]);
 
   const totalFish = tanks.reduce((sum, tank) => sum + (tank.fish?.length || 0), 0);
   const readings = sensorData?.currentReadings;
@@ -161,15 +189,24 @@ function Dashboard() {
           <div className={styles.card}>
             <div className={styles.cardHeader}>
               <h3><FaThermometerHalf /> Live Readings</h3>
-              {/* SSE connection badge */}
-              <span
-                className={`${styles.badge} ${sseConnected ? styles.success : styles.warning}`}
-                title={sseConnected ? 'Live data connected' : 'Reconnecting…'}
-                style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
-              >
-                <FaCircle style={{ fontSize: '0.5rem' }} />
-                {sseConnected ? 'Live' : 'Reconnecting…'}
-              </span>
+              {/* SSE connection badge (temperature + pH) */}
+              {(() => {
+                const both = sseConnected && phConnected;
+                const partial = sseConnected || phConnected;
+                const cls = both ? styles.success : partial ? styles.warning : styles.danger;
+                const title = both ? 'All live data connected' : partial ? 'Partial live data' : 'Reconnecting…';
+                const label = both ? 'Live' : partial ? 'Partial' : 'Reconnecting…';
+                return (
+                  <span
+                    className={`${styles.badge} ${cls}`}
+                    title={title}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                  >
+                    <FaCircle style={{ fontSize: '0.5rem' }} />
+                    {label}
+                  </span>
+                );
+              })()}
             </div>
             {readings ? (
               <div className={styles.readingsRow}>

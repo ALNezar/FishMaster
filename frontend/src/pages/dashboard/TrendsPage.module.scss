@@ -8,6 +8,12 @@ $border: rgba(61, 48, 33, 0.08);
 
 .trendsPage {
   font-family: 'DM Sans', sans-serif;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  color: $text-dark;
+  padding: 0.25rem;
+  background: linear-gradient(180deg, #fbf8ef 0%, #f5f1e3 100%);
 }
 
 /* HEADER */
@@ -15,12 +21,12 @@ $border: rgba(61, 48, 33, 0.08);
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   flex-wrap: wrap;
 
   h1 {
     font-family: 'Special Elite', cursive;
-    font-size: 1.8rem;
+    font-size: 1.65rem;
     display: flex;
     gap: .6rem;
     margin: 0 0 .4rem;
@@ -42,15 +48,15 @@ $border: rgba(61, 48, 33, 0.08);
   border-radius: 999px;
   font-size: .78rem;
   font-weight: 700;
+  border: 1px solid rgba(61, 48, 33, 0.10);
+  background: #fff;
 }
 
 .liveConnected {
-  background: #eefbf1;
   color: #16a34a;
 }
 
 .liveReconnecting {
-  background: #fff8e7;
   color: #ca8a04;
 }
 
@@ -65,7 +71,7 @@ $border: rgba(61, 48, 33, 0.08);
 .controls {
   display: flex;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   flex-wrap: wrap;
 }
 
@@ -86,13 +92,15 @@ $border: rgba(61, 48, 33, 0.08);
   border-radius: 12px;
   border: 1px solid $border;
   min-width: 220px;
+  background: #fff;
+  color: $text-dark;
 }
 
 /* MAIN GRID */
 .mainGrid {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 1.2rem;
+  grid-template-columns: 300px 1fr;
+  gap: 0.9rem;
 }
 
 /* LEFT COLUMN */
@@ -111,14 +119,15 @@ $border: rgba(61, 48, 33, 0.08);
   border: 1px solid $border;
   cursor: pointer;
   transition: .25s ease;
+  box-shadow: 0 2px 8px rgba($text-dark, 0.06);
 }
 
 .paramCard:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 .paramActive {
-  border: 2px solid var(--card-color);
+  border: 1.5px solid var(--card-color);
 }
 
 .paramFill {
@@ -126,13 +135,13 @@ $border: rgba(61, 48, 33, 0.08);
   left: 0;
   bottom: 0;
   width: 100%;
-  opacity: .08;
+  opacity: .04;
   transition: height .8s ease;
 }
 
 .paramInner {
   position: relative;
-  padding: 1rem;
+  padding: 0.95rem;
   z-index: 2;
 }
 
@@ -154,6 +163,7 @@ $border: rgba(61, 48, 33, 0.08);
 .paramPct {
   font-weight: 800;
   font-size: .95rem;
+  color: $text-light;
 }
 
 .paramLabelRow {
@@ -165,10 +175,11 @@ $border: rgba(61, 48, 33, 0.08);
 .paramLabel {
   font-size: .85rem;
   font-weight: 700;
+  color: $text-dark;
 }
 
 .paramValue {
-  font-size: 2rem;
+  font-size: 1.85rem;
   font-weight: 800;
   line-height: 1.1;
   margin-top: .45rem;
@@ -194,6 +205,8 @@ $border: rgba(61, 48, 33, 0.08);
   align-items: center;
   font-size: .82rem;
   font-weight: 700;
+  border: 1px solid rgba($text-dark, 0.08);
+  background: rgba(245, 241, 227, 0.45);
 }
 
 .paramDot {
@@ -207,7 +220,8 @@ $border: rgba(61, 48, 33, 0.08);
   background: white;
   border-radius: 18px;
   border: 1px solid $border;
-  padding: 1.2rem !important;
+  padding: 1rem !important;
+  box-shadow: 0 2px 8px rgba($text-dark, 0.06);
 }
 
 .chartHeader {
@@ -224,7 +238,7 @@ $border: rgba(61, 48, 33, 0.08);
 
 .chartLegend {
   display: flex;
-  gap: 1rem;
+  gap: .85rem;
 }
 
 .legendItem {
@@ -242,23 +256,24 @@ $border: rgba(61, 48, 33, 0.08);
 
 .legendLine {
   width: 18px;
-  border-top: 2px dashed #333;
+  border-top: 2px dashed $text-dark;
 }
 
 .chartContainer {
-  height: 420px;
-  margin-top: 1rem;
+  height: 360px;
+  margin-top: .9rem;
 }
 
 /* RECOMMENDATION */
 .recoCard {
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   background: white;
   border-radius: 18px;
-  padding: 1rem;
+  padding: .95rem 1rem;
   display: flex;
   gap: 1rem;
   border: 1px solid $border;
+  align-items: center;
 }
 
 .recoAvatar {
@@ -278,8 +293,9 @@ $border: rgba(61, 48, 33, 0.08);
 }
 
 .recoText {
-  margin: .3rem 0 0;
+  margin: .2rem 0 0;
   line-height: 1.5;
+  color: $text-dark;
 }
 
 /* MOBILE */
@@ -289,6 +305,18 @@ $border: rgba(61, 48, 33, 0.08);
   }
 
   .chartContainer {
-    height: 320px;
+    height: 300px;
+  }
+
+  .controls {
+    gap: .75rem;
+  }
+
+  .select {
+    min-width: 100%;
+  }
+
+  .recoCard {
+    align-items: flex-start;
   }
 }

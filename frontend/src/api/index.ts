@@ -30,6 +30,9 @@ export * from './device.api';
 // Feeding Schedules API
 export * from './feeding.api';
 
+// History API
+export * from './history.api';
+
 // Onboarding API
 export * from './onboarding.api';
 

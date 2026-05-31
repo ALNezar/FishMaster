@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getTanks } from '../../api';
+import { getTankHistoryTimeline, getTanks } from '../../api';
 import Card from '../../components/common/card/card.jsx';
 import styles from './HistoryPage.module.scss';
 import { FaHistory, FaThermometerHalf, FaExclamationTriangle, FaTools, FaFish, FaTint, FaCheckCircle, FaFilter } from 'react-icons/fa';
@@ -11,7 +11,9 @@ function HistoryPage() {
   const [tanks, setTanks] = useState([]);
   const [selectedTank, setSelectedTank] = useState(null);
   const [historyData, setHistoryData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingTanks, setLoadingTanks] = useState(true);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [error, setError] = useState('');
   const [filterType, setFilterType] = useState('all');
 
   useEffect(() => {
@@ -24,44 +26,49 @@ function HistoryPage() {
         }
       } catch (err) {
         console.error('Failed to load tanks:', err);
+        setError('Failed to load tanks.');
       } finally {
-        setLoading(false);
+        setLoadingTanks(false);
       }
     };
     loadTanks();
   }, []);
 
   useEffect(() => {
-    if (selectedTank) {
-      const mockHistory = generateMockHistory(selectedTank);
-      setHistoryData(mockHistory);
+    if (!selectedTank) {
+      setHistoryData([]);
+      return;
     }
+    let isActive = true;
+
+    const loadHistory = async () => {
+      setLoadingHistory(true);
+      setError('');
+
+      try {
+        const data = await getTankHistoryTimeline(selectedTank, 24);
+        if (isActive) {
+          setHistoryData(data || []);
+        }
+      } catch (err) {
+        console.error('Failed to load history timeline:', err);
+        if (isActive) {
+          setHistoryData([]);
+          setError('Failed to load history timeline.');
+        }
+      } finally {
+        if (isActive) {
+          setLoadingHistory(false);
+        }
+      }
+    };
+
+    loadHistory();
+
+    return () => {
+      isActive = false;
+    };
   }, [selectedTank]);
-
-  const generateMockHistory = (tankId) => {
-    const events = [
-      { type: 'parameter', icon: <FaThermometerHalf />, title: 'Temperature adjusted', description: 'Temperature stabilized at 25°C', status: 'success' },
-      { type: 'alert', icon: <FaExclamationTriangle />, title: 'pH Warning', description: 'pH level dropped below 6.8', status: 'warning' },
-      { type: 'maintenance', icon: <FaTools />, title: 'Water change', description: '25% water change completed', status: 'info' },
-      { type: 'feeding', icon: <FaFish />, title: 'Fish fed', description: 'Regular feeding schedule completed', status: 'success' },
-      { type: 'parameter', icon: <FaTint />, title: 'Ammonia check', description: 'Ammonia levels normal at 0.02 ppm', status: 'success' },
-      { type: 'alert', icon: <FaCheckCircle />, title: 'Alert resolved', description: 'pH level returned to normal range', status: 'success' },
-      { type: 'maintenance', icon: <FaFilter />, title: 'Filter cleaned', description: 'Monthly filter maintenance performed', status: 'info' },
-      { type: 'parameter', icon: <FaTint />, title: 'Turbidity check', description: 'Water clarity optimal at 1.2 NTU', status: 'success' },
-      { type: 'alert', icon: <FaExclamationTriangle />, title: 'Temperature spike', description: 'Temperature rose to 28°C briefly', status: 'warning' },
-      { type: 'feeding', icon: <FaFish />, title: 'Fish fed', description: 'Evening feeding completed', status: 'success' },
-      { type: 'maintenance', icon: <FaTools />, title: 'Substrate vacuumed', description: 'Weekly substrate cleaning', status: 'info' },
-      { type: 'parameter', icon: <FaThermometerHalf />, title: 'Heater calibrated', description: 'Heater set to maintain 25°C', status: 'success' },
-    ];
-
-    const now = new Date();
-    return events.map((event, i) => ({
-      ...event,
-      id: i + 1,
-      timestamp: new Date(now - i * 3600000 * (Math.random() * 5 + 1)).toISOString(),
-      tankId,
-    })).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  };
 
   const formatTime = (isoString) => {
     const date = new Date(isoString);
@@ -94,6 +101,21 @@ function HistoryPage() {
     }
   };
 
+  const getEventIcon = (event) => {
+    switch (event.type) {
+      case 'feeding':
+        return <FaFish />;
+      case 'alert':
+        return <FaExclamationTriangle />;
+      case 'maintenance':
+        return <FaTools />;
+      case 'parameter':
+        return event.title.toLowerCase().includes('ph') ? <FaTint /> : <FaThermometerHalf />;
+      default:
+        return <FaCheckCircle />;
+    }
+  };
+
   const filteredHistory = filterType === 'all' 
     ? historyData 
     : historyData.filter(event => event.type === filterType);
@@ -106,7 +128,7 @@ function HistoryPage() {
     { value: 'feeding', label: 'Feeding' },
   ];
 
-  if (loading) {
+  if (loadingTanks) {
     return (
       <div className={styles.historyPage}>
         <div className={styles.loading}>
@@ -122,9 +144,11 @@ function HistoryPage() {
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <h1><FaHistory /> History Log</h1>
-          <p>View past events, alerts, and maintenance records</p>
+          <p>View real feeding, telemetry, and system history for each tank</p>
         </div>
       </header>
+
+      {error ? <div className={styles.errorBanner}>{error}</div> : null}
 
       <div className={styles.controls}>
         <div className={styles.controlGroup}>
@@ -177,16 +201,21 @@ function HistoryPage() {
       {/* Timeline */}
       <Card className={styles.timelineCard}>
         <div className={styles.timeline}>
-          {filteredHistory.length === 0 ? (
+          {loadingHistory ? (
+            <div className={styles.emptyState}>
+              <div className={styles.spinner}></div>
+              <p>Loading real history...</p>
+            </div>
+          ) : filteredHistory.length === 0 ? (
             <div className={styles.emptyState}>
               <FaHistory className={styles.emptyIcon} />
-              <p>No history events found</p>
+              <p>No real history events found for this tank</p>
             </div>
           ) : (
             filteredHistory.map((event) => (
               <div key={event.id} className={`${styles.timelineItem} ${getEventClass(event.type)}`}>
                 <div className={`${styles.timelineDot} ${getStatusClass(event.status)}`}>
-                  {event.icon}
+                  {getEventIcon(event)}
                 </div>
                 <div className={styles.timelineContent}>
                   <div className={styles.timelineHeader}>

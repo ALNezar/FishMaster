@@ -39,12 +39,12 @@ const navItems = [
     ]
   },
   { 
-    path: '/learning', 
-    label: 'Learn', 
+    path: '/education', 
+    label: 'Learn & Care', 
     icon: FaBook,
     matchPaths: ['/learning', '/education'],
     subTabs: [
-      { path: '/learning', label: 'Home', icon: FaBook },
+      { path: '/education', label: 'Home', icon: FaBook },
     ]
   },
 ];

@@ -4,11 +4,10 @@
 // ===================== CONFIG =====================
 static const int PH_ADC_PIN = 34;
 
-// more realistic sampling
 static const int SAMPLE_COUNT = 10;
 static const unsigned long SAMPLE_INTERVAL_MS = 50;
 
-// calibration (YOU MUST TUNE THIS)
+// Calibration (YOU MUST TUNE THIS)
 static const float CALIBRATION_PH7_V = 2.5f;
 static const float CALIBRATION_SLOPE  = -0.18f;
 
@@ -30,6 +29,8 @@ static float last_adc = 0.0f;
 void phSensorInit(void)
 {
     analogReadResolution(12);
+
+    // Correct ESP32 API usage
     analogSetPinAttenuation(PH_ADC_PIN, ADC_11db);
 
     sampling = false;
@@ -60,13 +61,18 @@ void phSensorLoop(void)
     {
         lastSampleTime = now;
 
-        samples[collected++] = analogRead(PH_ADC_PIN);
+        // safety check (prevents overflow)
+        if (collected < SAMPLE_COUNT)
+        {
+            samples[collected++] = analogRead(PH_ADC_PIN);
+        }
 
+        // finished sampling
         if (collected >= SAMPLE_COUNT)
         {
             sampling = false;
 
-            // ===== sort =====
+            // ===================== SORT (simple insertion sort) =====================
             for (int i = 1; i < SAMPLE_COUNT; i++)
             {
                 int key = samples[i];
@@ -80,7 +86,7 @@ void phSensorLoop(void)
                 samples[j + 1] = key;
             }
 
-            // ===== trim noise (remove min/max) =====
+            // ===================== TRIM NOISE =====================
             long sum = 0;
             for (int i = 1; i < SAMPLE_COUNT - 1; i++)
             {
@@ -88,18 +94,24 @@ void phSensorLoop(void)
             }
 
             float avg = sum / float(SAMPLE_COUNT - 2);
+
             last_adc = avg;
 
-            // ===== convert ADC → voltage =====
-            float v_pin = (avg / 4095.0f) * 3.3f;
+            // ===================== ADC → VOLTAGE =====================
+            // More accurate ESP32 method (preferred)
+            float v_pin = analogReadMilliVolts(PH_ADC_PIN) / 1000.0f;
 
-            // adjust ONLY if you really use divider
-            float v_module = v_pin * 2.0f;
-            last_voltage = v_module;
+            last_voltage = v_pin;
 
-            // ===== pH conversion =====
+            // If you still use external divider, adjust here
+            // float v_module = v_pin * 2.0f;
+
+            float v_module = v_pin; // assume direct or already scaled
+
+            // ===================== pH CALCULATION =====================
             float ph = 7.0f + (CALIBRATION_PH7_V - v_module) / CALIBRATION_SLOPE;
 
+            // clamp
             if (ph < 0) ph = 0;
             if (ph > 14) ph = 14;
 

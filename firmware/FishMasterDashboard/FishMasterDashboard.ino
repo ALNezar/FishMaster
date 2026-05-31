@@ -19,12 +19,12 @@ static constexpr uint8_t SPI_SCK_PIN = 18;
 static constexpr uint8_t SPI_MOSI_PIN = 23;
 static constexpr uint8_t SPI_MISO_PIN = 19;
 
-static constexpr uint8_t TFT_CS_PIN = 15;
-static constexpr uint8_t TFT_DC_PIN = 2;
+static constexpr uint8_t TFT_CS_PIN = 5;
+static constexpr uint8_t TFT_DC_PIN = 27;
 static constexpr uint8_t TFT_RST_PIN = 4;
 
-static constexpr uint8_t TOUCH_CS_PIN = 21;
-static constexpr uint8_t TOUCH_IRQ_PIN = 22;
+static constexpr uint8_t TOUCH_CS_PIN = 14;
+static constexpr uint8_t TOUCH_IRQ_PIN = 255;
 
 // ------------------------------------------------------------
 // Display and touch configuration

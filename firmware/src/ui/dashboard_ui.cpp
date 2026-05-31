@@ -6,6 +6,7 @@
 #include "dashboard_ui.h"
 
 #include <SPI.h>
+#include "tft_setup.h"
 #include <TFT_eSPI.h>
 #include <XPT2046_Touchscreen.h>
 #include <math.h>
@@ -475,12 +476,18 @@ static void drawBootSplash()
 static void handleTouch()
 {
     digitalWrite(TFT_CS, HIGH);
+    digitalWrite(TOUCH_CS, LOW);
     if (!touch.touched()) return;
     
     unsigned long now = millis();
-    if (now - lastTouchMs < TOUCH_DEBOUNCE_MS) return;
+    if (now - lastTouchMs < TOUCH_DEBOUNCE_MS)
+    {
+        digitalWrite(TOUCH_CS, HIGH);
+        return;
+    }
     
     TS_Point p = touch.getPoint();
+    digitalWrite(TOUCH_CS, HIGH);
     
     if (p.x == 0 && p.y == 0) return;
     if (p.x >= 4095 && p.y >= 4095 && p.z >= 4095) return;
@@ -579,6 +586,13 @@ void dashboardInit()
     SPI.begin(TFT_SCLK, TFT_MISO, TFT_MOSI);
     pinMode(TFT_CS, OUTPUT);
     digitalWrite(TFT_CS, HIGH);
+    pinMode(TFT_RST, OUTPUT);
+    digitalWrite(TFT_RST, HIGH);
+    delay(20);
+    digitalWrite(TFT_RST, LOW);
+    delay(20);
+    digitalWrite(TFT_RST, HIGH);
+    delay(120);
     pinMode(TOUCH_CS, OUTPUT);
     digitalWrite(TOUCH_CS, HIGH);
     

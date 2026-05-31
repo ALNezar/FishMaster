@@ -11,6 +11,9 @@
 #include "sensors/turbidity_sensor.h"
 #include "sensors/ph_sensor.h"
 
+#include "logic/risk_engine.h"
+#include "hardware/audio_manager.h"
+
 #if defined(__has_include)
 #  if __has_include("driver/temp_sensor.h")
 #    include "driver/temp_sensor.h"
@@ -25,48 +28,44 @@
 // =====================
 // TIMERS
 // =====================
-unsigned long temperatureTimer = 0;
-unsigned long turbidityTimer = 0;
-unsigned long deviceInfoTimer = 0;
-unsigned long phTimer = 0;
-unsigned long chipTempTimer = 0;
+static unsigned long tTemp = 0;
+static unsigned long tTurb = 0;
+static unsigned long tPh = 0;
+static unsigned long tDevice = 0;
+static unsigned long tUi = 0;
 
 // =====================
 // STATE
 // =====================
-static bool waterTempValid = false;
-static bool turbidityValid = false;
-static bool phValid = false;
-static bool chipTempValid = false;
-
-static float currentWaterTemp = NAN;
-static float currentTurbidityNtu = NAN;
-static int currentTurbidityRaw = 0;
-
-static float currentPh = NAN;
-static float currentPhVoltage = NAN;
-static float currentPhRawAdc = NAN;
-
-static float currentChipTemp = NAN;
-
 static bool phSampling = false;
 
-// TSENS
+static float lastTemp = NAN;
+static float lastPh = NAN;
+static float lastTurb = NAN;
+
+static bool tempValid = false;
+static bool phValid = false;
+static bool turbValid = false;
+
+static RiskLevel risk = RiskLevel::SAFE;
+
+static AudioManager audio(22);
+
 #if HAVE_TSENS
-static temp_sensor_handle_t tsens_handle = NULL;
+static temp_sensor_handle_t tsens = NULL;
 #endif
 
 // =====================
-// UI THROTTLE TIMER
+// SETUP
 // =====================
-static unsigned long uiTimer = 0;
-
 void setup()
 {
     Serial.begin(115200);
-    delay(1000);
+    delay(800);
 
-    Serial.println("FishMaster Starting...");
+    Serial.println("\n[FISHMASTER BOOT]");
+
+    audio.init();
 
     tempSensorInit();
     phSensorInit();
@@ -76,136 +75,125 @@ void setup()
 
 #if HAVE_TSENS
     temp_sensor_config_t cfg = TSENS_CONFIG_DEFAULT();
-    temp_sensor_install(&cfg, &tsens_handle);
-    temp_sensor_start(tsens_handle);
+    temp_sensor_install(&cfg, &tsens);
+    temp_sensor_start(tsens);
 #endif
 
-    wifiConnect();
-    mqttSetup();
+    // NON-BLOCKING WiFi
+    wifiConnectStart();
 
+    mqttSetup();
     mqttPublishDeviceInfo();
 
-    Serial.println("System ready ✔");
+    Serial.println("[SYSTEM] READY");
 }
 
+// =====================
+// LOOP
+// =====================
 void loop()
 {
     // =====================
-    // BACKGROUND TASKS
+    // NETWORK LAYER
     // =====================
-    phSensorLoop();
+    wifiConnectUpdate();
     mqttLoop();
 
-    dashboardSetWifiConnected(WiFi.status() == WL_CONNECTED);
+    // =====================
+    // SENSOR LAYER
+    // =====================
 
-    // =====================
-    // DEVICE INFO
-    // =====================
-    if (checkTime(deviceInfoTimer, 60000))
+    phSensorLoop();
+
+    // ---- TEMP ----
+    if (checkTime(tTemp, 2000))
     {
-        mqttPublishDeviceInfo();
+        float t = tempSensorReadC();
+
+        if (t != TEMP_SENSOR_ERROR)
+        {
+            lastTemp = t;
+            tempValid = true;
+            dashboardSetWaterTemp(t, true);
+            mqttPublishTemperature(t);
+        }
+        else
+        {
+            tempValid = false;
+            dashboardSetWaterTemp(NAN, false);
+        }
     }
 
-    // =====================
-    // TURBIDITY
-    // =====================
-    if (checkTime(turbidityTimer, 5000))
+    // ---- TURBIDITY ----
+    if (checkTime(tTurb, 5000))
     {
         int raw = turbiditySensorReadRaw();
         float ntu = turbiditySensorReadNtu();
 
-        currentTurbidityRaw = raw;
-        currentTurbidityNtu = ntu;
-        turbidityValid = true;
+        lastTurb = ntu;
+        turbValid = true;
 
         dashboardSetTurbidity(ntu, raw, true);
         mqttPublishTurbidity(ntu, raw);
     }
 
-    // =====================
-    // pH REQUEST
-    // =====================
-    if (checkTime(phTimer, 5000))
+    // ---- pH ----
+    if (checkTime(tPh, 5000))
     {
         phSensorRequestSample();
         phSampling = true;
     }
 
-    // =====================
-    // pH RESULT
-    // =====================
     if (phSampling && phSensorSampleReady())
     {
-        currentPh = phSensorGetPh();
-        currentPhVoltage = phSensorLastVoltage();
-        currentPhRawAdc = phSensorLastRawAdc();
+        float ph = phSensorGetPh();
+        float v = phSensorLastVoltage();
 
-        phValid = (currentPh >= 0.0f);
+        lastPh = ph;
+        phValid = (ph >= 0);
 
-        dashboardSetPh(currentPh, currentPhVoltage, currentPhRawAdc, phValid);
-
-        float chipTemp = NAN;
+        dashboardSetPh(ph, v, ph, true);
 
 #if HAVE_TSENS
-        if (tsens_handle)
-        {
-            if (temp_sensor_get_celsius(tsens_handle, &chipTemp) == ESP_OK)
-            {
-                currentChipTemp = chipTemp;
-                chipTempValid = true;
-                dashboardSetInternalTemp(chipTemp, true);
-            }
-        }
+        float chipTemp = NAN;
+        if (tsens)
+            temp_sensor_get_celsius(tsens, &chipTemp);
+
+        mqttPublishPh(ph, v, chipTemp);
+#else
+        mqttPublishPh(ph, v, NAN);
 #endif
 
-        mqttPublishPh(currentPh, currentPhVoltage, chipTemp);
         phSampling = false;
     }
 
-    // =====================
-    // CHIP TEMP
-    // =====================
-    if (checkTime(chipTempTimer, 15000))
+    // ---- DEVICE INFO ----
+    if (checkTime(tDevice, 60000))
     {
-#if HAVE_TSENS
-        float t = NAN;
-        if (tsens_handle && temp_sensor_get_celsius(tsens_handle, &t) == ESP_OK)
-        {
-            currentChipTemp = t;
-            dashboardSetInternalTemp(t, true);
-        }
-#endif
+        mqttPublishDeviceInfo();
     }
 
     // =====================
-    // WATER TEMP
+    // LOGIC LAYER
     // =====================
-    if (checkTime(temperatureTimer, 2000))
+    SensorSnapshot snap = {
+        lastTemp, tempValid,
+        lastTurb, turbValid,
+        lastPh, phValid
+    };
+
+    risk = RiskEngine::evaluate(snap);
+    audio.update(risk);
+
+    if (dashboardConsumeManualFeedRequest())
+        audio.triggerFeedChime();
+
+    // =====================
+    // UI LAYER (FIXED 30 FPS)
+    // =====================
+    if (millis() - tUi >= 33)
     {
-        float temp = tempSensorReadC();
-
-        if (temp == TEMP_SENSOR_ERROR)
-        {
-            waterTempValid = false;
-            dashboardSetWaterTemp(NAN, false);
-        }
-        else
-        {
-            currentWaterTemp = temp;
-            waterTempValid = true;
-
-            dashboardSetWaterTemp(temp, true);
-            mqttPublishTemperature(temp);
-        }
-    }
-
-    // =====================
-    // UI UPDATE (FIXED)
-    // =====================
-    if (millis() - uiTimer >= 33) // ~30 FPS
-    {
-        uiTimer = millis();
-
+        tUi = millis();
         dashboardLoop();
     }
 }

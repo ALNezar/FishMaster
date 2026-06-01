@@ -40,6 +40,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/telemetry/**").permitAll()
                         .requestMatchers("/api/devices/**").permitAll()
                         .requestMatchers("/device/**").permitAll()
+                        .requestMatchers("/api/alerts/stream").permitAll()
                         .anyRequest().authenticated()
                 )
 

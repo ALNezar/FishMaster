@@ -29,6 +29,7 @@ public class TelemetryService {
     private final TurbidityReadingRepository turbidityRepository;
     private final DeviceInfoSnapshotRepository deviceInfoRepository;
     private final PhReadingRepository phRepository;
+    private final AlertEngine alertEngine;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final java.util.Set<SseEmitter> tempEmitters = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
@@ -67,6 +68,11 @@ public class TelemetryService {
             TemperatureReading saved = temperatureRepository.save(reading);
             log.info("[TELEMETRY] Stored temperature reading: tank={}, value={}, id={}",
                     saved.getTankId(), saved.getTemperature(), saved.getId());
+            try {
+                alertEngine.evaluate(saved.getTankId(), "temperature", saved.getTemperature());
+            } catch (Exception e) {
+                log.warn("[ALERT] Alert evaluation failed for temperature: {}", e.getMessage());
+            }
             emitTemperature(saved);
         } catch (Exception ex) {
             log.error("[TELEMETRY] Failed to parse/store payload: {}", payload, ex);
@@ -118,12 +124,11 @@ public class TelemetryService {
             TurbidityReading saved = turbidityRepository.save(reading);
             log.info("[TELEMETRY] Stored turbidity reading: tank={}, ntu={}, raw={}, id={}",
                     saved.getTankId(), saved.getNtu(), saved.getRawAdc(), saved.getId());
-
-            if (saved.getNtu() != null && saved.getNtu().doubleValue() > turbidityAlertThreshold) {
-                log.warn("[ALERT] Turbidity above threshold: ntu={} > {} (tank={})",
-                        saved.getNtu(), turbidityAlertThreshold, saved.getTankId());
+            try {
+                alertEngine.evaluate(saved.getTankId(), "turbidity", saved.getNtu());
+            } catch (Exception e) {
+                log.warn("[ALERT] Alert evaluation failed for turbidity: {}", e.getMessage());
             }
-
             emitTurbidity(saved);
         } catch (Exception ex) {
             log.error("[TELEMETRY] Failed to parse/store turbidity payload: {}", payload, ex);
@@ -180,6 +185,13 @@ public class TelemetryService {
             PhReading saved = phRepository.save(reading);
             log.info("[TELEMETRY] Stored pH reading: tank={}, ph={}, voltage={}, id={}",
                     saved.getTankId(), saved.getPhValue(), saved.getPhVoltage(), saved.getId());
+            try {
+                if (saved.getPhValue() != null) {
+                    alertEngine.evaluate(saved.getTankId(), "ph", saved.getPhValue());
+                }
+            } catch (Exception e) {
+                log.warn("[ALERT] Alert evaluation failed for pH: {}", e.getMessage());
+            }
             emitPh(saved);
         } catch (Exception ex) {
             log.error("[TELEMETRY] Failed to parse/store pH payload: {}", payload, ex);

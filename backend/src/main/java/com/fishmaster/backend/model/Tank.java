@@ -49,6 +49,9 @@ public class Tank {
     @Column(name = "updated_at")
     private Instant updatedAt = Instant.now();
 
+    @Column(name = "mqtt_tank_id", length = 64)
+    private String mqttTankId = "tank1";
+
     public Tank(User user, String name, Integer sizeLiters) {
         this.user = user;
         this.name = name;

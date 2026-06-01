@@ -115,6 +115,18 @@
         </dependency>
         <!-- MQTT integration can be added with Spring Integration MQTT or Eclipse Paho.
              Intentionally omitted here to keep the project buildable in constrained environments. -->
+
+        <!-- Web Push (VAPID JWT + payload encryption) -->
+        <dependency>
+            <groupId>nl.martijndwars</groupId>
+            <artifactId>web-push</artifactId>
+            <version>5.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.80</version>
+        </dependency>
     </dependencies>
 
     <build>

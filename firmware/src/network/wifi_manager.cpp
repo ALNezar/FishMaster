@@ -1,5 +1,6 @@
 #include <WiFi.h>
 #include "network_parameter.h"
+#include "config.h"
 
 enum class WiFiState
 {
@@ -23,7 +24,14 @@ bool wifiConnectStart(void)
     Serial.println("[WiFi] Starting connection...");
 
     WiFi.mode(WIFI_STA);
-    WiFi.begin(WIFI_SSID, WIFI_PASS);
+    // Prefer persisted config if available
+    NetConfig &cfg = configGet();
+    if (cfg.valid && cfg.ssid.length() > 0) {
+        Serial.print("[WiFi] Using saved SSID: "); Serial.println(cfg.ssid);
+        WiFi.begin(cfg.ssid.c_str(), cfg.pass.c_str());
+    } else {
+        WiFi.begin(WIFI_SSID, WIFI_PASS);
+    }
 
     wifiState = WiFiState::CONNECTING;
     connectStartMs = millis();

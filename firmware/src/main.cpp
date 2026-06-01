@@ -4,6 +4,8 @@
 #include "utility/timer.h"
 #include "network/wifi_manager.h"
 #include "network/mqtt_manager.h"
+#include "network/config.h"
+#include "network/serial_setup.h"
 
 #include "ui/dashboard_ui.h"
 
@@ -64,6 +66,23 @@ void setup()
     delay(800);
 
     Serial.println("\n[FISHMASTER BOOT]");
+
+    // Load existing config into global and offer serial setup at boot
+    NetConfig &cfg = configGet();
+    configLoad(cfg);
+    Serial.println("Press 's' + Enter within 5s to open serial setup...");
+    unsigned long _boot_t0 = millis();
+    while (millis() - _boot_t0 < 5000) {
+        if (Serial.available()) {
+            String _ln = Serial.readStringUntil('\n');
+            _ln.trim();
+            if (_ln.equalsIgnoreCase("s")) {
+                serialSetupWizard(cfg);
+                break;
+            }
+        }
+        delay(50);
+    }
 
     audio.init();
 

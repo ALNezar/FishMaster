@@ -5,8 +5,8 @@
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
-
 #include "network_parameter.h"
+#include "config.h"
 
 static WiFiClientSecure espClient;
 static PubSubClient mqttClient(espClient);
@@ -14,6 +14,8 @@ static unsigned long lastReconnectAttemptMs = 0;
 
 static void printDeviceInfoPayload(const char* payload)
 {
+    static const bool MQTT_VERBOSE = false;
+    if (!MQTT_VERBOSE) return;
     Serial.println("[MQTT] Device info snapshot");
     Serial.print("[MQTT] Topic -> ");
     Serial.println(FM_MQTT_DEVICE_TOPIC);
@@ -23,6 +25,12 @@ static void printDeviceInfoPayload(const char* payload)
 
 static void printTurbidityPayload(float ntu, int rawValue, const char* payload)
 {
+    static const bool MQTT_VERBOSE = false;
+    if (!MQTT_VERBOSE) {
+        Serial.print("[MQTT] Turbidity -> raw="); Serial.print(rawValue);
+        Serial.print(" ntu="); Serial.println(ntu, 2);
+        return;
+    }
     Serial.println("[MQTT] Turbidity snapshot");
     Serial.print("[MQTT] Topic -> ");
     Serial.println(FM_MQTT_TURBIDITY_TOPIC);
@@ -71,12 +79,25 @@ void mqttReconnect(void)
     lastReconnectAttemptMs = now;
 
     Serial.println("[MQTT] Connecting...");
+    NetConfig &cfg = configGet();
+    const char* broker = MQTT_SERVER;
+    uint16_t port = MQTT_PORT;
+    const char* client_id = MQTT_CLIENT_ID;
+    const char* user = MQTT_USERNAME;
+    const char* pass = MQTT_PASSWORD;
+    if (cfg.valid && cfg.mqtt_server.length() > 0) {
+        broker = cfg.mqtt_server.c_str();
+        port = cfg.mqtt_port;
+        if (cfg.client_id.length()) client_id = cfg.client_id.c_str();
+        if (cfg.mqtt_user.length()) user = cfg.mqtt_user.c_str();
+        if (cfg.mqtt_pass.length()) pass = cfg.mqtt_pass.c_str();
+    }
     Serial.print("[MQTT] Broker -> ");
-    Serial.print(MQTT_SERVER);
+    Serial.print(broker);
     Serial.print(":");
-    Serial.println(MQTT_PORT);
+    Serial.println(port);
 
-    if (mqttClient.connect(MQTT_CLIENT_ID, MQTT_USERNAME, MQTT_PASSWORD))
+    if (mqttClient.connect(client_id, user, pass))
     {
         Serial.println("[MQTT] Connected ✔");
         lastReconnectAttemptMs = 0;
@@ -98,8 +119,12 @@ void mqttSetup(void)
         espClient.setInsecure();
         Serial.println("[MQTT] TLS mode: insecure (testing only)");
     }
-
-    mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
+    NetConfig &cfg = configGet();
+    if (cfg.valid && cfg.mqtt_server.length() > 0) {
+        mqttClient.setServer(cfg.mqtt_server.c_str(), cfg.mqtt_port);
+    } else {
+        mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
+    }
     mqttClient.setBufferSize(1024);
     Serial.println("[MQTT] Buffer size set to 1024 bytes");
     Serial.print("[MQTT] Publish topic -> ");

@@ -8,6 +8,7 @@ import { ApiRequestOptions } from './types';
 interface HttpError extends Error {
   status?: number;
   responseBody?: any;
+  response?: Response;
 }
 
 const parseResponseBody = async (response: Response): Promise<any> => {
@@ -57,6 +58,7 @@ export const apiRequest = async (
 
       const error = new Error(errorMessage) as HttpError;
       error.status = response.status;
+      error.response = response;
       error.responseBody = data;
       throw error;
     }

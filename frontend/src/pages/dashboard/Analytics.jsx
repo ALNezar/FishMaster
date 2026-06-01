@@ -700,7 +700,17 @@ export default function Analytics() {
   }, [fetchSensorData, fetchTimeline, selectedTank, timeRange]);
 
   const toggleMetric = useCallback((metricKey) => {
-    setVisibleMetrics((prev) => ({ ...prev, [metricKey]: !prev[metricKey] }));
+    setVisibleMetrics((prev) => {
+      const nextValue = !prev[metricKey];
+      if (!nextValue) {
+        const enabledCount = Object.values(prev).filter(Boolean).length;
+        if (enabledCount <= 1) {
+          return prev;
+        }
+      }
+
+      return { ...prev, [metricKey]: nextValue };
+    });
   }, []);
 
   if (tanks.length === 0 && !loading) {

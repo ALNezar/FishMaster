@@ -21,6 +21,7 @@ import LearningHomePage from './pages/education/LearningHomePage.jsx';
 import LearningPathPage from './pages/education/LearningPathPage.jsx';
 import LessonPage from './pages/education/LessonPage.jsx';
 import LearningProgressPage from './pages/education/LearningProgressPage.jsx';
+import FishTypesPage from './pages/fish-types/FishTypesPage.jsx';
 
 // Layouts
 import MyTanksPage from './pages/tanks/MyTanksPage.jsx';
@@ -46,6 +47,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/tanks" element={<MyTanksPage />} />
+        <Route path="/fish-types" element={<FishTypesPage />} />
         <Route path="/tanks/:id" element={<TankDetailsPage />} />
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/data" element={<DataPage />} />

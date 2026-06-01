@@ -63,6 +63,8 @@ const safeNumber = (value) => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
+const asArray = (value) => (Array.isArray(value) ? value : []);
+
 const getVisibleMetrics = (visibleMetrics) =>
   Object.entries(visibleMetrics || {})
     .filter(([, visible]) => Boolean(visible))
@@ -70,12 +72,14 @@ const getVisibleMetrics = (visibleMetrics) =>
 
 const buildSeries = ({ labels, temperature, ph, turbidity, visibleMetrics, chartMode }) => {
   const visible = getVisibleMetrics(visibleMetrics);
+  const xLabels = asArray(labels);
 
   return visible.map((metricKey) => {
     const meta = metricMeta[metricKey];
     const color = COLORS[metricKey];
     const soft = COLORS[`${metricKey}Soft`];
-    const values = metricKey === 'temperature' ? temperature : metricKey === 'ph' ? ph : turbidity;
+    const values = asArray(metricKey === 'temperature' ? temperature : metricKey === 'ph' ? ph : turbidity);
+    const points = xLabels.map((label, index) => [label, safeNumber(values[index])]);
 
     const baseSeries = {
       name: meta.label,
@@ -84,8 +88,9 @@ const buildSeries = ({ labels, temperature, ph, turbidity, visibleMetrics, chart
       showSymbol: false,
       symbol: 'circle',
       symbolSize: 8,
-      data: values.map((value, index) => [labels[index], safeNumber(value)]),
+      data: points,
       yAxisIndex: metricKey === 'temperature' ? 0 : metricKey === 'ph' ? 1 : 2,
+      connectNulls: true,
       lineStyle: { width: 3, color },
       itemStyle: { color },
       emphasis: { focus: 'series' },
@@ -138,6 +143,7 @@ export default function TelemetryAnalyticsChart({
   const option = useMemo(() => {
     const visible = getVisibleMetrics(visibleMetrics);
     const series = buildSeries({ labels, temperature, ph, turbidity, visibleMetrics, chartMode });
+    const hasRenderableData = series.some((item) => Array.isArray(item.data) && item.data.length > 0);
 
     return {
       backgroundColor: 'transparent',
@@ -164,6 +170,7 @@ export default function TelemetryAnalyticsChart({
         },
       },
       tooltip: {
+        show: hasRenderableData,
         trigger: 'axis',
         confine: true,
         backgroundColor: 'rgba(15, 23, 42, 0.96)',
@@ -172,21 +179,25 @@ export default function TelemetryAnalyticsChart({
         axisPointer: { type: 'cross' },
         formatter: (params = []) => {
           const lines = Array.isArray(params) ? params : [params];
-          const header = `<div style="font-weight:700;margin-bottom:6px">${lines[0]?.axisValueLabel ?? ''}</div>`;
-          const body = lines
+          const validLines = lines.filter((item) => item && item.seriesName);
+          if (!validLines.length) return '';
+          const header = `<div style="font-weight:700;margin-bottom:6px">${validLines[0]?.axisValueLabel ?? ''}</div>`;
+          const body = validLines
             .map((item) => {
               const seriesName = item.seriesName || '';
               const metricKey = seriesName.includes('Turbidity') ? 'turbidity' : seriesName.includes('pH') ? 'ph' : 'temperature';
               const unit = metricMeta[metricKey].unit;
               const raw = Array.isArray(item.value) ? item.value[1] : item.value;
               const digits = metricKey === 'ph' ? 2 : 1;
-              return `<div style="display:flex;justify-content:space-between;gap:12px;margin:3px 0"><span>${item.marker}${seriesName}</span><strong>${Number(raw ?? 0).toFixed(digits)} ${unit}</strong></div>`;
+              const valueText = Number.isFinite(Number(raw)) ? Number(raw).toFixed(digits) : '--';
+              return `<div style="display:flex;justify-content:space-between;gap:12px;margin:3px 0"><span>${item.marker || ''}${seriesName}</span><strong>${valueText} ${unit}</strong></div>`;
             })
             .join('');
           return `<div style="min-width:180px">${header}${body}</div>`;
         },
       },
       axisPointer: {
+        show: hasRenderableData,
         link: [{ xAxisIndex: 'all' }],
       },
       toolbox: {
@@ -208,6 +219,7 @@ export default function TelemetryAnalyticsChart({
           zoomOnMouseWheel: 'shift',
           moveOnMouseWheel: true,
           moveOnMouseMove: true,
+          disabled: !hasRenderableData,
         },
         {
           type: 'slider',
@@ -218,6 +230,7 @@ export default function TelemetryAnalyticsChart({
           handleStyle: { color: '#3b82f6' },
           fillerColor: 'rgba(59, 130, 246, 0.18)',
           backgroundColor: 'rgba(148, 163, 184, 0.12)',
+          show: hasRenderableData,
         },
       ],
       brush: {

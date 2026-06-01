@@ -48,6 +48,18 @@ const normalizeFishType = (fishType: any): FishType => {
   };
 };
 
+const normalizeFishTypeResponse = (data: any): any => {
+  if (Array.isArray(data)) {
+    return data.map((fishType: any) => normalizeFishType(fishType));
+  }
+
+  if (data && typeof data === 'object') {
+    return normalizeFishType(data);
+  }
+
+  return data;
+};
+
 // Main normalization function
 export const normalizeResponse = (data: any, endpoint: string): any => {
   if (!data || typeof data !== 'object') return data;
@@ -73,7 +85,11 @@ export const normalizeResponse = (data: any, endpoint: string): any => {
 
   // Normalize fish types array
   if (endpoint.includes('/fish-types') && Array.isArray(data)) {
-    return data.map((fishType: any) => normalizeFishType(fishType));
+    return normalizeFishTypeResponse(data);
+  }
+
+  if (endpoint.includes('/fish-types') && data && typeof data === 'object') {
+    return normalizeFishTypeResponse(data);
   }
 
   // Normalize single fish with type

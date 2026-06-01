@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { API_BASE_URL } from '../config';
 import { TemperatureReading } from '../types';
+import { isAuthenticated } from '../utils/token';
 
 export interface UseTemperatureStreamResult {
   lastReading: TemperatureReading | null;
@@ -19,6 +20,10 @@ export function useTemperatureStream(): UseTemperatureStreamResult {
   const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
+    if (!isAuthenticated()) {
+      setConnected(false);
+      return () => {};
+    }
 
     const url = `${API_BASE_URL}/api/telemetry/temperature/stream`;
     const es = new EventSource(url, { withCredentials: false });
@@ -44,10 +49,15 @@ export function useTemperatureStream(): UseTemperatureStreamResult {
       }
     };
 
-    es.addEventListener('temperature', (evt: Event) => handleEvent(evt as MessageEvent));
+    const onTemperature = (evt: Event) => handleEvent(evt as MessageEvent);
+    es.addEventListener('temperature', onTemperature);
     es.onmessage = (evt) => handleEvent(evt as MessageEvent);
 
     return () => {
+      es.removeEventListener('temperature', onTemperature);
+      es.onmessage = null;
+      es.onerror = null;
+      es.onopen = null;
       es.close();
     };
   }, []);

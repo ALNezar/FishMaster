@@ -34,7 +34,7 @@ export default function DashboardLayout() {
         const userData = await getCurrentUser();
         if (isMounted) setUser(userData);
       } catch (err) {
-        const status = err.response?.status;
+        const status = err?.status ?? err?.response?.status;
         const isAuthError = status === 401 || status === 403;
 
         if (isAuthError) {

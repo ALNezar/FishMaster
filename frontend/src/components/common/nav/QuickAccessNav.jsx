@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { FaHome, FaFish, FaChartLine, FaBell, FaBook } from 'react-icons/fa';
+import { FaHome, FaFish, FaChartLine, FaBell, FaBook, FaFlask } from 'react-icons/fa';
 import { MdSensors, MdTimeline, MdHistory, MdNotifications, MdRule } from 'react-icons/md';
 import styles from './QuickAccessNav.module.scss';
 import { haptics } from '../../../utils/haptics';
@@ -16,6 +16,12 @@ const navItems = [
     label: 'My Tanks', 
     icon: FaFish,
     matchPaths: ['/tanks']
+  },
+  {
+    path: '/fish-types',
+    label: 'Species Lab',
+    icon: FaFlask,
+    matchPaths: ['/fish-types'],
   },
   { 
     path: '/data', 

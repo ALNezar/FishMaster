@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { API_BASE_URL } from '../config';
 import { PhReading } from '../types';
+import { isAuthenticated } from '../utils/token';
 
 export interface UsePhStreamResult {
   lastReading: PhReading | null;
@@ -19,6 +20,14 @@ export function usePhStream(): UsePhStreamResult {
   const esRef = useRef<EventSource | null>(null);
 
   const normalizePhReading = (payload: unknown): PhReading | null => {
+    const readField = (obj: unknown, key: string): unknown => {
+      if (obj && typeof obj === 'object') {
+        return (obj as Record<string, unknown>)[key];
+      }
+
+      return undefined;
+    };
+
     if (payload == null) return null;
 
     if (typeof payload === 'number' || typeof payload === 'string') {
@@ -35,30 +44,39 @@ export function usePhStream(): UsePhStreamResult {
 
     if (typeof payload !== 'object') return null;
 
-    const record = payload as Record<string, unknown>;
+    const reading = readField(payload, 'reading');
     const candidate =
-      record.ph ??
-      record.ph_value ??
-      record.value ??
-      record.reading?.ph ??
-      record.reading?.ph_value ??
-      record.reading?.value;
+      readField(payload, 'ph') ??
+      readField(payload, 'ph_value') ??
+      readField(payload, 'value') ??
+      readField(reading, 'ph') ??
+      readField(reading, 'ph_value') ??
+      readField(reading, 'value');
 
     const value = Number(candidate);
     if (!Number.isFinite(value)) return null;
 
     return {
-      id: typeof record.id === 'number' ? record.id : 0,
-      tankId: typeof record.tankId === 'string' ? record.tankId : 'tank1',
+      id: typeof readField(payload, 'id') === 'number' ? (readField(payload, 'id') as number) : 0,
+      tankId: typeof readField(payload, 'tankId') === 'string'
+        ? (readField(payload, 'tankId') as string)
+        : 'tank1',
       ph: value,
-      deviceTimestamp: typeof record.deviceTimestamp === 'string' ? record.deviceTimestamp : null,
-      serverTimestamp: typeof record.serverTimestamp === 'string'
-        ? record.serverTimestamp
+      deviceTimestamp: typeof readField(payload, 'deviceTimestamp') === 'string'
+        ? (readField(payload, 'deviceTimestamp') as string)
+        : null,
+      serverTimestamp: typeof readField(payload, 'serverTimestamp') === 'string'
+        ? (readField(payload, 'serverTimestamp') as string)
         : new Date().toISOString(),
     };
   };
 
   useEffect(() => {
+    if (!isAuthenticated()) {
+      setConnected(false);
+      return () => {};
+    }
+
     const url = `${API_BASE_URL}/api/telemetry/ph/stream`;
     const es = new EventSource(url, { withCredentials: false });
     esRef.current = es;
@@ -86,10 +104,15 @@ export function usePhStream(): UsePhStreamResult {
     };
 
     // Listen for named 'ph' events and fallback to generic messages
-    es.addEventListener('ph', (evt: Event) => handleEvent(evt as MessageEvent));
+    const onPh = (evt: Event) => handleEvent(evt as MessageEvent);
+    es.addEventListener('ph', onPh);
     es.onmessage = (evt) => handleEvent(evt as MessageEvent);
 
     return () => {
+      es.removeEventListener('ph', onPh);
+      es.onmessage = null;
+      es.onerror = null;
+      es.onopen = null;
       es.close();
     };
   }, []);

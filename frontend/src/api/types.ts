@@ -12,6 +12,16 @@ export interface FishType {
   description?: string;
 }
 
+export interface CreateFishTypeRequest {
+  name: string;
+  careLevel?: string;
+  minPh?: number;
+  maxPh?: number;
+  minTemp?: number;
+  maxTemp?: number;
+  description?: string;
+}
+
 export interface Fish {
   id: number;
   name: string;

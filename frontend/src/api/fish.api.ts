@@ -1,7 +1,20 @@
 // Fish management API endpoints
 
 import { apiRequest } from './client';
-import { Fish } from './types';
+import { CreateFishTypeRequest, Fish, FishType } from './types';
+
+export const listFishTypes = async (): Promise<FishType[]> => {
+  return apiRequest('/api/fish-types');
+};
+
+export const createFishType = async (
+  fishType: CreateFishTypeRequest
+): Promise<FishType> => {
+  return apiRequest('/api/fish-types', {
+    method: 'POST',
+    body: JSON.stringify(fishType),
+  });
+};
 
 export const addFishToTank = async (
   tankId: number,

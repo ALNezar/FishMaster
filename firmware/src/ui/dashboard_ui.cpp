@@ -477,7 +477,10 @@ static void handleTouch()
 {
     digitalWrite(TFT_CS, HIGH);
     digitalWrite(TOUCH_CS, LOW);
-    if (!touch.touched()) return;
+    if (!touch.touched()) {
+        digitalWrite(TOUCH_CS, HIGH);
+        return;
+    }
     
     unsigned long now = millis();
     if (now - lastTouchMs < TOUCH_DEBOUNCE_MS)
@@ -497,6 +500,8 @@ static void handleTouch()
     x = constrain(x, 0, SCREEN_W - 1);
     y = constrain(y, 0, SCREEN_H - 1);
     
+    if (x == 0 && y == 0) return; // Prevent serial spam if mapped to 0,0
+
     Serial.printf("[TOUCH] Mapped X: %d | Y: %d\n", x, y);
     lastTouchMs = now;
     

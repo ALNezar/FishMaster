@@ -26,7 +26,7 @@ bool wifiConnectStart(void)
     WiFi.mode(WIFI_STA);
     // Prefer persisted config if available
     NetConfig &cfg = configGet();
-    if (cfg.valid && cfg.ssid.length() > 0) {
+    if (cfg.valid && cfg.ssid.length() > 0 && cfg.ssid.length() <= 32) {
         Serial.print("[WiFi] Using saved SSID: "); Serial.println(cfg.ssid);
         WiFi.begin(cfg.ssid.c_str(), cfg.pass.c_str());
     } else {

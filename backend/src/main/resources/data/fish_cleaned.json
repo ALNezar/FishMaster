@@ -1,0 +1,13 @@
+[
+  {
+    "name": "name",
+    "minPh": null,
+    "maxPh": null,
+    "minTemp": null,
+    "maxTemp": null,
+    "description": "remarks",
+    "careLevel": "BEGINNER",
+    "imageUrl": "imageURL",
+    "detailsUrl": "detailsUrl"
+  }
+]

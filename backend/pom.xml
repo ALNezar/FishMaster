@@ -118,6 +118,21 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <!-- Ensure JSON dataset under src/main/java/com/fishmaster/backend/data is copied to the classpath
+                 at com/fishmaster/backend/data/fish_cleaned.json so FishDataSeeder can load it. -->
+            <resource>
+                <directory>src/main/java/com/fishmaster/backend/data</directory>
+                <targetPath>com/fishmaster/backend/data</targetPath>
+                <includes>
+                    <include>fish_cleaned.json</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

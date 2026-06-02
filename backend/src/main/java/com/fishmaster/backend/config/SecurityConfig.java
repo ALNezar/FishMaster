@@ -3,6 +3,7 @@ package com.fishmaster.backend.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -34,11 +35,15 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // Permit all preflight requests
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // Public endpoints
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api/telemetry/**").permitAll()
                         .requestMatchers("/api/devices/**").permitAll()
                         .requestMatchers("/device/**").permitAll()
                         .requestMatchers("/api/alerts/stream").permitAll()
+                        // Everything else requires auth
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider)
@@ -57,7 +62,12 @@ public class SecurityConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOriginPatterns(List.of("*"));
+        // Use explicit origins when allowCredentials(true) is enabled
+        config.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "http://127.0.0.1:5173",
+                "https://fishmaster-frontend.up.railway.app"
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));

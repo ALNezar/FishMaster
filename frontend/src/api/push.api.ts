@@ -19,3 +19,12 @@ export const unsubscribeFromPush = async (endpoint: string): Promise<{ message: 
     body: JSON.stringify({ endpoint }),
   });
 };
+
+export interface VapidPublicKeyResponse {
+  configured: boolean;
+  publicKey: string;
+}
+
+export const getVapidPublicKey = async (): Promise<VapidPublicKeyResponse> => {
+  return apiRequest('/api/push/vapid-public-key');
+};

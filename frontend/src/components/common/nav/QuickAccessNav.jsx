@@ -41,7 +41,7 @@ const navItems = [
     matchPaths: ['/alerts', '/notifications'],
     subTabs: [
       { path: '/alerts', label: 'Alert Rules', icon: MdRule },
-      { path: '/notifications', label: 'Notifications', icon: MdNotifications },
+      { path: '/alerts?tab=history', label: 'Notifications', icon: MdNotifications },
     ],
   },
 ];

@@ -4,14 +4,14 @@ import com.fishmaster.backend.model.Alert;
 import com.fishmaster.backend.model.PushSubscription;
 import com.fishmaster.backend.repositories.PushSubscriptionRepository;
 import lombok.extern.slf4j.Slf4j;
+import nl.martijndwars.webpush.Notification;
+import nl.martijndwars.webpush.PushService;
+import nl.martijndwars.webpush.Subscription;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
@@ -19,7 +19,6 @@ import java.util.List;
 public class WebPushService {
 
     private final PushSubscriptionRepository pushSubscriptionRepository;
-    private final HttpClient httpClient = HttpClient.newHttpClient();
 
     @Value("${vapid.public-key:}")
     private String vapidPublicKey;
@@ -27,13 +26,25 @@ public class WebPushService {
     @Value("${vapid.private-key:}")
     private String vapidPrivateKey;
 
+    @Value("${vapid.subject:mailto:alerts@fishmaster.app}")
+    private String vapidSubject;
+
     public WebPushService(PushSubscriptionRepository pushSubscriptionRepository) {
         this.pushSubscriptionRepository = pushSubscriptionRepository;
     }
 
+    public boolean isConfigured() {
+        return vapidPublicKey != null && !vapidPublicKey.isBlank()
+                && vapidPrivateKey != null && !vapidPrivateKey.isBlank();
+    }
+
+    public String getPublicKey() {
+        return vapidPublicKey;
+    }
+
     @Async
     public void sendPush(Long userId, Alert alert) {
-        if (vapidPublicKey == null || vapidPublicKey.isBlank()) {
+        if (!isConfigured()) {
             log.debug("[WEB-PUSH] VAPID keys not configured, skipping push notification");
             return;
         }
@@ -58,27 +69,32 @@ public class WebPushService {
                 alert.getMessage().replace("\"", "\\\"")
         ).trim();
 
+        PushService pushService = new PushService();
+        pushService.setPublicKey(vapidPublicKey);
+        pushService.setPrivateKey(vapidPrivateKey);
+        pushService.setSubject(vapidSubject);
+
         for (PushSubscription sub : subscriptions) {
             try {
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(sub.getEndpoint()))
-                        .header("Content-Type", "application/json")
-                        .header("TTL", "86400")
-                        .POST(HttpRequest.BodyPublishers.ofString(payload))
-                        .build();
-
-                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-                if (response.statusCode() == 410 || response.statusCode() == 404) {
+                Subscription subscription = new Subscription(
+                        sub.getEndpoint(),
+                        sub.getP256dh(),
+                        sub.getAuth()
+                );
+                Notification notification = new Notification(
+                        subscription,
+                        payload.getBytes(StandardCharsets.UTF_8)
+                );
+                pushService.send(notification);
+                log.info("[WEB-PUSH] Push sent successfully to user={}", userId);
+            } catch (Exception e) {
+                String message = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+                if (message.contains("410") || message.contains("404") || message.contains("Gone")) {
                     log.info("[WEB-PUSH] Subscription expired, removing: {}", sub.getEndpoint());
                     pushSubscriptionRepository.delete(sub);
-                } else if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                    log.info("[WEB-PUSH] Push sent successfully to user={}", userId);
                 } else {
-                    log.warn("[WEB-PUSH] Push failed with status={}: {}", response.statusCode(), response.body());
+                    log.warn("[WEB-PUSH] Failed to send push to {}: {}", sub.getEndpoint(), message);
                 }
-            } catch (Exception e) {
-                log.error("[WEB-PUSH] Failed to send push to {}: {}", sub.getEndpoint(), e.getMessage());
             }
         }
     }

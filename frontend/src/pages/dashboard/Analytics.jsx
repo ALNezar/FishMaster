@@ -90,6 +90,8 @@ const DISPLAY_POINTS = {
 const PREDICTION_OPTIONS = [1, 6, 24];
 const TAB_OPTIONS = ['overview', 'trends', 'correlations', 'predictions', 'events'];
 const EVENT_FILTERS = ['all', 'feeding', 'alert', 'maintenance', 'parameter', 'system'];
+const MAX_LIVE_POINTS = 240;
+const MOBILE_BREAKPOINT = 600;
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -200,6 +202,42 @@ function ensureUniqueLabels(labels = []) {
     counts.set(label, next);
     return next === 1 ? label : `${label} · ${next}`;
   });
+}
+
+function trimSeries(labels = [], values = [], maxPoints = MAX_LIVE_POINTS) {
+  return {
+    labels: labels.slice(-maxPoints),
+    values: values.slice(-maxPoints),
+  };
+}
+
+function appendMetricSeries(prev, metricKey, value, timestamp) {
+  if (!prev) return prev;
+  const label = new Date(timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const metricSeries = prev[metricKey] || { labels: [], values: [] };
+  const next = trimSeries(
+    [...(metricSeries.labels || []), label],
+    [...(metricSeries.values || []), value],
+  );
+
+  const multiParam = prev.multiParam
+    ? {
+        ...prev.multiParam,
+        labels: [...(prev.multiParam.labels || []), label].slice(-MAX_LIVE_POINTS),
+        [metricKey]: [...(prev.multiParam[metricKey] || []), value].slice(-MAX_LIVE_POINTS),
+      }
+    : prev.multiParam;
+
+  return {
+    ...prev,
+    [metricKey]: {
+      ...metricSeries,
+      labels: next.labels,
+      values: next.values,
+      currentValue: value,
+    },
+    multiParam,
+  };
 }
 
 function deriveMetricStatus(metricKey, value) {
@@ -466,7 +504,7 @@ export default function Analytics() {
   const [timeRange, setTimeRange] = useState('24h');
   const [customHours, setCustomHours] = useState(12);
   const [activeTab, setActiveTab] = useState('overview');
-  const [chartMode, setChartMode] = useState('combined');
+  const [chartMode, setChartMode] = useState('area');
   const [visibleMetrics, setVisibleMetrics] = useState({ temperature: true, ph: true, turbidity: true });
   const [predictionHorizon, setPredictionHorizon] = useState(6);
   const [eventFilter, setEventFilter] = useState('all');
@@ -546,25 +584,33 @@ export default function Analytics() {
   }, [fetchSensorData, selectedTank, timeRange]);
 
   useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
+    const applyMobileDefaults = () => {
+      if (!mq.matches) return;
+      setVisibleMetrics((prev) => {
+        const enabled = Object.values(prev).filter(Boolean).length;
+        if (enabled === 3) {
+          return { temperature: true, ph: false, turbidity: false };
+        }
+        return prev;
+      });
+    };
+    applyMobileDefaults();
+    mq.addEventListener('change', applyMobileDefaults);
+    return () => mq.removeEventListener('change', applyMobileDefaults);
+  }, []);
+
+  useEffect(() => {
     if (!liveTemp) return;
     setSensorData((prev) => {
       if (!prev) return prev;
       const value = toNumber(liveTemp.temperature);
       const timestamp = liveTemp.serverTimestamp || new Date().toISOString();
-      const label = new Date(timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      const withSeries = appendMetricSeries(prev, 'temperature', value, timestamp);
       return {
-        ...prev,
-        temperature: {
-          ...prev.temperature,
-          labels: [...(prev.temperature?.labels || []), label],
-          values: [...(prev.temperature?.values || []), value],
-          currentValue: value,
-        },
-        multiParam: prev.multiParam
-          ? { ...prev.multiParam, temperature: [...(prev.multiParam.temperature || []), value] }
-          : prev.multiParam,
+        ...withSeries,
         currentReadings: {
-          ...prev.currentReadings,
+          ...withSeries.currentReadings,
           temperature: {
             value,
             unit: '°C',
@@ -588,20 +634,11 @@ export default function Analytics() {
       if (!prev) return prev;
       const value = toNumber(livePh.ph);
       const timestamp = livePh.serverTimestamp || new Date().toISOString();
-      const label = new Date(timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      const withSeries = appendMetricSeries(prev, 'ph', value, timestamp);
       return {
-        ...prev,
-        ph: {
-          ...prev.ph,
-          labels: [...(prev.ph?.labels || []), label],
-          values: [...(prev.ph?.values || []), value],
-          currentValue: value,
-        },
-        multiParam: prev.multiParam
-          ? { ...prev.multiParam, ph: [...(prev.multiParam.ph || []), value] }
-          : prev.multiParam,
+        ...withSeries,
         currentReadings: {
-          ...prev.currentReadings,
+          ...withSeries.currentReadings,
           ph: {
             value,
             unit: 'pH',
@@ -731,11 +768,8 @@ export default function Analytics() {
     <div className={`${styles.analyticsPage} ${chartFullscreen ? styles.analyticsPageFullscreen : ''}`}>
       <header className={styles.hero}>
         <div>
-          <p className={styles.heroEyebrow}>FishMaster analytics workspace</p>
-          <h1>Production-grade aquarium intelligence</h1>
-          <p className={styles.heroCopy}>
-            A mobile-first control room for temperature, pH, turbidity, correlations, predictions, and event analysis.
-          </p>
+          <h1 className={styles.pageTitle}><FaChartLine /> Analytics</h1>
+          <p className={styles.heroCopy}>{tankName}</p>
         </div>
         <div className={styles.heroBadges}>
           <span className={styles.heroBadge}><FaWifi /> {tempConnected && phConnected ? 'Live connected' : 'Partial live feed'}</span>
@@ -820,6 +854,7 @@ export default function Analytics() {
               onSetChartMode={setChartMode}
               fullscreen={chartFullscreen}
               onToggleFullscreen={() => setChartFullscreen((prev) => !prev)}
+              compact
             />
           </section>
 
@@ -969,20 +1004,39 @@ export default function Analytics() {
               )}
 
               {activeTab === 'trends' && (
-                <div className={`${styles.chartPanel} ${chartFullscreen ? styles.chartPanelFullscreen : ''}`}>
-                  <TelemetryAnalyticsChart
-                    labels={displaySeries.labels}
-                    temperature={displaySeries.temperature}
-                    ph={displaySeries.ph}
-                    turbidity={displaySeries.turbidity}
-                    visibleMetrics={visibleMetrics}
-                    chartMode={chartMode}
-                    timeRangeLabel={TIME_RANGES.find((entry) => entry.value === timeRange)?.label || timeRange}
-                    onToggleMetric={toggleMetric}
-                    onSetChartMode={setChartMode}
-                    fullscreen={chartFullscreen}
-                    onToggleFullscreen={() => setChartFullscreen((prev) => !prev)}
-                  />
+                <div className={styles.trendMetricGrid}>
+                  {Object.entries(METRICS).map(([metricKey, metric]) => {
+                    const snapshot = snapshots[metricKey];
+                    const Icon = metric.icon;
+                    const isActive = visibleMetrics[metricKey];
+                    const trendTone = snapshot.trendPct >= 0 ? 'up' : 'down';
+
+                    return (
+                      <button
+                        key={metricKey}
+                        type="button"
+                        className={`${styles.trendMetricCard} ${isActive ? styles.trendMetricCardActive : ''}`}
+                        style={{ '--metric-tone': metric.tone }}
+                        onClick={() => {
+                          setVisibleMetrics({ temperature: false, ph: false, turbidity: false, [metricKey]: true });
+                        }}
+                      >
+                        <div className={styles.trendMetricTop}>
+                          <Icon className={styles.trendMetricIcon} />
+                          <MetricBadge tone={snapshot.status.tone}>{snapshot.status.label}</MetricBadge>
+                        </div>
+                        <span className={styles.trendMetricLabel}>{metric.label}</span>
+                        <strong className={styles.trendMetricValue}>
+                          {formatValue(snapshot.current, metricKey)}
+                          <span>{metric.unit}</span>
+                        </strong>
+                        <span className={trendTone === 'up' ? styles.trendUp : styles.trendDown}>
+                          {formatTrendPercent(snapshot.trendPct)}
+                        </span>
+                        <span className={styles.trendMetricHint}>Tap to focus chart above</span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
 

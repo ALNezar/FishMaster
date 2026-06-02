@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useToast } from './toast/ToastProvider';
 import { API_BASE_URL } from '../../api';
+import { getToken } from '../../api/utils/token';
 
 const AlertContext = createContext(null);
 
@@ -17,10 +18,13 @@ export const AlertProvider = ({ children }) => {
   const toast = useToast();
 
   useEffect(() => {
-    // Connect to SSE stream
-    const eventSource = new EventSource(`${API_BASE_URL}/api/alerts/stream`, {
-      withCredentials: true,
-    });
+    const token = getToken();
+    if (!token) {
+      return undefined;
+    }
+
+    const streamUrl = `${API_BASE_URL}/api/alerts/stream?access_token=${encodeURIComponent(token)}`;
+    const eventSource = new EventSource(streamUrl);
 
     eventSource.onopen = () => {
       console.log('[SSE] Alert stream connected');
@@ -30,8 +34,7 @@ export const AlertProvider = ({ children }) => {
       try {
         const data = JSON.parse(event.data);
         console.log('[SSE] New alert received:', data);
-        
-        // Show high-priority toast
+
         if (data.severity === 'CRITICAL') {
           toast.error(data.message, { duration: 10000 });
         } else if (data.severity === 'WARNING') {

@@ -28,7 +28,7 @@ const sections = [
   { path: '/trends', label: 'Trends', icon: MdShowChart },
   { path: '/history', label: 'History', icon: MdHistory },
   { path: '/alerts', label: 'Alert Rules', icon: MdWarning },
-  { path: '/notifications', label: 'Notifications', icon: MdNotifications },
+  { path: '/alerts?tab=history', label: 'Notifications', icon: MdNotifications },
   { path: '/education', label: 'Learn & Care', icon: MdMenuBook },
   { path: '/device', label: 'Device Setup', icon: MdSettings },
   { path: '/profile', label: 'My Profile', icon: MdPerson },

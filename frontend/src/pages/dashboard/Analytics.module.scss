@@ -62,11 +62,20 @@
   font-family: 'Special Elite', cursive;
 }
 
-.hero h1 {
+.hero h1,
+.pageTitle {
   margin: 0;
-  font-size: clamp(2rem, 9vw, 3.2rem);
-  line-height: 1.02;
-  letter-spacing: -0.04em;
+  font-size: clamp(1.45rem, 5vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pageTitle svg {
+  color: var(--primary);
+  flex-shrink: 0;
 }
 
 .heroCopy {
@@ -524,8 +533,76 @@
 
 .chartProminent {
   grid-column: 1 / -1;
-  min-height: 420px;
+  min-height: 0;
   margin-bottom: 0.9rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.trendMetricGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.65rem;
+}
+
+.trendMetricCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--panel);
+  box-shadow: var(--shadow-soft);
+  text-align: left;
+  cursor: pointer;
+  min-height: 44px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.trendMetricCardActive {
+  border-color: var(--metric-tone, var(--primary));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--metric-tone, var(--primary)) 35%, transparent);
+}
+
+.trendMetricTop {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.trendMetricIcon {
+  font-size: 1.1rem;
+  color: var(--metric-tone, var(--primary));
+}
+
+.trendMetricLabel {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.trendMetricValue {
+  font-family: 'Special Elite', cursive;
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.trendMetricValue span {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  margin-left: 0.25rem;
+  font-weight: 700;
+}
+
+.trendMetricHint {
+  font-size: 0.76rem;
+  color: var(--muted);
 }
 
 .chartPanelFullscreen {
@@ -810,15 +887,15 @@
 /* Responsive tweaks for phone users */
 .kpiRailExpanded { }
 
+@media (min-width: 640px) {
+  .trendMetricGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 600px) {
   .chartProminent {
-    min-height: 280px;
-    padding: 0;
     margin-bottom: 0.6rem;
-  }
-
-  .chartPanel {
-    min-height: 260px;
   }
 
   .hero {

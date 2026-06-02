@@ -1,75 +1,74 @@
 .chartShell {
-  position: relative;
-  min-height: 420px;
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(61, 48, 33, 0.14);
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(61, 48, 33, 0.06);
+  padding: 0.85rem;
 }
 
 .chartShellFullscreen {
-  min-height: 70vh;
+  background: rgba(245, 241, 227, 0.98);
+  border-radius: 0;
+  border: none;
+  min-height: 100%;
 }
 
 .chartHeader {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 1rem;
-  align-items: flex-start;
+  gap: 0.65rem;
+  align-items: center;
 }
 
-.chartEyebrow {
-  margin: 0 0 0.35rem;
-  font-size: 0.76rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #64748b;
-  font-weight: 700;
-}
-
-.chartHeader h3 {
+.chartTitle {
   margin: 0;
+  font-family: 'Special Elite', cursive;
   font-size: 1.1rem;
-  line-height: 1.2;
+  color: #3d3021;
 }
 
-.chartCopy {
-  margin: 0.35rem 0 0;
-  color: #64748b;
-  max-width: 60ch;
-  font-size: 0.92rem;
+.chartRange {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  color: #7b6b5b;
 }
 
 .chartActions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
+  margin-left: auto;
 }
 
 .segmentedControl {
   display: inline-flex;
-  padding: 0.25rem;
+  padding: 0.2rem;
   border-radius: 999px;
-  background: rgba(148, 163, 184, 0.12);
-  gap: 0.2rem;
+  background: rgba(61, 48, 33, 0.08);
+  gap: 0.15rem;
 }
 
 .segmentedButton {
   border: 0;
   background: transparent;
-  color: #475569;
-  min-height: 44px;
-  padding: 0.55rem 0.9rem;
+  color: #7b6b5b;
+  min-height: 40px;
+  padding: 0.45rem 0.75rem;
   border-radius: 999px;
   text-transform: capitalize;
   font-weight: 700;
+  font-size: 0.82rem;
 }
 
 .segmentedButtonActive {
-  background: #0f172a;
-  color: #f8fafc;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.18);
+  background: #3d3021;
+  color: #fbf8ef;
+  box-shadow: 0 4px 12px rgba(61, 48, 33, 0.18);
 }
 
 .iconButton {
@@ -77,15 +76,15 @@
   min-height: 44px;
   display: inline-grid;
   place-items: center;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 14px;
+  border: 1px solid rgba(61, 48, 33, 0.14);
+  border-radius: 12px;
   background: #fff;
-  color: #0f172a;
+  color: #3d3021;
 }
 
 .metricToggleRow {
   display: flex;
-  gap: 0.55rem;
+  gap: 0.45rem;
   flex-wrap: wrap;
 }
 
@@ -93,45 +92,41 @@
   min-height: 44px;
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.4rem;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.26);
-  background: rgba(255, 255, 255, 0.82);
-  color: #475569;
-  padding: 0.55rem 0.9rem;
+  border: 1px solid rgba(61, 48, 33, 0.14);
+  background: #fff;
+  color: #7b6b5b;
+  padding: 0.5rem 0.85rem;
   font-weight: 700;
+  font-size: 0.82rem;
 }
 
 .metricToggleActive {
-  border-color: rgba(59, 130, 246, 0.35);
-  background: rgba(59, 130, 246, 0.1);
-  color: #0f172a;
+  border-color: var(--metric-color, #1277b0);
+  background: color-mix(in srgb, var(--metric-color, #1277b0) 12%, white);
+  color: #3d3021;
 }
 
-@media (min-width: 1024px) {
-  .chartShell {
-    min-height: 520px;
-  }
+.chartCanvas {
+  width: 100%;
+  min-height: 280px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
 }
 
-/* Mobile-specific adjustments to ensure chart occupies visible viewport */
 @media (max-width: 600px) {
   .chartShell {
-    min-height: 36vh;
-    padding: 0.5rem 0.5rem 0.6rem 0.5rem;
-  }
-
-  .chartShellFullscreen {
-    min-height: 78vh;
-  }
-
-  .iconButton {
-    min-width: 48px;
-    min-height: 48px;
+    padding: 0.65rem;
   }
 
   .segmentedButton {
-    min-height: 40px;
-    padding: 0.45rem 0.7rem;
+    min-height: 38px;
+    padding: 0.4rem 0.65rem;
+  }
+
+  .chartCanvas {
+    min-height: 260px;
   }
 }

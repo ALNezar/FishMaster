@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import { FaThermometerHalf, FaTint, FaWater, FaFlask, FaBell, FaBellSlash, FaEnvelope, FaMobileAlt, FaUndo, FaSave, FaCheckCircle, FaExclamationTriangle, FaHistory, FaCog, FaPaperPlane } from 'react-icons/fa';
+import { useOutletContext, useSearchParams } from 'react-router-dom';
+import { FaThermometerHalf, FaTint, FaWater, FaBell, FaBellSlash, FaEnvelope, FaMobileAlt, FaUndo, FaSave, FaExclamationTriangle, FaHistory, FaCog, FaPaperPlane } from 'react-icons/fa';
 import { MdNotificationsActive } from 'react-icons/md';
 import Card from '../../components/common/card/card';
 import Button from '../../components/common/button/button';
-import { getTanks, getAlertThresholds, updateAlertThresholds, subscribeToPush } from '../../api';
+import { getTanks, getAlertThresholds, updateAlertThresholds, subscribeToPush, getVapidPublicKey } from '../../api';
 import { urlB64ToUint8Array } from '../../utils/push';
 import { useToast } from '../../components/common/toast/ToastProvider';
 import AlertHistoryList from './AlertHistoryList';
@@ -29,21 +29,17 @@ const DEFAULT_THRESHOLDS = {
     enabled: true,
     max: 5,
   },
-  ammonia: {
-    enabled: true,
-    max: 0.25,
-  },
 };
 
 const PARAMETERS = [
   { key: 'temperature', label: 'Temperature', icon: FaThermometerHalf, color: '#ef4444', unit: '°C', hasMin: true, hasMax: true, step: 0.5, hint: 'Most freshwater fish thrive between 22–28°C', minBound: 10, maxBound: 40 },
   { key: 'ph', label: 'pH Level', icon: FaTint, color: '#3b82f6', unit: '', hasMin: true, hasMax: true, step: 0.1, hint: 'Ideal range for most species: 6.5–7.5', minBound: 0, maxBound: 14 },
   { key: 'turbidity', label: 'Turbidity', icon: FaWater, color: '#14b8a6', unit: 'NTU', hasMin: false, hasMax: true, step: 0.5, hint: 'Clear water should be below 5 NTU', minBound: 0, maxBound: 100 },
-  { key: 'ammonia', label: 'Ammonia', icon: FaFlask, color: '#f97316', unit: 'ppm', hasMin: false, hasMax: true, step: 0.01, hint: 'Any detectable ammonia (>0.25 ppm) is harmful', minBound: 0, maxBound: 5 },
 ];
 
 export default function AlertConfigPage() {
   const { user } = useOutletContext() || {};
+  const [searchParams] = useSearchParams();
   const [tanks, setTanks] = useState([]);
   const [selectedTankId, setSelectedTankId] = useState(null);
   const [thresholds, setThresholds] = useState({ ...DEFAULT_THRESHOLDS });
@@ -53,11 +49,20 @@ export default function AlertConfigPage() {
   const [error, setError] = useState('');
   const [thresholdsReadOnly, setThresholdsReadOnly] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
-  const [activeTab, setActiveTab] = useState('config'); // 'config' or 'history'
+  const [activeTab, setActiveTab] = useState(() => (
+    searchParams.get('tab') === 'history' ? 'history' : 'config'
+  ));
   
   const toast = useToast();
 
   // Fetch tanks on mount
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'history' || tab === 'config') {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     const fetchTanks = async () => {
       try {
@@ -86,9 +91,8 @@ export default function AlertConfigPage() {
       setThresholdsReadOnly(false);
       try {
         const data = await getAlertThresholds(selectedTankId);
-        const merged = { ...DEFAULT_THRESHOLDS, ...data };
-        setThresholds(merged);
-        setOriginalThresholds(merged);
+        setThresholds(data);
+        setOriginalThresholds(data);
       } catch (err) {
         console.error('Failed to fetch thresholds:', err);
         if (err && err.status === 403) {
@@ -159,8 +163,9 @@ export default function AlertConfigPage() {
     setError('');
 
     try {
-      await updateAlertThresholds(selectedTankId, thresholds);
-      setOriginalThresholds({ ...thresholds });
+      const saved = await updateAlertThresholds(selectedTankId, thresholds);
+      setThresholds(saved);
+      setOriginalThresholds(saved);
       toast.success('Alert thresholds updated successfully!');
     } catch (err) {
       console.error('Failed to save thresholds:', err);
@@ -183,10 +188,19 @@ export default function AlertConfigPage() {
       }
       
       toast.info('Registering push service...');
-      const registration = await navigator.serviceWorker.register('/sw.js');
-      await navigator.serviceWorker.ready;
-      
-      const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY || 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuB-3qOX7A8CILa694Ocmj7HNc'; // Replace with real VAPID public key
+      const registration = await navigator.serviceWorker.ready;
+
+      const vapidConfig = await getVapidPublicKey();
+      const vapidPublicKey =
+        (vapidConfig?.configured && vapidConfig.publicKey)
+          ? vapidConfig.publicKey
+          : import.meta.env.VITE_VAPID_PUBLIC_KEY;
+
+      if (!vapidPublicKey) {
+        toast.error('Push notifications are not configured on the server. Set VAPID keys in Railway.');
+        return;
+      }
+
       const convertedVapidKey = urlB64ToUint8Array(vapidPublicKey);
 
       const subscription = await registration.pushManager.subscribe({

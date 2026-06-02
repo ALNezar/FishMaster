@@ -11,7 +11,6 @@ import LoginPage from './pages/auth/LoginPage.jsx';
 import OnboardingFlow from './pages/onboarding/OnboardingFlow.jsx';
 import Profile from './pages/profile/Profile.jsx';
 import Dashboard from './pages/dashboard/Dashboard.jsx';
-import PlaceholderPage from './pages/PlaceholderPage.jsx';
 import HistoryPage from './pages/dashboard/HistoryPage.jsx';
 import TrendsPage from './pages/dashboard/TrendsPage.jsx';
 import DataPage from './pages/dashboard/DataPage.jsx';
@@ -50,10 +49,7 @@ function App() {
         <Route path="/trends" element={<TrendsPage />} />
         <Route path="/analytics" element={<DataPage />} />
         <Route path="/alerts" element={<AlertConfigPage />} />
-        <Route
-          path="/notifications"
-          element={<PlaceholderPage title="Notifications" />}
-        />
+        <Route path="/notifications" element={<Navigate to="/alerts?tab=history" replace />} />
         <Route path="/device" element={<DeviceControlPage />} />
       </Route>
 

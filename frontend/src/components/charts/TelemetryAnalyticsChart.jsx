@@ -1,62 +1,24 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { FaCompress, FaExpand, FaTint, FaThermometerHalf, FaWater } from 'react-icons/fa';
 import styles from './TelemetryAnalyticsChart.module.scss';
 
+const MOBILE_MAX_WIDTH = 600;
+
 const COLORS = {
-  temperature: '#ef4444',
-  temperatureSoft: 'rgba(239, 68, 68, 0.16)',
-  ph: '#3b82f6',
-  phSoft: 'rgba(59, 130, 246, 0.18)',
-  turbidity: '#14b8a6',
-  turbiditySoft: 'rgba(20, 184, 166, 0.18)',
+  temperature: '#b01222',
+  temperatureSoft: 'rgba(176, 18, 34, 0.14)',
+  ph: '#16a34a',
+  phSoft: 'rgba(22, 163, 74, 0.14)',
+  turbidity: '#ca8a04',
+  turbiditySoft: 'rgba(202, 138, 4, 0.14)',
 };
 
 const metricMeta = {
-  temperature: { label: 'Temperature', icon: FaThermometerHalf, unit: '°C' },
-  ph: { label: 'pH', icon: FaTint, unit: 'pH' },
-  turbidity: { label: 'Turbidity', icon: FaWater, unit: 'NTU' },
+  temperature: { label: 'Temperature', icon: FaThermometerHalf, unit: '°C', yMin: 20, yMax: 32, ideal: 25 },
+  ph: { label: 'pH', icon: FaTint, unit: 'pH', yMin: 6, yMax: 8.5, ideal: 7 },
+  turbidity: { label: 'Turbidity', icon: FaWater, unit: 'NTU', yMin: 0, yMax: 15, ideal: 3 },
 };
-
-const yAxisConfig = [
-  {
-    type: 'value',
-    name: '°C',
-    position: 'left',
-    nameLocation: 'middle',
-    nameGap: 30,
-    axisLine: { lineStyle: { color: COLORS.temperature } },
-    axisLabel: { color: '#6b7280' },
-    splitLine: { lineStyle: { color: 'rgba(15, 23, 42, 0.08)' } },
-    min: 20,
-    max: 32,
-  },
-  {
-    type: 'value',
-    name: 'pH',
-    position: 'right',
-    nameLocation: 'middle',
-    nameGap: 30,
-    axisLine: { lineStyle: { color: COLORS.ph } },
-    axisLabel: { color: '#6b7280' },
-    splitLine: { show: false },
-    min: 6,
-    max: 8.5,
-  },
-  {
-    type: 'value',
-    name: 'NTU',
-    position: 'right',
-    offset: 50,
-    nameLocation: 'middle',
-    nameGap: 30,
-    axisLine: { lineStyle: { color: COLORS.turbidity } },
-    axisLabel: { color: '#6b7280' },
-    splitLine: { show: false },
-    min: 0,
-    max: 15,
-  },
-];
 
 const safeNumber = (value) => {
   const parsed = Number(value);
@@ -70,62 +32,74 @@ const getVisibleMetrics = (visibleMetrics) =>
     .filter(([, visible]) => Boolean(visible))
     .map(([key]) => key);
 
-const buildSeries = ({ labels, temperature, ph, turbidity, visibleMetrics, chartMode }) => {
-  const visible = getVisibleMetrics(visibleMetrics);
-  const xLabels = asArray(labels);
+function buildYAxes(visible, isMobile) {
+  return visible.map((metricKey, index) => {
+    const meta = metricMeta[metricKey];
+    const color = COLORS[metricKey];
+    const useSingleAxis = visible.length === 1;
+    return {
+      type: 'value',
+      name: meta.unit,
+      show: true,
+      position: useSingleAxis ? 'left' : index === 0 ? 'left' : 'right',
+      offset: !useSingleAxis && index === 2 ? 48 : 0,
+      nameLocation: 'end',
+      nameGap: 8,
+      nameTextStyle: { color: '#7b6b5b', fontSize: 11 },
+      axisLine: { show: true, lineStyle: { color } },
+      axisLabel: { color: '#7b6b5b', fontSize: 10 },
+      splitLine: {
+        show: index === 0,
+        lineStyle: { color: 'rgba(61, 48, 33, 0.08)' },
+      },
+      min: meta.yMin,
+      max: meta.yMax,
+    };
+  });
+}
 
-  return visible.map((metricKey) => {
+function buildSeries({ labels, temperature, ph, turbidity, visibleMetrics, chartMode }) {
+  const visible = getVisibleMetrics(visibleMetrics);
+  const count = labels.length;
+
+  return visible.map((metricKey, axisIndex) => {
     const meta = metricMeta[metricKey];
     const color = COLORS[metricKey];
     const soft = COLORS[`${metricKey}Soft`];
-    const values = asArray(metricKey === 'temperature' ? temperature : metricKey === 'ph' ? ph : turbidity);
-    const points = xLabels.map((label, index) => [label, safeNumber(values[index])]);
+    const source = metricKey === 'temperature' ? temperature : metricKey === 'ph' ? ph : turbidity;
+    const values = asArray(source);
+    const data = Array.from({ length: count }, (_, index) => safeNumber(values[index]));
 
     const baseSeries = {
       name: meta.label,
       type: 'line',
-      smooth: true,
+      smooth: 0.35,
       showSymbol: false,
-      symbol: 'circle',
-      symbolSize: 8,
-      data: points,
-      yAxisIndex: metricKey === 'temperature' ? 0 : metricKey === 'ph' ? 1 : 2,
+      data,
+      yAxisIndex: axisIndex,
       connectNulls: true,
-      lineStyle: { width: 3, color },
+      lineStyle: { width: 2.5, color },
       itemStyle: { color },
-      emphasis: { focus: 'series' },
+      emphasis: { focus: 'series', lineStyle: { width: 3 } },
       markLine: {
+        silent: true,
         symbol: 'none',
-        lineStyle: { type: 'dashed', color: 'rgba(15, 23, 42, 0.28)' },
-        label: { color: '#64748b' },
-        data:
-          metricKey === 'temperature'
-            ? [{ yAxis: 25 }]
-            : metricKey === 'ph'
-              ? [{ yAxis: 7 }]
-              : [{ yAxis: 5 }],
+        lineStyle: { type: 'dashed', color: 'rgba(61, 48, 33, 0.22)' },
+        label: { show: false },
+        data: [{ yAxis: meta.ideal }],
       },
     };
 
-    if (chartMode === 'line') {
-      return baseSeries;
-    }
-
-    if (chartMode === 'area') {
+    if (chartMode === 'area' || chartMode === 'combined') {
       return {
         ...baseSeries,
-        areaStyle: { color: soft },
+        areaStyle: chartMode === 'combined' && metricKey !== 'temperature' ? undefined : { color: soft },
       };
     }
 
-    return {
-      ...baseSeries,
-      areaStyle: metricKey === 'temperature' ? { color: soft } : undefined,
-      lineStyle: metricKey === 'temperature' ? { width: 3, color } : { width: 2.5, color },
-      symbolSize: metricKey === 'temperature' ? 8 : 7,
-    };
+    return baseSeries;
   });
-};
+}
 
 export default function TelemetryAnalyticsChart({
   labels = [],
@@ -133,50 +107,63 @@ export default function TelemetryAnalyticsChart({
   ph = [],
   turbidity = [],
   visibleMetrics = { temperature: true, ph: true, turbidity: true },
-  chartMode = 'combined',
+  chartMode = 'area',
   timeRangeLabel = '',
   onToggleMetric,
   onSetChartMode,
   onToggleFullscreen,
   fullscreen = false,
+  compact = true,
 }) {
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH}px)`).matches : false
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH}px)`);
+    const onChange = () => setIsMobile(mq.matches);
+    onChange();
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  const chartHeight = fullscreen ? '70vh' : isMobile ? 300 : 380;
+
   const option = useMemo(() => {
     const visible = getVisibleMetrics(visibleMetrics);
     const series = buildSeries({ labels, temperature, ph, turbidity, visibleMetrics, chartMode });
-    const hasRenderableData = series.some((item) => Array.isArray(item.data) && item.data.length > 0);
+    const hasRenderableData = series.some((item) => item.data?.some((v) => v != null));
+    const yAxis = buildYAxes(visible, isMobile);
+    const gridRight = visible.length <= 1 ? 16 : visible.length === 2 ? 48 : 72;
+    const gridBottom = isMobile ? 36 : 52;
 
     return {
       backgroundColor: 'transparent',
-      animation: true,
+      animation: false,
+      animationDurationUpdate: 0,
       grid: {
-        left: 56,
-        right: 72,
-        top: 88,
-        bottom: 84,
+        left: 12,
+        right: gridRight,
+        top: compact ? 12 : 48,
+        bottom: gridBottom,
         containLabel: true,
       },
       legend: {
-        top: 20,
-        left: 16,
-        right: 16,
-        itemWidth: 12,
-        itemHeight: 12,
-        icon: 'roundRect',
-        textStyle: { color: '#475569', fontSize: 12, fontWeight: 600 },
-        selected: {
-          Temperature: visible.includes('temperature'),
-          pH: visible.includes('ph'),
-          Turbidity: visible.includes('turbidity'),
-        },
+        show: !compact && !isMobile,
+        top: 8,
+        left: 8,
+        itemWidth: 10,
+        itemHeight: 10,
+        textStyle: { color: '#7b6b5b', fontSize: 11 },
       },
       tooltip: {
         show: hasRenderableData,
         trigger: 'axis',
         confine: true,
-        backgroundColor: 'rgba(15, 23, 42, 0.96)',
+        backgroundColor: 'rgba(61, 48, 33, 0.94)',
         borderWidth: 0,
-        textStyle: { color: '#f8fafc' },
-        axisPointer: { type: 'cross' },
+        textStyle: { color: '#fbf8ef', fontSize: 12 },
+        axisPointer: { type: isMobile ? 'line' : 'cross' },
         formatter: (params = []) => {
           const lines = Array.isArray(params) ? params : [params];
           const validLines = lines.filter((item) => item && item.seriesName);
@@ -185,7 +172,11 @@ export default function TelemetryAnalyticsChart({
           const body = validLines
             .map((item) => {
               const seriesName = item.seriesName || '';
-              const metricKey = seriesName.includes('Turbidity') ? 'turbidity' : seriesName.includes('pH') ? 'ph' : 'temperature';
+              const metricKey = seriesName.includes('Turbidity')
+                ? 'turbidity'
+                : seriesName.includes('pH')
+                  ? 'ph'
+                  : 'temperature';
               const unit = metricMeta[metricKey].unit;
               const raw = Array.isArray(item.value) ? item.value[1] : item.value;
               const digits = metricKey === 'ph' ? 2 : 1;
@@ -193,82 +184,63 @@ export default function TelemetryAnalyticsChart({
               return `<div style="display:flex;justify-content:space-between;gap:12px;margin:3px 0"><span>${item.marker || ''}${seriesName}</span><strong>${valueText} ${unit}</strong></div>`;
             })
             .join('');
-          return `<div style="min-width:180px">${header}${body}</div>`;
+          return `<div style="min-width:160px">${header}${body}</div>`;
         },
       },
-      axisPointer: {
-        show: hasRenderableData,
-        link: [{ xAxisIndex: 'all' }],
-      },
-      toolbox: {
-        right: 14,
-        top: 12,
-        itemSize: 14,
-        iconStyle: { borderColor: '#64748b' },
-        feature: {
-          dataZoom: { yAxisIndex: 'none' },
-          restore: {},
-          saveAsImage: { name: `fishmaster-${timeRangeLabel || 'analytics'}` },
-        },
-      },
-      dataZoom: [
-        {
-          type: 'inside',
-          xAxisIndex: 0,
-          filterMode: 'none',
-          zoomOnMouseWheel: 'shift',
-          moveOnMouseWheel: true,
-          moveOnMouseMove: true,
-          disabled: !hasRenderableData,
-        },
-        {
-          type: 'slider',
-          xAxisIndex: 0,
-          height: 22,
-          bottom: 18,
-          borderColor: 'rgba(15, 23, 42, 0.12)',
-          handleStyle: { color: '#3b82f6' },
-          fillerColor: 'rgba(59, 130, 246, 0.18)',
-          backgroundColor: 'rgba(148, 163, 184, 0.12)',
-          show: hasRenderableData,
-        },
-      ],
-      brush: {
-        toolbox: ['rect', 'clear'],
-        xAxisIndex: 0,
-      },
+      toolbox: isMobile
+        ? undefined
+        : {
+            right: 8,
+            top: 4,
+            itemSize: 13,
+            feature: {
+              restore: {},
+              saveAsImage: { name: `fishmaster-${timeRangeLabel || 'analytics'}` },
+            },
+          },
+      dataZoom: isMobile
+        ? []
+        : [
+            {
+              type: 'inside',
+              xAxisIndex: 0,
+              filterMode: 'none',
+              zoomOnMouseWheel: 'shift',
+              moveOnMouseMove: false,
+              disabled: !hasRenderableData,
+            },
+          ],
       xAxis: {
         type: 'category',
         boundaryGap: false,
         data: labels,
         axisLabel: {
-          color: '#64748b',
+          color: '#7b6b5b',
           hideOverlap: true,
-          interval: 'auto',
-          fontSize: 11,
+          interval: isMobile ? 'auto' : 0,
+          fontSize: 10,
+          rotate: isMobile ? 0 : 30,
         },
-        axisLine: { lineStyle: { color: 'rgba(148, 163, 184, 0.55)' } },
-        axisTick: { alignWithLabel: true },
+        axisLine: { lineStyle: { color: 'rgba(61, 48, 33, 0.2)' } },
       },
-      yAxis: yAxisConfig,
+      yAxis,
       series,
     };
-  }, [chartMode, labels, ph, temperature, turbidity, timeRangeLabel, visibleMetrics]);
+  }, [chartMode, compact, isMobile, labels, ph, temperature, timeRangeLabel, turbidity, visibleMetrics]);
 
   return (
     <div className={`${styles.chartShell} ${fullscreen ? styles.chartShellFullscreen : ''}`}>
       <div className={styles.chartHeader}>
-        <div>
-          <p className={styles.chartEyebrow}>Advanced analytics workspace</p>
-          <h3>Live Aquarium Telemetry</h3>
-          <p className={styles.chartCopy}>
-            Smooth curves, range selection, crosshair inspection, and comparison mode in one panel.
-          </p>
-        </div>
+        {!compact && (
+          <div>
+            <h3 className={styles.chartTitle}>Sensor trends</h3>
+            {timeRangeLabel ? <p className={styles.chartRange}>{timeRangeLabel}</p> : null}
+          </div>
+        )}
 
         <div className={styles.chartActions}>
           <div className={styles.segmentedControl} role="tablist" aria-label="Chart mode">
-            {['area', 'line', 'combined'].map((mode) => (
+            {['area', 'line'].map((mode) => (
               <button
                 key={mode}
                 type="button"
@@ -281,7 +253,12 @@ export default function TelemetryAnalyticsChart({
             ))}
           </div>
 
-          <button type="button" className={styles.iconButton} onClick={onToggleFullscreen} aria-label="Toggle fullscreen chart">
+          <button
+            type="button"
+            className={styles.iconButton}
+            onClick={onToggleFullscreen}
+            aria-label="Toggle fullscreen chart"
+          >
             {fullscreen ? <FaCompress /> : <FaExpand />}
           </button>
         </div>
@@ -297,6 +274,7 @@ export default function TelemetryAnalyticsChart({
               type="button"
               className={`${styles.metricToggle} ${active ? styles.metricToggleActive : ''}`}
               onClick={() => onToggleMetric?.(key)}
+              style={active ? { '--metric-color': COLORS[key] } : undefined}
             >
               <Icon />
               <span>{meta.label}</span>
@@ -305,7 +283,15 @@ export default function TelemetryAnalyticsChart({
         })}
       </div>
 
-      <ReactECharts option={option} style={{ height: fullscreen ? '70vh' : '100%', width: '100%' }} notMerge lazyUpdate />
+      <div className={styles.chartCanvas} style={{ height: chartHeight }}>
+        <ReactECharts
+          option={option}
+          style={{ height: '100%', width: '100%' }}
+          opts={{ renderer: 'canvas' }}
+          notMerge
+          lazyUpdate={false}
+        />
+      </div>
     </div>
   );
 }

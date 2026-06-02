@@ -156,6 +156,7 @@ public class MqttSubscriberService implements MqttCallbackExtended {
                 String sourceClientId = mqttProps.getClientId();
                 telemetryService.handleTurbidityPayload(payload, sourceClientId);
             } else if (t.endsWith("/Ph") || t.equals("FishMaster/Ph") || t.equalsIgnoreCase("FishMaster/pH")
+                    // Support hardware publishing pH to 'aquarium/telemetry' (or any '<prefix>/telemetry')
                     || t.equalsIgnoreCase("aquarium/telemetry") || t.toLowerCase().endsWith("/telemetry")) {
                 telemetryService.handlePhPayload(payload);
             } else if (t.endsWith("/DeviceInfo") || t.equals("FishMaster/DeviceInfo")) {

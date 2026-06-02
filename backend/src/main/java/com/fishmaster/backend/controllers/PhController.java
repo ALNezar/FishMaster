@@ -6,6 +6,7 @@ import com.fishmaster.backend.service.TelemetryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import jakarta.servlet.http.HttpServletResponse;
@@ -33,8 +34,9 @@ public class PhController {
     }
 
     @GetMapping("/latest")
-    public Optional<PhReading> latest(@RequestParam(defaultValue = "tank1") String tankId) {
-        return repository.findTopByTankIdOrderByServerTimestampDesc(tankId);
+    public ResponseEntity<PhReading> latest(@RequestParam(defaultValue = "tank1") String tankId) {
+        Optional<PhReading> reading = repository.findTopByTankIdOrderByServerTimestampDesc(tankId);
+        return reading.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.noContent().build());
     }
 
     @GetMapping("/recent")

@@ -42,6 +42,9 @@ export * from './learning.api';
 // Alert API
 export * from './alert.api';
 
+// Tank Advisor API
+export * from './advisor.api';
+
 // Push API
 export * from './push.api';
 

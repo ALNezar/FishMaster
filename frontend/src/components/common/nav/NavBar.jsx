@@ -25,7 +25,7 @@ const sections = [
   { path: '/dashboard', label: 'Dashboard', icon: MdDashboard },
   { path: '/tanks', label: 'My Tanks', icon: MdWaterDrop },
   { path: '/data', label: 'Sensor Data', icon: MdSensors },
-  { path: '/trends', label: 'Trends', icon: MdShowChart },
+  { path: '/advisor', label: 'Tank Advisor', icon: MdShowChart },
   { path: '/history', label: 'History', icon: MdHistory },
   { path: '/alerts', label: 'Alert Rules', icon: MdWarning },
   { path: '/alerts?tab=history', label: 'Notifications', icon: MdNotifications },

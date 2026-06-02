@@ -88,7 +88,7 @@ const DISPLAY_POINTS = {
 };
 
 const PREDICTION_OPTIONS = [1, 6, 24];
-const TAB_OPTIONS = ['overview', 'trends', 'correlations', 'predictions', 'events'];
+const TAB_OPTIONS = ['overview', 'correlations', 'predictions', 'events'];
 const EVENT_FILTERS = ['all', 'feeding', 'alert', 'maintenance', 'parameter', 'system'];
 const MAX_LIVE_POINTS = 240;
 const MOBILE_BREAKPOINT = 600;
@@ -1000,43 +1000,6 @@ export default function Analytics() {
                     <strong>{recentFeedingHours != null ? 'Detected' : 'Pending'}</strong>
                     <span>{recentFeedingHours != null ? 'Track turbidity changes after feeding.' : 'Waiting for a feeding event.'}</span>
                   </div>
-                </div>
-              )}
-
-              {activeTab === 'trends' && (
-                <div className={styles.trendMetricGrid}>
-                  {Object.entries(METRICS).map(([metricKey, metric]) => {
-                    const snapshot = snapshots[metricKey];
-                    const Icon = metric.icon;
-                    const isActive = visibleMetrics[metricKey];
-                    const trendTone = snapshot.trendPct >= 0 ? 'up' : 'down';
-
-                    return (
-                      <button
-                        key={metricKey}
-                        type="button"
-                        className={`${styles.trendMetricCard} ${isActive ? styles.trendMetricCardActive : ''}`}
-                        style={{ '--metric-tone': metric.tone }}
-                        onClick={() => {
-                          setVisibleMetrics({ temperature: false, ph: false, turbidity: false, [metricKey]: true });
-                        }}
-                      >
-                        <div className={styles.trendMetricTop}>
-                          <Icon className={styles.trendMetricIcon} />
-                          <MetricBadge tone={snapshot.status.tone}>{snapshot.status.label}</MetricBadge>
-                        </div>
-                        <span className={styles.trendMetricLabel}>{metric.label}</span>
-                        <strong className={styles.trendMetricValue}>
-                          {formatValue(snapshot.current, metricKey)}
-                          <span>{metric.unit}</span>
-                        </strong>
-                        <span className={trendTone === 'up' ? styles.trendUp : styles.trendDown}>
-                          {formatTrendPercent(snapshot.trendPct)}
-                        </span>
-                        <span className={styles.trendMetricHint}>Tap to focus chart above</span>
-                      </button>
-                    );
-                  })}
                 </div>
               )}
 

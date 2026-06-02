@@ -1,8 +1,10 @@
 package com.fishmaster.backend.controllers;
 
+import com.fishmaster.backend.model.Fish;
 import com.fishmaster.backend.model.Tank;
 import com.fishmaster.backend.model.User;
 import com.fishmaster.backend.service.TankService;
+import dto.FishDto;
 import dto.TankDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -60,6 +62,19 @@ public class TankController {
     public ResponseEntity<Void> deleteTank(@PathVariable Long id) {
         User user = getAuthenticatedUser();
         tankService.deleteTank(user, id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{tankId}/fish")
+    public ResponseEntity<Fish> addFish(@PathVariable Long tankId, @RequestBody FishDto dto) {
+        User user = getAuthenticatedUser();
+        return ResponseEntity.ok(tankService.addFish(user, tankId, dto));
+    }
+
+    @DeleteMapping("/{tankId}/fish/{fishId}")
+    public ResponseEntity<Void> removeFish(@PathVariable Long tankId, @PathVariable Long fishId) {
+        User user = getAuthenticatedUser();
+        tankService.removeFish(user, tankId, fishId);
         return ResponseEntity.noContent().build();
     }
 }

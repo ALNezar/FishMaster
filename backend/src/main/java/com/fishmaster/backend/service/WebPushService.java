@@ -64,19 +64,13 @@ public class WebPushService {
             return;
         }
 
-        String severityEmoji = switch (alert.getSeverity()) {
-            case CRITICAL -> "🚨";
-            case WARNING -> "⚠️";
-            case INFO -> "ℹ️";
-        };
+        FriendlyAlertCopy.FriendlyMessage friendly = FriendlyAlertCopy.forAlert(alert);
+        String title = FriendlyAlertCopy.pushTitle(friendly).replace("\"", "\\\"");
+        String body = FriendlyAlertCopy.pushBody(friendly).replace("\"", "\\\"");
 
         String payload = """
-                {"title":"%s %s Alert","body":"%s","icon":"/android/launchericon-192x192.png","url":"/alerts"}
-                """.formatted(
-                severityEmoji,
-                capitalize(alert.getMetric()),
-                alert.getMessage().replace("\"", "\\\"")
-        ).trim();
+                {"title":"%s","body":"%s","icon":"/android/launchericon-192x192.png","url":"/advisor"}
+                """.formatted(title, body).trim();
 
         try {
             PushService pushService = new PushService();
@@ -112,8 +106,4 @@ public class WebPushService {
         }
     }
 
-    private String capitalize(String str) {
-        if (str == null || str.isEmpty()) return str;
-        return str.substring(0, 1).toUpperCase() + str.substring(1);
-    }
 }

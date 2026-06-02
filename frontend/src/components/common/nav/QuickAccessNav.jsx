@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { FaHome, FaFish, FaChartLine, FaBell, FaFlask } from 'react-icons/fa';
-import { MdSensors, MdTimeline, MdHistory, MdNotifications, MdRule } from 'react-icons/md';
+import { FaHome, FaFish, FaChartLine, FaBell, FaFlask, FaCompass } from 'react-icons/fa';
+import { MdSensors, MdHistory, MdNotifications, MdRule } from 'react-icons/md';
 import styles from './QuickAccessNav.module.scss';
 import { haptics } from '../../../utils/haptics';
 
@@ -24,13 +24,18 @@ const navItems = [
     matchPaths: ['/fish-types'],
   },
   {
+    path: '/advisor',
+    label: 'Tank Advisor',
+    icon: FaCompass,
+    matchPaths: ['/advisor', '/trends'],
+  },
+  {
     path: '/data',
     label: 'Analytics',
     icon: FaChartLine,
-    matchPaths: ['/data', '/trends', '/history'],
+    matchPaths: ['/data', '/history', '/analytics'],
     subTabs: [
       { path: '/data', label: 'Sensor Data', icon: MdSensors },
-      { path: '/trends', label: 'Trends', icon: MdTimeline },
       { path: '/history', label: 'History', icon: MdHistory },
     ],
   },
@@ -51,60 +56,78 @@ const QuickAccessNav = () => {
 
   const getActiveParent = () => {
     for (const item of navItems) {
-      if (item.matchPaths?.some((p) => location.pathname.startsWith(p))) {
+      if (item.subTabs) {
+        const pathMatch = item.matchPaths?.some((p) => {
+          const base = p.split('?')[0];
+          return location.pathname === base || location.pathname.startsWith(`${base}/`);
+        });
+        if (pathMatch) return item;
+      }
+      if (item.matchPaths?.some((p) => location.pathname.startsWith(p.split('?')[0]))) {
         return item;
       }
-
-      if (item.exact && location.pathname === item.path) {
-        return item;
-      }
-
-      if (!item.exact && !item.matchPaths && location.pathname.startsWith(item.path)) {
+      if (location.pathname === item.path) {
         return item;
       }
     }
-
     return null;
   };
 
   const activeParent = getActiveParent();
-  const activeSubTabs = activeParent?.subTabs || [];
+
+  const isItemActive = (item) => {
+    if (item.subTabs) {
+      return activeParent?.path === item.path;
+    }
+    if (item.matchPaths) {
+      return item.matchPaths.some((p) => location.pathname.startsWith(p.split('?')[0]));
+    }
+    return location.pathname === item.path;
+  };
 
   return (
-    <nav className={styles.quickAccessNav}>
+    <nav className={styles.quickAccessNav} aria-label="Main navigation">
       <div className={styles.mainTabs}>
         {navItems.map((item) => {
-          const isActive = activeParent?.path === item.path;
+          const Icon = item.icon;
+          const active = isItemActive(item);
 
           return (
             <NavLink
               key={item.path}
               to={item.path}
-              className={`${styles.tabButton} ${isActive ? styles.activeTab : ''}`}
-              onClick={() => haptics.tap(8)}
+              end={item.exact}
+              className={`${styles.tabButton} ${active ? styles.activeTab : ''}`}
+              onClick={() => haptics.tap()}
             >
-              <item.icon className={styles.tabIcon} />
+              <Icon className={styles.tabIcon} />
               <span className={styles.tabLabel}>{item.label}</span>
             </NavLink>
           );
         })}
       </div>
 
-      {activeSubTabs.length > 0 && (
+      {activeParent?.subTabs && (
         <div className={styles.subTabs}>
-          {activeSubTabs.map((subItem, index) => (
-            <NavLink
-              key={subItem.path}
-              to={subItem.path}
-              className={({ isActive }) =>
-                `${styles.subTabButton} ${isActive ? styles.activeSubTab : ''}`
-              }
-              style={{ animationDelay: `${index * 80}ms` }}
-            >
-              <subItem.icon className={styles.subTabIcon} />
-              <span>{subItem.label}</span>
-            </NavLink>
-          ))}
+          {activeParent.subTabs.map((sub, index) => {
+            const SubIcon = sub.icon;
+            const isSubActive =
+              `${location.pathname}${location.search}` === sub.path
+              || (location.pathname === sub.path && !sub.path.includes('?'));
+
+            return (
+              <NavLink
+                key={sub.path}
+                to={sub.path}
+                className={`${styles.subTabButton} ${isSubActive ? styles.activeSubTab : ''}`}
+                style={{ animationDelay: `${index * 0.05}s` }}
+                onClick={() => haptics.tap()}
+              >
+                <SubIcon className={styles.subTabIcon} />
+                <span>{sub.label}</span>
+              </NavLink>
+            );
+          })}
         </div>
       )}
     </nav>

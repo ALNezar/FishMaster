@@ -44,18 +44,17 @@ public class AlertNotificationService {
                 User user = userRepository.findById(userId).orElse(null);
                 Tank tank = tankRepository.findById(alert.getTankId()).orElse(null);
                 if (user != null && Boolean.TRUE.equals(user.getEmailNotifications())) {
-                    String safeRange = formatSafeRange(alert);
+                    FriendlyAlertCopy.FriendlyMessage friendly = FriendlyAlertCopy.forAlert(alert);
                     String timestamp = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss 'UTC'")
                             .withZone(ZoneOffset.UTC)
                             .format(alert.getCreatedAt());
 
-                    emailService.sendAlertEmail(
+                    emailService.sendFriendlyAlertEmail(
                             user.getEmail(),
                             tank != null ? tank.getName() : "Tank #" + alert.getTankId(),
-                            alert.getMetric(),
-                            alert.getValue().toPlainString() + getUnit(alert.getMetric()),
-                            safeRange,
-                            alert.getSeverity().name(),
+                            friendly.title(),
+                            friendly.body(),
+                            friendly.actionHint(),
                             timestamp
                     );
                 }

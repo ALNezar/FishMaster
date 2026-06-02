@@ -19,6 +19,26 @@ function runtimeInfoPlugin({ command, mode, apiBaseUrl }) {
   }
 }
 
+/** Let React Router handle full-page loads; only proxy XHR/fetch to the API. */
+function spaProxyBypass(req) {
+  const accept = req.headers?.accept || ''
+  if (accept.includes('text/html')) {
+    return '/index.html'
+  }
+  if (req.headers?.['sec-fetch-dest'] === 'document') {
+    return '/index.html'
+  }
+}
+
+function createSpaAwareProxy(target) {
+  return {
+    target,
+    changeOrigin: true,
+    secure: false,
+    bypass: spaProxyBypass,
+  }
+}
+
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const apiBaseUrl = env.VITE_API_BASE_URL || 'http://localhost:8080'
@@ -32,36 +52,12 @@ export default defineConfig(({ command, mode }) => {
           changeOrigin: true,
           secure: false,
         },
-        '/auth': {
-          target: proxyTarget,
-          changeOrigin: true,
-          secure: false,
-        },
-        '/device': {
-          target: proxyTarget,
-          changeOrigin: true,
-          secure: false,
-        },
-        '/tanks': {
-          target: proxyTarget,
-          changeOrigin: true,
-          secure: false,
-        },
-        '/users': {
-          target: proxyTarget,
-          changeOrigin: true,
-          secure: false,
-        },
-        '/learning': {
-          target: proxyTarget,
-          changeOrigin: true,
-          secure: false,
-        },
-        '/onboarding': {
-          target: proxyTarget,
-          changeOrigin: true,
-          secure: false,
-        }
+        '/auth': createSpaAwareProxy(proxyTarget),
+        '/device': createSpaAwareProxy(proxyTarget),
+        '/tanks': createSpaAwareProxy(proxyTarget),
+        '/users': createSpaAwareProxy(proxyTarget),
+        '/learning': createSpaAwareProxy(proxyTarget),
+        '/onboarding': createSpaAwareProxy(proxyTarget),
       }
     },
     plugins: [

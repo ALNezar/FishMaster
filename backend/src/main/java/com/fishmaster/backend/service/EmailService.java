@@ -56,6 +56,46 @@ public class EmailService {
     }
 
     @Async
+    public void sendFriendlyAlertEmail(String to, String tankName, String title,
+                                       String problem, String actionHint, String timestamp) {
+        try {
+            String subject = "FishMaster: " + title;
+            String htmlContent = """
+                <div style="font-family: 'DM Sans', Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
+                    <h2 style="color: #1277b0; margin: 0 0 12px;">%s</h2>
+                    <p style="font-size: 16px; color: #3d3021; margin: 0 0 16px;">%s</p>
+                    <p style="font-size: 14px; color: #666; margin: 0 0 8px;"><strong>Tank:</strong> %s</p>
+                    <p style="font-size: 14px; color: #1277b0; margin: 0 0 16px;"><strong>Try:</strong> %s</p>
+                    <p style="font-size: 12px; color: #999;">%s</p>
+                </div>
+                """.formatted(title, problem, tankName, actionHint, timestamp);
+
+            String body = """
+                {
+                    "from": "Fishmaster <onboarding@resend.dev>",
+                    "to": ["%s"],
+                    "subject": "%s",
+                    "html": %s
+                }
+                """.formatted(to, subject, toJsonString(htmlContent));
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.resend.com/emails"))
+                    .header("Authorization", "Bearer " + apiKey)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(body))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200 && response.statusCode() != 201) {
+                logger.error("Resend API error for friendly alert email: {}", response.body());
+            }
+        } catch (Exception e) {
+            logger.error("FAILED to send friendly alert email to: " + to, e);
+        }
+    }
+
+    @Async
     public void sendAlertEmail(String to, String tankName, String metric,
                                 String currentValue, String safeRange,
                                 String severity, String timestamp) {

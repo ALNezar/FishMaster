@@ -163,22 +163,45 @@ public class TelemetryService {
     public void handlePhPayload(String payload) {
         try {
             JsonNode node = objectMapper.readTree(payload);
+
+            // Accept standard keys first
             JsonNode vNode = node.get("ph_voltage");
             JsonNode pNode = node.get("ph_value");
-            if ((vNode == null || !vNode.isNumber()) && (pNode == null || !pNode.isNumber())) {
-                log.warn("[MQTT] pH payload missing both 'ph_voltage' and 'ph_value': {}", payload);
+
+            // Fallback aliases commonly used by devices/firmware
+            if (pNode == null) pNode = firstPresent(node, "ph", "pH", "phValue");
+            if (vNode == null) vNode = firstPresent(node, "voltage", "v", "phVolt");
+
+            java.math.BigDecimal phValue = parseDecimalNode(pNode);
+            java.math.BigDecimal phVoltage = parseDecimalNode(vNode);
+
+            if (phValue == null && phVoltage == null) {
+                log.warn("[MQTT] pH payload missing/invalid 'ph_value' and 'ph_voltage': {}", payload);
                 return;
             }
 
+            // Clamp pH to [0,14] if present
+            if (phValue != null) {
+                double v = phValue.doubleValue();
+                if (v < 0.0) v = 0.0;
+                if (v > 14.0) v = 14.0;
+                phValue = java.math.BigDecimal.valueOf(v);
+            }
+
             PhReading reading = new PhReading();
-            if (vNode != null && vNode.isNumber()) reading.setPhVoltage(vNode.decimalValue());
-            if (pNode != null && pNode.isNumber()) reading.setPhValue(pNode.decimalValue());
+            if (phVoltage != null) reading.setPhVoltage(phVoltage);
+            if (phValue != null) reading.setPhValue(phValue);
+
             if (node.has("internal_chip_temp") && node.get("internal_chip_temp").isNumber()) {
                 reading.setInternalChipTemp(node.get("internal_chip_temp").decimalValue());
+            } else if (node.has("chip_temp") && node.get("chip_temp").isNumber()) {
+                reading.setInternalChipTemp(node.get("chip_temp").decimalValue());
             }
+
             if (node.has("uptime_ms") && node.get("uptime_ms").canConvertToLong()) {
                 reading.setUptimeMs(node.get("uptime_ms").asLong());
             }
+
             reading.setTankId(java.util.Optional.ofNullable(node.path("tankId").asText(null))
                     .filter(s -> !s.isBlank()).orElse(defaultTankId));
 
@@ -196,6 +219,34 @@ public class TelemetryService {
         } catch (Exception ex) {
             log.error("[TELEMETRY] Failed to parse/store pH payload: {}", payload, ex);
         }
+    }
+
+    private JsonNode firstPresent(JsonNode node, String... keys) {
+        for (String k : keys) {
+            JsonNode n = node.get(k);
+            if (n != null && !n.isNull()) return n;
+        }
+        return null;
+    }
+
+    private java.math.BigDecimal parseDecimalNode(JsonNode n) {
+        try {
+            if (n == null || n.isNull()) return null;
+            if (n.isNumber()) return n.decimalValue();
+            if (n.isTextual()) {
+                String s = n.asText();
+                if (s == null) return null;
+                s = s.trim();
+                if (s.isEmpty()) return null;
+                // Accept comma as decimal separator occasionally used, replace with dot
+                s = s.replace(',', '.');
+                double d = Double.parseDouble(s);
+                if (Double.isNaN(d) || Double.isInfinite(d)) return null;
+                return java.math.BigDecimal.valueOf(d);
+            }
+        } catch (Exception ignore) {
+        }
+        return null;
     }
 
     public SseEmitter registerPhEmitter() {

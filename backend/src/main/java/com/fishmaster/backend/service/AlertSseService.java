@@ -43,6 +43,9 @@ public class AlertSseService {
         Set<SseEmitter> emitters = userEmitters.get(userId);
         if (emitters == null || emitters.isEmpty()) return;
 
+        FriendlyAlertCopy.FriendlyMessage friendly = FriendlyAlertCopy.forAlert(alert);
+        String displayMessage = friendly.body();
+
         synchronized (emitters) {
             var it = emitters.iterator();
             while (it.hasNext()) {
@@ -56,7 +59,8 @@ public class AlertSseService {
                                     "metric", alert.getMetric(),
                                     "value", alert.getValue(),
                                     "severity", alert.getSeverity().name(),
-                                    "message", alert.getMessage(),
+                                    "message", displayMessage,
+                                    "title", friendly.title(),
                                     "createdAt", alert.getCreatedAt().toString()
                             )));
                 } catch (Exception e) {

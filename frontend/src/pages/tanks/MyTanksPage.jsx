@@ -101,7 +101,7 @@ const MyTanksPage = () => {
                 <div className={styles.header}>
                     <div className={styles.titleSection}>
                         <h1>My Aquariums</h1>
-                        <p className={styles.subtitle}>Manage and monitor your aquatic ecosystems</p>
+                        <p className={styles.subtitle}>Tap a tank for health, compatibility, and care tips</p>
                     </div>
                     <Button className={styles.addBtn} onClick={() => setShowAddForm(!showAddForm)}>
                         {showAddForm ? 'Close' : '+ Add Aquarium'}
@@ -157,7 +157,7 @@ const MyTanksPage = () => {
                             >
                                 <div className={styles.cardImage} style={{ backgroundImage: `url(${getTankImage(tank.id)})` }}>
                                     <div className={styles.imageOverlay}>
-                                        <span className={styles.viewLabel}>View Details</span>
+                                        <span className={styles.viewLabel}>Open care report</span>
                                     </div>
                                 </div>
                                 <div className={styles.cardContent}>
@@ -168,7 +168,7 @@ const MyTanksPage = () => {
                                     </div>
                                     <div className={styles.statusIndicator}>
                                         <span className={styles.statusDot}></span>
-                                        Good Condition
+                                        {tank.fish?.length ? `${tank.fish.length} resident${tank.fish.length === 1 ? '' : 's'}` : 'Add fish inside'}
                                     </div>
                                 </div>
                                 <button

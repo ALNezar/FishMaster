@@ -12,8 +12,8 @@ import OnboardingFlow from './pages/onboarding/OnboardingFlow.jsx';
 import Profile from './pages/profile/Profile.jsx';
 import Dashboard from './pages/dashboard/Dashboard.jsx';
 import HistoryPage from './pages/dashboard/HistoryPage.jsx';
-import TrendsPage from './pages/dashboard/TrendsPage.jsx';
 import DataPage from './pages/dashboard/DataPage.jsx';
+import TankAdvisorPage from './pages/advisor/TankAdvisorPage.jsx';
 import AlertConfigPage from './pages/alerts/AlertConfigPage.jsx';
 import DeviceControlPage from './pages/device/DeviceControlPage.jsx';
 import FishTypesPage from './pages/fish-types/FishTypesPage.jsx';
@@ -46,7 +46,8 @@ function App() {
         <Route path="/tanks/:id" element={<TankDetailsPage />} />
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/data" element={<DataPage />} />
-        <Route path="/trends" element={<TrendsPage />} />
+        <Route path="/advisor" element={<TankAdvisorPage />} />
+        <Route path="/trends" element={<Navigate to="/advisor" replace />} />
         <Route path="/analytics" element={<DataPage />} />
         <Route path="/alerts" element={<AlertConfigPage />} />
         <Route path="/notifications" element={<Navigate to="/alerts?tab=history" replace />} />

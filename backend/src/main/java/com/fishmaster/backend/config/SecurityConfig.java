@@ -69,7 +69,7 @@ public class SecurityConfig {
                 "https://fishmaster-frontend.up.railway.app",
                 // Production frontend actual domain
                 "https://fishmastero.up.railway.app",
-                "fishmaster.app"
+                "https://fishmaster.app"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));

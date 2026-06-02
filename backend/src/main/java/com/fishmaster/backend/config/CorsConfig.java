@@ -16,10 +16,11 @@ public class CorsConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        // Allow frontend (Vite)
+        // Allow frontend (Vite dev + Railway production)
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "http://127.0.0.1:5173"
+                "http://127.0.0.1:5173",
+                "https://fishmaster-frontend.up.railway.app"
         ));
 
         // IMPORTANT: must be true if using JWT / Authorization headers

@@ -7,11 +7,13 @@ import lombok.extern.slf4j.Slf4j;
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
 import nl.martijndwars.webpush.Subscription;
+import jakarta.annotation.PostConstruct;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
+import java.security.Security;
 import java.util.List;
 
 @Service
@@ -31,6 +33,13 @@ public class WebPushService {
 
     public WebPushService(PushSubscriptionRepository pushSubscriptionRepository) {
         this.pushSubscriptionRepository = pushSubscriptionRepository;
+    }
+
+    @PostConstruct
+    void registerSecurityProvider() {
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
     }
 
     public boolean isConfigured() {
@@ -69,33 +78,37 @@ public class WebPushService {
                 alert.getMessage().replace("\"", "\\\"")
         ).trim();
 
-        PushService pushService = new PushService();
-        pushService.setPublicKey(vapidPublicKey);
-        pushService.setPrivateKey(vapidPrivateKey);
-        pushService.setSubject(vapidSubject);
+        try {
+            PushService pushService = new PushService();
+            pushService.setPublicKey(vapidPublicKey);
+            pushService.setPrivateKey(vapidPrivateKey);
+            pushService.setSubject(vapidSubject);
 
-        for (PushSubscription sub : subscriptions) {
-            try {
-                Subscription subscription = new Subscription(
-                        sub.getEndpoint(),
-                        sub.getP256dh(),
-                        sub.getAuth()
-                );
-                Notification notification = new Notification(
-                        subscription,
-                        payload.getBytes(StandardCharsets.UTF_8)
-                );
-                pushService.send(notification);
-                log.info("[WEB-PUSH] Push sent successfully to user={}", userId);
-            } catch (Exception e) {
-                String message = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
-                if (message.contains("410") || message.contains("404") || message.contains("Gone")) {
-                    log.info("[WEB-PUSH] Subscription expired, removing: {}", sub.getEndpoint());
-                    pushSubscriptionRepository.delete(sub);
-                } else {
-                    log.warn("[WEB-PUSH] Failed to send push to {}: {}", sub.getEndpoint(), message);
+            for (PushSubscription sub : subscriptions) {
+                try {
+                    Subscription subscription = new Subscription(
+                            sub.getEndpoint(),
+                            new Subscription.Keys(sub.getP256dh(), sub.getAuth())
+                    );
+                    Notification notification = new Notification(subscription, payload);
+                    pushService.send(notification);
+                    log.info("[WEB-PUSH] Push sent successfully to user={}", userId);
+                } catch (Exception e) {
+                    handlePushFailure(sub, e);
                 }
             }
+        } catch (Exception e) {
+            log.error("[WEB-PUSH] Failed to initialize push service: {}", e.getMessage());
+        }
+    }
+
+    private void handlePushFailure(PushSubscription sub, Exception e) {
+        String message = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+        if (message.contains("410") || message.contains("404") || message.contains("Gone")) {
+            log.info("[WEB-PUSH] Subscription expired, removing: {}", sub.getEndpoint());
+            pushSubscriptionRepository.delete(sub);
+        } else {
+            log.warn("[WEB-PUSH] Failed to send push to {}: {}", sub.getEndpoint(), message);
         }
     }
 

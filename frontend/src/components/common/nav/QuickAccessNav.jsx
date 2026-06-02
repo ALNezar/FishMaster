@@ -1,21 +1,21 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { FaHome, FaFish, FaChartLine, FaBell, FaBook, FaFlask } from 'react-icons/fa';
+import { FaHome, FaFish, FaChartLine, FaBell, FaFlask } from 'react-icons/fa';
 import { MdSensors, MdTimeline, MdHistory, MdNotifications, MdRule } from 'react-icons/md';
 import styles from './QuickAccessNav.module.scss';
 import { haptics } from '../../../utils/haptics';
 
 const navItems = [
-  { 
-    path: '/dashboard', 
-    label: 'Dashboard', 
+  {
+    path: '/dashboard',
+    label: 'Dashboard',
     icon: FaHome,
-    exact: true 
+    exact: true,
   },
-  { 
-    path: '/tanks', 
-    label: 'My Tanks', 
+  {
+    path: '/tanks',
+    label: 'My Tanks',
     icon: FaFish,
-    matchPaths: ['/tanks']
+    matchPaths: ['/tanks'],
   },
   {
     path: '/fish-types',
@@ -23,67 +23,59 @@ const navItems = [
     icon: FaFlask,
     matchPaths: ['/fish-types'],
   },
-  { 
-    path: '/data', 
-    label: 'Analytics', 
+  {
+    path: '/data',
+    label: 'Analytics',
     icon: FaChartLine,
     matchPaths: ['/data', '/trends', '/history'],
     subTabs: [
       { path: '/data', label: 'Sensor Data', icon: MdSensors },
       { path: '/trends', label: 'Trends', icon: MdTimeline },
       { path: '/history', label: 'History', icon: MdHistory },
-    ]
+    ],
   },
-  { 
-    path: '/alerts', 
-    label: 'Alerts', 
+  {
+    path: '/alerts',
+    label: 'Alerts',
     icon: FaBell,
     matchPaths: ['/alerts', '/notifications'],
     subTabs: [
       { path: '/alerts', label: 'Alert Rules', icon: MdRule },
       { path: '/notifications', label: 'Notifications', icon: MdNotifications },
-    ]
-  },
-  { 
-    path: '/education', 
-    label: 'Learn & Care', 
-    icon: FaBook,
-    matchPaths: ['/learning', '/education'],
-    subTabs: [
-      { path: '/education', label: 'Home', icon: FaBook },
-    ]
+    ],
   },
 ];
 
 const QuickAccessNav = () => {
   const location = useLocation();
-  
-  // Find active parent tab based on current path
+
   const getActiveParent = () => {
     for (const item of navItems) {
-      if (item.matchPaths?.some(p => location.pathname.startsWith(p))) {
+      if (item.matchPaths?.some((p) => location.pathname.startsWith(p))) {
         return item;
       }
+
       if (item.exact && location.pathname === item.path) {
         return item;
       }
+
       if (!item.exact && !item.matchPaths && location.pathname.startsWith(item.path)) {
         return item;
       }
     }
+
     return null;
   };
-  
+
   const activeParent = getActiveParent();
   const activeSubTabs = activeParent?.subTabs || [];
 
   return (
     <nav className={styles.quickAccessNav}>
-      {/* Main Tabs */}
       <div className={styles.mainTabs}>
         {navItems.map((item) => {
           const isActive = activeParent?.path === item.path;
-          
+
           return (
             <NavLink
               key={item.path}
@@ -97,15 +89,14 @@ const QuickAccessNav = () => {
           );
         })}
       </div>
-      
-      {/* Sub Tabs - appear with bubbly animation */}
+
       {activeSubTabs.length > 0 && (
         <div className={styles.subTabs}>
           {activeSubTabs.map((subItem, index) => (
             <NavLink
               key={subItem.path}
               to={subItem.path}
-              className={({ isActive }) => 
+              className={({ isActive }) =>
                 `${styles.subTabButton} ${isActive ? styles.activeSubTab : ''}`
               }
               style={{ animationDelay: `${index * 80}ms` }}

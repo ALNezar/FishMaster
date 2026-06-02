@@ -39,6 +39,12 @@ export * from './onboarding.api';
 // Learning Hub API
 export * from './learning.api';
 
+// Alert API
+export * from './alert.api';
+
+// Push API
+export * from './push.api';
+
 // Hooks
 export { useTemperatureStream } from './hooks/useTemperatureStream';
 export type { UseTemperatureStreamResult } from './hooks/useTemperatureStream';
@@ -79,6 +85,8 @@ import * as deviceApi from './device.api';
 import * as feedingApi from './feeding.api';
 import * as onboardingApi from './onboarding.api';
 import * as learningApi from './learning.api';
+import * as alertApi from './alert.api';
+import * as pushApi from './push.api';
 import { useSseEvent } from './hooks/useSseEvent';
 import { useTemperatureStream } from './hooks/useTemperatureStream';
 import { usePhStream } from './hooks/usePhStream';
@@ -97,6 +105,8 @@ export default {
   ...feedingApi,
   ...onboardingApi,
   ...learningApi,
+  ...alertApi,
+  ...pushApi,
   useSseEvent,
   useTemperatureStream,
   usePhStream,

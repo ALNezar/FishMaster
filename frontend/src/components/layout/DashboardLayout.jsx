@@ -4,6 +4,8 @@ import Wave from 'react-wavify';
 
 import QuickAccessNav from '../common/nav/QuickAccessNav';
 import ProfileAvatar from '../common/profile/ProfileAvatar';
+import { ToastProvider } from '../common/toast/ToastProvider';
+import { AlertProvider } from '../common/AlertProvider';
 import { isAuthenticated, getCurrentUser, logout } from '../../api';
 import usePullToRefresh from '../../hooks/usePullToRefresh';
 import { haptics } from '../../utils/haptics';
@@ -138,7 +140,11 @@ export default function DashboardLayout() {
 
       {/* Page Content */}
       <main className={styles.content}>
-        <Outlet context={{ user }} />
+        <ToastProvider>
+          <AlertProvider>
+            <Outlet context={{ user }} />
+          </AlertProvider>
+        </ToastProvider>
       </main>
     </div>
   );

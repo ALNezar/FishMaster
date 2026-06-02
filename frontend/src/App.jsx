@@ -17,13 +17,9 @@ import TrendsPage from './pages/dashboard/TrendsPage.jsx';
 import DataPage from './pages/dashboard/DataPage.jsx';
 import AlertConfigPage from './pages/alerts/AlertConfigPage.jsx';
 import DeviceControlPage from './pages/device/DeviceControlPage.jsx';
-import LearningHomePage from './pages/education/LearningHomePage.jsx';
-import LearningPathPage from './pages/education/LearningPathPage.jsx';
-import LessonPage from './pages/education/LessonPage.jsx';
-import LearningProgressPage from './pages/education/LearningProgressPage.jsx';
 import FishTypesPage from './pages/fish-types/FishTypesPage.jsx';
 
-// Layouts
+// Tank Pages
 import MyTanksPage from './pages/tanks/MyTanksPage.jsx';
 import TankDetailsPage from './pages/tanks/TankDetailsPage.jsx';
 
@@ -54,15 +50,15 @@ function App() {
         <Route path="/trends" element={<TrendsPage />} />
         <Route path="/analytics" element={<DataPage />} />
         <Route path="/alerts" element={<AlertConfigPage />} />
-        <Route path="/notifications" element={<PlaceholderPage title="Notifications" />} />
-        <Route path="/education" element={<LearningHomePage />} />
-        <Route path="/education/path/:pathId" element={<LearningPathPage />} />
-        <Route path="/education/lesson/:lessonId" element={<LessonPage />} />
-        <Route path="/education/progress" element={<LearningProgressPage />} />
-        <Route path="/learning" element={<Navigate to="/education" replace />} />
-        <Route path="/learning/:sectionId" element={<Navigate to="/education" replace />} />
+        <Route
+          path="/notifications"
+          element={<PlaceholderPage title="Notifications" />}
+        />
         <Route path="/device" element={<DeviceControlPage />} />
       </Route>
+
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

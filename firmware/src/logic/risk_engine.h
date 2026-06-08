@@ -25,7 +25,7 @@ struct SensorSnapshot
 class RiskEngine
 {
 public:
-    static RiskLevel evaluate(const SensorSnapshot& snapshot);
+    static RiskLevel evaluate(const SensorSnapshot& snapshot, bool enableTempAlert = true, bool enablePhTurbAlert = true);
 
 private:
     static RiskLevel evaluateTemperature(float temperatureC);

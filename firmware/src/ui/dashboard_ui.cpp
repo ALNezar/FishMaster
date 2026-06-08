@@ -1,6 +1,6 @@
 // =============================================================================
 // dashboard_ui.cpp  —  FishMaster ESP32 TFT Dashboard
-// Multi-Page UI, Premium Redesign, In-Memory Analytics & Polling Touch
+// Multi-Page UI, Premium Redesign, In-Memory Analytics, Alert Controls
 // =============================================================================
 
 #include "dashboard_ui.h"
@@ -52,7 +52,8 @@ struct Rect
 static constexpr Rect CARD_TEMP = {8, 38, 94, 94};
 static constexpr Rect CARD_PH   = {113, 38, 94, 94};
 static constexpr Rect CARD_TURB = {218, 38, 94, 94};
-static constexpr Rect FEED_BTN  = {100, 148, 210, 48};
+// Home: Alert Status Strip (replaces Feed button)
+static constexpr Rect ALERT_STRIP = {8, 148, 304, 48};
 
 // Navbar Layout (4 tabs of 80px width)
 static constexpr Rect NAV_HOME     = {0, 212, 80, 28};
@@ -60,10 +61,11 @@ static constexpr Rect NAV_GRAPH    = {80, 212, 80, 28};
 static constexpr Rect NAV_HISTORY  = {160, 212, 80, 28};
 static constexpr Rect NAV_SETTINGS = {240, 212, 80, 28};
 
-// Settings Toggles
-static constexpr Rect SETTING_1 = {240, 60, 48, 24};
-static constexpr Rect SETTING_2 = {240, 100, 48, 24};
-static constexpr Rect SETTING_3 = {240, 140, 48, 24};
+// Settings Toggles — 4 rows (y spacing: 40px, first at y=50)
+static constexpr Rect SETTING_1 = {240, 50,  48, 24}; // Cloud Sync
+static constexpr Rect SETTING_2 = {240, 90,  48, 24}; // Night Mode
+static constexpr Rect SETTING_3 = {240, 130, 48, 24}; // Temp Alerts
+static constexpr Rect SETTING_4 = {240, 170, 48, 24}; // pH / Turbidity Alerts
 
 // =============================================================================
 // Calibration Constants for Touch Screen (Rotation 3)
@@ -87,7 +89,6 @@ static Page currentPage = Page::HOME;
 static bool needsFullRedraw = true;
 
 static bool  wifiConnected      = false;
-static bool  manualFeedRequest  = false;
 static float waterTemp          = NAN;
 static float phValue            = NAN;
 static float turbidity          = NAN;
@@ -97,9 +98,12 @@ static bool  lastWifiConnected  = false;
 static float lastWaterTemp      = -999.0f;
 static float lastPhValue        = -999.0f;
 static float lastTurbidity      = -999.0f;
+static bool  lastAlertActive    = false;  // tracks alert strip redraw
 
-static bool  feedButtonPressed  = false;
-static unsigned long feedPressActiveUntil = 0;
+// Alert ticker scroll state
+static int            alertScrollX   = 0;
+static unsigned long  lastScrollMs   = 0;
+static char           alertScrollMsg[192] = "";
 
 // Debouncing touch inputs
 static unsigned long lastTouchMs = 0;
@@ -121,9 +125,28 @@ static char eventLog[LOG_MAX][32];
 static int logCount = 0;
 
 // Settings states
-static bool settingCloudSync = true;
-static bool settingNightMode = false;
-static bool settingAutoFeed  = true;
+static bool settingCloudSync   = true;
+static bool settingNightMode   = false;
+static bool settingAlertTemp   = true;  // Temperature out-of-range alert
+static bool settingAlertPhTurb = true;  // pH / Turbidity alert
+
+bool dashboardGetSettingAlertTemp() { return settingAlertTemp; }
+bool dashboardGetSettingAlertPhTurb() { return settingAlertPhTurb; }
+
+// Volume Overlay State
+static unsigned long volumeOverlayEndMs = 0;
+static uint8_t volumeOverlayVal = 0;
+static bool volumeOverlayActive = false;
+
+void dashboardShowVolumeOverlay(uint8_t volumeDuty) {
+    volumeOverlayVal = volumeDuty;
+    volumeOverlayEndMs = millis() + 2000;
+    volumeOverlayActive = true;
+    needsFullRedraw = true; // force redraw to draw overlay on top
+}
+
+// IR Remote State
+static int selectedSettingIndex = 0; // 0 to 3 for the 4 settings rows
 
 static void addEventLog(const char* msg)
 {
@@ -225,16 +248,18 @@ static void drawHomeStatic()
         tft.drawString(units[i], cards[i].x + cards[i].w / 2, cards[i].y + 78);
     }
     
-    // Feed Button (Idle)
-    tft.fillRoundRect(FEED_BTN.x, FEED_BTN.y, FEED_BTN.w, FEED_BTN.h, 24, COL_BG);
-    tft.drawRoundRect(FEED_BTN.x, FEED_BTN.y, FEED_BTN.w, FEED_BTN.h, 24, COL_ACC_TEMP);
-    tft.setTextColor(COL_ACC_TEMP, COL_BG);
-    tft.setTextDatum(MC_DATUM);
+    // Alert Status Strip
+    tft.fillRoundRect(ALERT_STRIP.x, ALERT_STRIP.y, ALERT_STRIP.w, ALERT_STRIP.h, 12, COL_CARD);
+    tft.fillRoundRect(ALERT_STRIP.x, ALERT_STRIP.y, ALERT_STRIP.w, 4, 4, COL_ACC_PH);
+    tft.setTextDatum(ML_DATUM);
+    tft.setTextFont(2);
+    tft.setTextColor(COL_TEXT_SEC, COL_CARD);
+    tft.drawString("STATUS", ALERT_STRIP.x + 12, ALERT_STRIP.y + 14);
     tft.setTextFont(4);
-    tft.drawString("FEED FISH", FEED_BTN.x + FEED_BTN.w / 2, FEED_BTN.y + FEED_BTN.h / 2);
-    
-    // Mascot
-    drawCartoonyFishMascot(50, 172);
+    tft.setTextColor(COL_ACC_PH, COL_CARD);
+    tft.drawString("ALL OK", ALERT_STRIP.x + 70, ALERT_STRIP.y + 26);
+    // Mascot (repositioned)
+    drawCartoonyFishMascot(285, 172);
     
     drawNavbar();
     
@@ -243,6 +268,7 @@ static void drawHomeStatic()
     lastPhValue = -999.0f;
     lastTurbidity = -999.0f;
     lastWifiConnected = !wifiConnected;
+    lastAlertActive = false; // strip was just drawn as "ALL OK", force next dynamic update
 }
 
 static void drawHomeDynamic()
@@ -305,6 +331,114 @@ static void drawHomeDynamic()
         tft.drawString(buf, CARD_TURB.x + CARD_TURB.w / 2, CARD_TURB.y + 50);
         lastTurbidity = turbidity;
     }
+}
+
+// Assemble the scrolling reason string from live sensor values
+static void buildAlertScrollMsg()
+{
+    alertScrollMsg[0] = '\0';
+    char s[64];
+
+    if (settingAlertTemp && !isnan(waterTemp)) {
+        if (waterTemp > 30.0f) {
+            snprintf(s, sizeof(s), "Temp %.1fC (+%.1f above limit)   ", waterTemp, waterTemp - 30.0f);
+            strlcat(alertScrollMsg, s, sizeof(alertScrollMsg));
+        } else if (waterTemp < 22.0f) {
+            snprintf(s, sizeof(s), "Temp %.1fC (%.1f below limit)   ", waterTemp, 22.0f - waterTemp);
+            strlcat(alertScrollMsg, s, sizeof(alertScrollMsg));
+        }
+    }
+    if (settingAlertPhTurb && !isnan(phValue)) {
+        if (phValue < 6.5f) {
+            snprintf(s, sizeof(s), "pH %.2f too low (min 6.5)   ", phValue);
+            strlcat(alertScrollMsg, s, sizeof(alertScrollMsg));
+        } else if (phValue > 8.5f) {
+            snprintf(s, sizeof(s), "pH %.2f too high (max 8.5)   ", phValue);
+            strlcat(alertScrollMsg, s, sizeof(alertScrollMsg));
+        }
+    }
+    if (settingAlertPhTurb && !isnan(turbidity) && turbidity > 5.0f) {
+        snprintf(s, sizeof(s), "Turbidity %.1f NTU (max 5.0)   ", turbidity);
+        strlcat(alertScrollMsg, s, sizeof(alertScrollMsg));
+    }
+    if (alertScrollMsg[0] == '\0')
+        strlcpy(alertScrollMsg, "Condition out of safe range   ", sizeof(alertScrollMsg));
+}
+
+// Alert strip: static redraw on state change + horizontal ticker while alerting
+static void drawAlertStrip(bool alertActive)
+{
+    unsigned long now = millis();
+    const int dotX = ALERT_STRIP.x + ALERT_STRIP.w - 16;
+    const int midY = ALERT_STRIP.y + ALERT_STRIP.h / 2;
+
+    // ---- ALL OK state ----
+    if (!alertActive) {
+        if (!lastAlertActive) return; // no change
+        lastAlertActive = false;
+        alertScrollX = 0;
+        // Restore teal accent bar
+        tft.fillRoundRect(ALERT_STRIP.x, ALERT_STRIP.y, ALERT_STRIP.w, 4, 4, COL_ACC_PH);
+        // Clear content area
+        tft.fillRoundRect(ALERT_STRIP.x, ALERT_STRIP.y + 5, ALERT_STRIP.w, ALERT_STRIP.h - 5, 10, COL_CARD);
+        tft.setTextFont(2);
+        tft.setTextDatum(ML_DATUM);
+        tft.setTextColor(COL_TEXT_SEC, COL_CARD);
+        tft.drawString("STATUS", ALERT_STRIP.x + 12, midY);
+        tft.setTextFont(4);
+        tft.setTextColor(COL_ACC_PH, COL_CARD);
+        tft.drawString("ALL OK", ALERT_STRIP.x + 70, midY);
+        tft.fillCircle(dotX, midY, 8, COL_ACC_PH);
+        return;
+    }
+
+    // ---- ALERT state ----
+    if (!lastAlertActive) {
+        // Transition: just switched to alert — draw static chrome
+        lastAlertActive = true;
+        buildAlertScrollMsg();
+        alertScrollX = ALERT_STRIP.w; // ticker starts off the right edge
+        lastScrollMs  = now;
+        // Swap accent bar to red
+        tft.fillRoundRect(ALERT_STRIP.x, ALERT_STRIP.y, ALERT_STRIP.w, 4, 4, COL_ACC_TEMP);
+        // Clear content area
+        tft.fillRoundRect(ALERT_STRIP.x, ALERT_STRIP.y + 5, ALERT_STRIP.w, ALERT_STRIP.h - 5, 10, COL_CARD);
+        // "!" prefix
+        tft.setTextFont(4);
+        tft.setTextDatum(ML_DATUM);
+        tft.setTextColor(COL_ACC_TEMP, COL_CARD);
+        tft.drawString("!", ALERT_STRIP.x + 10, midY);
+        // Red dot
+        tft.fillCircle(dotX, midY, 8, COL_ACC_TEMP);
+    }
+
+    // Advance ticker every 35 ms (~28 fps scroll)
+    if (now - lastScrollMs < 35) return;
+    lastScrollMs = now;
+    alertScrollX -= 2;
+
+    // Scroll viewport: between "!" label (left) and dot (right)
+    const int vpX = ALERT_STRIP.x + 28;
+    const int vpY = ALERT_STRIP.y + 10;
+    const int vpW = ALERT_STRIP.w - 52;  // 252 px wide
+    const int vpH = ALERT_STRIP.h - 20;  // 28 px tall
+
+    tft.setTextFont(2);
+    const int msgW = tft.textWidth(alertScrollMsg);
+
+    // When text has fully scrolled out, rebuild message and restart
+    if (alertScrollX < -msgW) {
+        alertScrollX = vpW;
+        buildAlertScrollMsg(); // refresh live values on each loop
+    }
+
+    // Draw inside clipped viewport
+    tft.setViewport(vpX, vpY, vpW, vpH);
+    tft.fillRect(0, 0, vpW, vpH, COL_CARD);
+    tft.setTextDatum(ML_DATUM);
+    tft.setTextColor(COL_TEXT_PRI, COL_CARD);
+    tft.drawString(alertScrollMsg, alertScrollX, vpH / 2);
+    tft.resetViewport();
 }
 
 // =============================================================================
@@ -422,19 +556,69 @@ static void drawSettingsPage()
     tft.setTextFont(2);
     tft.setTextColor(COL_TEXT_PRI, COL_BG);
     
-    // Row 1
+    // Draw selection highlight box
+    const Rect* rowRects[4] = {&SETTING_1, &SETTING_2, &SETTING_3, &SETTING_4};
+    int selY = rowRects[selectedSettingIndex]->y;
+    tft.drawRoundRect(10, selY - 8, 290, 40, 8, COL_TEXT_SEC);
+    
+    // Row 1 — Cloud Sync
     tft.drawString("Cloud Telemetry Sync", 20, SETTING_1.y + 12);
     drawToggle(SETTING_1, settingCloudSync);
     
-    // Row 2
+    // Row 2 — Night Mode
     tft.drawString("Night Mode Dimming", 20, SETTING_2.y + 12);
     drawToggle(SETTING_2, settingNightMode);
     
-    // Row 3
-    tft.drawString("Auto Feeder Enabled", 20, SETTING_3.y + 12);
-    drawToggle(SETTING_3, settingAutoFeed);
+    // Row 3 — Temp Alert
+    tft.setTextColor(COL_ACC_TEMP, COL_BG);
+    tft.drawString("! Temp Alert", 20, SETTING_3.y + 12);
+    tft.setTextColor(COL_TEXT_PRI, COL_BG);
+    drawToggle(SETTING_3, settingAlertTemp);
+    
+    // Row 4 — pH / Turbidity Alert
+    tft.setTextColor(COL_ACC_PH, COL_BG);
+    tft.drawString("! pH & Turbidity Alert", 20, SETTING_4.y + 12);
+    tft.setTextColor(COL_TEXT_PRI, COL_BG);
+    drawToggle(SETTING_4, settingAlertPhTurb);
     
     drawNavbar();
+}
+
+// =============================================================================
+// Rendering: Overlays
+// =============================================================================
+static void drawVolumeOverlay()
+{
+    if (!volumeOverlayActive || millis() > volumeOverlayEndMs) return;
+
+    int w = 160;
+    int h = 40;
+    int x = (SCREEN_W - w) / 2;
+    int y = (SCREEN_H - h) / 2;
+
+    tft.fillRoundRect(x, y, w, h, 8, COL_CARD);
+    tft.drawRoundRect(x, y, w, h, 8, COL_TEXT_SEC);
+
+    tft.setTextDatum(ML_DATUM);
+    tft.setTextFont(2);
+    tft.setTextColor(COL_TEXT_PRI, COL_CARD);
+
+    if (volumeOverlayVal == 0) {
+        tft.drawString("AUDIO: MUTE", x + 10, y + h / 2);
+    } else {
+        int pct = (volumeOverlayVal * 100) / 128;
+        char buf[32];
+        snprintf(buf, sizeof(buf), "AUDIO: %d%%", pct);
+        tft.drawString(buf, x + 10, y + h / 2);
+
+        // Draw bar
+        int barW = 60;
+        int barH = 10;
+        int barX = x + w - barW - 10;
+        int barY = y + (h - barH) / 2;
+        tft.drawRect(barX, barY, barW, barH, COL_TEXT_SEC);
+        tft.fillRect(barX + 1, barY + 1, (pct * (barW - 2)) / 100, barH - 2, COL_ACC_PH);
+    }
 }
 
 // =============================================================================
@@ -449,6 +633,7 @@ static void renderPageStatic()
         case Page::HISTORY:   drawHistoryPage(); break;
         case Page::SETTINGS:  drawSettingsPage(); break;
     }
+    drawVolumeOverlay();
     needsFullRedraw = false;
 }
 
@@ -523,43 +708,92 @@ static void handleTouch()
     }
     
     // Page specific touches
-    if (currentPage == Page::HOME)
+    if (currentPage == Page::SETTINGS)
     {
-        if (pointInRect(x, y, FEED_BTN))
+        if (pointInRect(x, y, {SETTING_1.x - 20, SETTING_1.y - 8, SETTING_1.w + 40, SETTING_1.h + 16}))
         {
-            Serial.println("[BTN] Feed Fish Button Pressed!");
-            manualFeedRequest = true;
-            feedButtonPressed = true;
-            feedPressActiveUntil = millis() + 150;
-            
-            tft.fillRoundRect(FEED_BTN.x, FEED_BTN.y, FEED_BTN.w, FEED_BTN.h, 24, COL_ACC_TEMP);
-            tft.setTextColor(COL_CARD, COL_ACC_TEMP);
-            tft.setTextDatum(MC_DATUM);
-            tft.setTextFont(4);
-            tft.drawString("FEEDING...", FEED_BTN.x + FEED_BTN.w / 2, FEED_BTN.y + FEED_BTN.h / 2);
-            
-            addEventLog("Manual Feed Triggered");
-        }
-    }
-    else if (currentPage == Page::SETTINGS)
-    {
-        if (pointInRect(x, y, {SETTING_1.x - 20, SETTING_1.y - 10, SETTING_1.w + 40, SETTING_1.h + 20}))
-        {
+            selectedSettingIndex = 0;
             settingCloudSync = !settingCloudSync;
             needsFullRedraw = true;
-            addEventLog(settingCloudSync ? "Cloud Sync Enabled" : "Cloud Sync Disabled");
+            addEventLog(settingCloudSync ? "Cloud Sync ON" : "Cloud Sync OFF");
         }
-        else if (pointInRect(x, y, {SETTING_2.x - 20, SETTING_2.y - 10, SETTING_2.w + 40, SETTING_2.h + 20}))
+        else if (pointInRect(x, y, {SETTING_2.x - 20, SETTING_2.y - 8, SETTING_2.w + 40, SETTING_2.h + 16}))
         {
+            selectedSettingIndex = 1;
             settingNightMode = !settingNightMode;
             needsFullRedraw = true;
-            addEventLog(settingNightMode ? "Night Mode Enabled" : "Night Mode Disabled");
+            addEventLog(settingNightMode ? "Night Mode ON" : "Night Mode OFF");
         }
-        else if (pointInRect(x, y, {SETTING_3.x - 20, SETTING_3.y - 10, SETTING_3.w + 40, SETTING_3.h + 20}))
+        else if (pointInRect(x, y, {SETTING_3.x - 20, SETTING_3.y - 8, SETTING_3.w + 40, SETTING_3.h + 16}))
         {
-            settingAutoFeed = !settingAutoFeed;
+            selectedSettingIndex = 2;
+            settingAlertTemp = !settingAlertTemp;
             needsFullRedraw = true;
-            addEventLog(settingAutoFeed ? "Auto Feeder Enabled" : "Auto Feeder Disabled");
+            addEventLog(settingAlertTemp ? "Temp Alert ON" : "Temp Alert OFF");
+        }
+        else if (pointInRect(x, y, {SETTING_4.x - 20, SETTING_4.y - 8, SETTING_4.w + 40, SETTING_4.h + 16}))
+        {
+            selectedSettingIndex = 3;
+            settingAlertPhTurb = !settingAlertPhTurb;
+            needsFullRedraw = true;
+            addEventLog(settingAlertPhTurb ? "pH/Turb Alert ON" : "pH/Turb Alert OFF");
+        }
+    }
+}
+
+// =============================================================================
+// IR Remote Input Routing
+// =============================================================================
+static constexpr uint8_t IR_CMD_OK    = 0x1C;
+static constexpr uint8_t IR_CMD_UP    = 0x18;
+static constexpr uint8_t IR_CMD_DOWN  = 0x52;
+static constexpr uint8_t IR_CMD_LEFT  = 0x08;
+static constexpr uint8_t IR_CMD_RIGHT = 0x5A;
+
+void dashboardHandleIrCommand(uint8_t irCode)
+{
+    // Wake screen if sleeping / debounce
+    lastTouchMs = millis();
+    
+    // Left/Right navigate through main tabs
+    if (irCode == IR_CMD_LEFT) {
+        int p = static_cast<int>(currentPage);
+        p = (p - 1 + 4) % 4;
+        currentPage = static_cast<Page>(p);
+        needsFullRedraw = true;
+    }
+    else if (irCode == IR_CMD_RIGHT) {
+        int p = static_cast<int>(currentPage);
+        p = (p + 1) % 4;
+        currentPage = static_cast<Page>(p);
+        needsFullRedraw = true;
+    }
+    
+    // Up/Down/OK interact with Settings page specifically
+    else if (currentPage == Page::SETTINGS) {
+        if (irCode == IR_CMD_DOWN) {
+            selectedSettingIndex = (selectedSettingIndex + 1) % 4;
+            needsFullRedraw = true;
+        }
+        else if (irCode == IR_CMD_UP) {
+            selectedSettingIndex = (selectedSettingIndex - 1 + 4) % 4;
+            needsFullRedraw = true;
+        }
+        else if (irCode == IR_CMD_OK) {
+            if (selectedSettingIndex == 0) {
+                settingCloudSync = !settingCloudSync;
+                addEventLog(settingCloudSync ? "Cloud Sync ON" : "Cloud Sync OFF");
+            } else if (selectedSettingIndex == 1) {
+                settingNightMode = !settingNightMode;
+                addEventLog(settingNightMode ? "Night Mode ON" : "Night Mode OFF");
+            } else if (selectedSettingIndex == 2) {
+                settingAlertTemp = !settingAlertTemp;
+                addEventLog(settingAlertTemp ? "Temp Alert ON" : "Temp Alert OFF");
+            } else if (selectedSettingIndex == 3) {
+                settingAlertPhTurb = !settingAlertPhTurb;
+                addEventLog(settingAlertPhTurb ? "pH/Turb Alert ON" : "pH/Turb Alert OFF");
+            }
+            needsFullRedraw = true;
         }
     }
 }
@@ -617,29 +851,37 @@ void dashboardInit()
 
 void dashboardLoop()
 {
+    unsigned long now = millis();
+    
+    // Clear volume overlay when it expires
+    if (volumeOverlayActive && now > volumeOverlayEndMs) {
+        volumeOverlayActive = false;
+        needsFullRedraw = true;
+    }
+
     handleTouch();
     updateDataBuffers();
     
+    // Dynamic Updates (only on Home)
+    if (currentPage == Page::HOME && !needsFullRedraw && !volumeOverlayActive)
+    {
+        // Evaluate alert state from live sensor values
+        bool alertActive = false;
+        if (settingAlertTemp && !isnan(waterTemp) && (waterTemp < 22.0f || waterTemp > 30.0f))
+            alertActive = true;
+        if (settingAlertPhTurb && !isnan(phValue) && (phValue < 6.5f || phValue > 8.5f))
+            alertActive = true;
+        if (settingAlertPhTurb && !isnan(turbidity) && turbidity > 5.0f)
+            alertActive = true;
+
+        drawAlertStrip(alertActive);
+        drawHomeDynamic();
+    }
+    
+    // Static / Full Redraw
     if (needsFullRedraw)
     {
         renderPageStatic();
-    }
-    
-    if (currentPage == Page::HOME)
-    {
-        if (feedButtonPressed && millis() >= feedPressActiveUntil)
-        {
-            feedButtonPressed = false;
-            // Restore idle button state
-            tft.fillRoundRect(FEED_BTN.x, FEED_BTN.y, FEED_BTN.w, FEED_BTN.h, 24, COL_BG);
-            tft.drawRoundRect(FEED_BTN.x, FEED_BTN.y, FEED_BTN.w, FEED_BTN.h, 24, COL_ACC_TEMP);
-            tft.setTextColor(COL_ACC_TEMP, COL_BG);
-            tft.setTextDatum(MC_DATUM);
-            tft.setTextFont(4);
-            tft.drawString("FEED FISH", FEED_BTN.x + FEED_BTN.w / 2, FEED_BTN.y + FEED_BTN.h / 2);
-        }
-        
-        drawHomeDynamic();
     }
 }
 
@@ -655,9 +897,5 @@ void dashboardSetPh(float ph, float, float, bool valid) { phValue = valid ? ph :
 void dashboardSetTurbidity(float ntu, int, bool valid) { turbidity = valid ? ntu : NAN; }
 void dashboardSetInternalTemp(float, bool) {}
 
-bool dashboardConsumeManualFeedRequest()
-{
-    bool r = manualFeedRequest;
-    manualFeedRequest = false;
-    return r;
-}
+// Feeding feature removed — stub kept for API compatibility
+bool dashboardConsumeManualFeedRequest() { return false; }

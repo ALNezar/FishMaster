@@ -19,7 +19,7 @@
 #define TFT_DC   27  // SAFE PIN: Moved away from dangerous boot-pin GPIO 2
 #define TFT_RST  4   // Hardware Reset Pin
 
-#define TOUCH_CS 26  // T_IRQ is not connected; touch is polled
+#define TOUCH_CS 14  // Changed from 26: Pin 26 is used by the IR Receiver
 
 #define LOAD_GLCD   1  // Standard 8-bit Font
 #define LOAD_FONT2  1  // Small 16-pixel Font

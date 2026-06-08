@@ -1,8 +1,10 @@
+// =============================================================================
+// audio_manager.h
+// =============================================================================
 #pragma once
 
 #include <Arduino.h>
-
-#include "logic/risk_engine.h"
+#include "logic/risk_engine.h" // Ensure this path is correct for your project
 
 class AudioManager
 {
@@ -13,6 +15,9 @@ public:
     void triggerFeedChime();
     void update(RiskLevel riskLevel);
     void stop();
+
+    uint8_t increaseVolume();
+    uint8_t decreaseVolume();
 
 private:
     void playBootMelodyBlocking();

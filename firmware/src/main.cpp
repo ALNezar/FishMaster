@@ -15,6 +15,7 @@
 
 #include "logic/risk_engine.h"
 #include "hardware/audio_manager.h"
+#include "hardware/ir_manager.h"
 
 #if defined(__has_include)
 #  if __has_include("driver/temp_sensor.h")
@@ -51,7 +52,7 @@ static bool turbValid = false;
 
 static RiskLevel risk = RiskLevel::SAFE;
 
-static AudioManager audio(22);
+AudioManager audio(22);
 
 #if HAVE_TSENS
 static temp_sensor_handle_t tsens = NULL;
@@ -85,6 +86,7 @@ void setup()
     }
 
     audio.init();
+    irManagerInit();
 
     tempSensorInit();
     phSensorInit();
@@ -113,10 +115,11 @@ void setup()
 void loop()
 {
     // =====================
-    // NETWORK LAYER
+    // NETWORK & INPUT LAYER
     // =====================
     wifiConnectUpdate();
     mqttLoop();
+    irManagerLoop();
 
     // =====================
     // SENSOR LAYER
@@ -201,11 +204,8 @@ void loop()
         lastPh, phValid
     };
 
-    risk = RiskEngine::evaluate(snap);
+    risk = RiskEngine::evaluate(snap, dashboardGetSettingAlertTemp(), dashboardGetSettingAlertPhTurb());
     audio.update(risk);
-
-    if (dashboardConsumeManualFeedRequest())
-        audio.triggerFeedChime();
 
     // =====================
     // UI LAYER (FIXED 30 FPS)

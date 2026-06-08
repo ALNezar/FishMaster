@@ -1,20 +1,20 @@
 #include "risk_engine.h"
 
-RiskLevel RiskEngine::evaluate(const SensorSnapshot& snapshot)
+RiskLevel RiskEngine::evaluate(const SensorSnapshot& snapshot, bool enableTempAlert, bool enablePhTurbAlert)
 {
     RiskLevel overall = RiskLevel::SAFE;
 
-    if (snapshot.temperatureValid)
+    if (enableTempAlert && snapshot.temperatureValid)
     {
         overall = maxLevel(overall, evaluateTemperature(snapshot.temperatureC));
     }
 
-    if (snapshot.turbidityValid)
+    if (enablePhTurbAlert && snapshot.turbidityValid)
     {
         overall = maxLevel(overall, evaluateTurbidity(snapshot.turbidityNtu));
     }
 
-    if (snapshot.phValid)
+    if (enablePhTurbAlert && snapshot.phValid)
     {
         overall = maxLevel(overall, evaluatePh(snapshot.ph));
     }

@@ -331,8 +331,7 @@ function getTankHealthSummary(snapshot) {
   const temperature = snapshot.temperature.health;
   const ph = snapshot.ph.health;
   const turbidity = snapshot.turbidity.health;
-  const weighted = temperature * 0.35 + ph * 0.35 + turbidity * 0.3;
-  const overall = Math.round(weighted);
+  const overall = Math.round(Math.min(temperature, ph, turbidity));
   return {
     overall,
     temperature: Math.round(temperature),
@@ -710,6 +709,10 @@ export default function Analytics() {
   const recommendations = useMemo(() => buildRecommendations(snapshots, recentFeedingHours != null ? Math.round(recentFeedingHours) : null), [recentFeedingHours, snapshots]);
   const insights = useMemo(() => buildInsights(snapshots, recentFeedingHours != null ? Math.round(recentFeedingHours) : null), [recentFeedingHours, snapshots]);
 
+  const urgentAlerts = useMemo(() => {
+    return recommendations.filter((r) => r.tone !== 'success').map((r) => r.text);
+  }, [recommendations]);
+
   const correlations = useMemo(() => {
     const temperature = displaySeries.temperature;
     const ph = displaySeries.ph;
@@ -758,6 +761,10 @@ export default function Analytics() {
 
   const toggleMetric = useCallback((metricKey) => {
     setVisibleMetrics((prev) => {
+      if (window.innerWidth <= 600) {
+        return { temperature: false, ph: false, turbidity: false, [metricKey]: true };
+      }
+
       const nextValue = !prev[metricKey];
       if (!nextValue) {
         const enabledCount = Object.values(prev).filter(Boolean).length;
@@ -854,6 +861,14 @@ export default function Analytics() {
         <div className={styles.errorBanner} role="alert">
           <FaExclamationTriangle />
           <span>{error}</span>
+        </div>
+      )}
+
+      {urgentAlerts.length > 0 && (
+        <div className={styles.errorBanner} role="alert" style={{ background: '#fef2f2', borderColor: '#fca5a5', color: '#991b1b' }}>
+          <FaExclamationTriangle style={{ color: '#dc2626' }} />
+          <strong>⚠️ {urgentAlerts.length} Issue{urgentAlerts.length > 1 ? 's' : ''} Detected:</strong>
+          <span>{urgentAlerts.join(', ')}</span>
         </div>
       )}
 
@@ -1002,14 +1017,9 @@ export default function Analytics() {
               {activeTab === 'overview' && (
                 <div className={styles.overviewGrid}>
                   <div className={styles.overviewCard}>
-                    <p>Water Quality Score</p>
+                    <p>Tank Health Index</p>
                     <strong>{healthSummary.overall}%</strong>
                     <span>{getWaterQualityLabel(healthSummary.overall)}</span>
-                  </div>
-                  <div className={styles.overviewCard}>
-                    <p>Tank Stability Score</p>
-                    <strong>{sensorQuality.stability}%</strong>
-                    <span>Derived from variance and drift.</span>
                   </div>
                   <div className={styles.overviewCard}>
                     <p>Fish Health Indicator</p>
@@ -1124,24 +1134,29 @@ export default function Analytics() {
             </div>
           </section>
 
-          <section className={styles.statisticsSection}>
-            <div className={styles.sectionHead}>
-              <div>
-                <p className={styles.sectionEyebrow}>Analytics statistics</p>
-                <h2>Statistical health summary</h2>
+          <details className={styles.advancedAnalytics} style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+            <summary className={styles.sectionEyebrow} style={{ cursor: 'pointer', padding: '1rem', background: 'var(--panel)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+              Advanced Analytics (Click to expand)
+            </summary>
+            <section className={styles.statisticsSection} style={{ marginTop: '0.5rem' }}>
+              <div className={styles.sectionHead}>
+                <div>
+                  <p className={styles.sectionEyebrow}>Analytics statistics</p>
+                  <h2>Statistical health summary</h2>
+                </div>
+                <FaRulerCombined className={styles.sectionIcon} />
               </div>
-              <FaRulerCombined className={styles.sectionIcon} />
-            </div>
 
-            <div className={styles.statisticsGrid}>
-              <CompactStat label="Standard deviation" value={stdev(displaySeries.temperature).toFixed(2)} sublabel="Temperature dispersion" icon={FaChartLine} />
-              <CompactStat label="Variance" value={variance(displaySeries.ph).toFixed(2)} sublabel="pH variation" icon={FaChartLine} />
-              <CompactStat label="Stability score" value={`${sensorQuality.stability}%`} sublabel="Higher is calmer" icon={FaShieldAlt} tone={sensorQuality.stability >= 80 ? 'success' : 'warning'} />
-              <CompactStat label="Data quality" value={`${sensorQuality.quality}%`} sublabel="Valid readings" icon={FaCheckCircle} tone={sensorQuality.quality >= 90 ? 'success' : 'warning'} />
-              <CompactStat label="Sensor reliability" value={`${sensorQuality.reliability}%`} sublabel="Combined quality signal" icon={FaWifi} tone={sensorQuality.reliability >= 90 ? 'success' : 'warning'} />
-              <CompactStat label="Uptime" value={`${sensorQuality.uptime}%`} sublabel="Observed connection health" icon={FaClock} tone={sensorQuality.uptime >= 99 ? 'success' : 'warning'} />
-            </div>
-          </section>
+              <div className={styles.statisticsGrid}>
+                <CompactStat label="Standard deviation" value={stdev(displaySeries.temperature).toFixed(2)} sublabel="Temperature dispersion" icon={FaChartLine} />
+                <CompactStat label="Variance" value={variance(displaySeries.ph).toFixed(2)} sublabel="pH variation" icon={FaChartLine} />
+                <CompactStat label="Stability score" value={`${sensorQuality.stability}%`} sublabel="Higher is calmer" icon={FaShieldAlt} tone={sensorQuality.stability >= 80 ? 'success' : 'warning'} />
+                <CompactStat label="Data quality" value={`${sensorQuality.quality}%`} sublabel="Valid readings" icon={FaCheckCircle} tone={sensorQuality.quality >= 90 ? 'success' : 'warning'} />
+                <CompactStat label="Sensor reliability" value={`${sensorQuality.reliability}%`} sublabel="Combined quality signal" icon={FaWifi} tone={sensorQuality.reliability >= 90 ? 'success' : 'warning'} />
+                <CompactStat label="Uptime" value={`${sensorQuality.uptime}%`} sublabel="Observed connection health" icon={FaClock} tone={sensorQuality.uptime >= 99 ? 'success' : 'warning'} />
+              </div>
+            </section>
+          </details>
         </>
       )}
 

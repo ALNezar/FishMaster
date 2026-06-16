@@ -1,12 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+/* Removed Special Elite font */
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap');
 
 .analyticsPage {
   --bg: #f5f1e3;
   --panel: rgba(255, 255, 255, 0.94);
   --panel-soft: rgba(248, 244, 233, 0.92);
-  --text: #3d3021;
-  --muted: #7b6b5b;
+  --text: #1A1A1A;
+  --muted: #4b4b4b;
   --border: rgba(61, 48, 33, 0.14);
   --shadow: 0 14px 34px rgba(61, 48, 33, 0.08);
   --shadow-soft: 0 8px 20px rgba(61, 48, 33, 0.06);
@@ -59,7 +59,9 @@
 .healthScore,
 .kpiCurrent,
 .correlationScore {
-  font-family: 'Special Elite', cursive;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
 .hero h1,
@@ -99,7 +101,7 @@
 .connectionPill,
 .rangeChip,
 .tabButton {
-  min-height: 44px;
+  min-height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -158,7 +160,7 @@
 .select,
 .rangeInput {
   width: 100%;
-  min-height: 44px;
+  min-height: 48px;
   border-radius: 16px;
   border: 1px solid var(--border);
   background: #fff;
@@ -186,7 +188,7 @@
 }
 
 .refreshButton {
-  min-height: 44px;
+  min-height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -251,6 +253,8 @@
   flex: 0 0 84%;
   min-width: 260px;
   padding: 0.95rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .kpiTopRow,
@@ -311,7 +315,7 @@
 
 .kpiGrid {
   margin: 0.9rem 0 0;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
 }
 
 .kpiGrid div,
@@ -414,7 +418,7 @@
 }
 
 .healthStatsGrid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
 }
 
 .healthStatsGrid div,
@@ -429,7 +433,7 @@
 }
 
 .breakdownRow {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   margin-top: 0.95rem;
 }
 
@@ -456,7 +460,7 @@
 
 .recommendationItem,
 .insightItem {
-  min-height: 44px;
+  min-height: 48px;
   display: flex;
   align-items: flex-start;
   gap: 0.65rem;
@@ -559,7 +563,7 @@
   box-shadow: var(--shadow-soft);
   text-align: left;
   cursor: pointer;
-  min-height: 44px;
+  min-height: 48px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -588,9 +592,11 @@
 }
 
 .trendMetricValue {
-  font-family: 'Special Elite', cursive;
+  font-family: 'DM Sans', system-ui, sans-serif;
   font-size: 1.65rem;
   line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
 .trendMetricValue span {
@@ -640,7 +646,7 @@
 
 .timelineItem {
   display: grid;
-  grid-template-columns: 44px 1fr;
+  grid-template-columns: 48px 1fr;
   gap: 0.8rem;
   align-items: start;
 }
@@ -651,8 +657,8 @@
 }
 
 .timelineDot {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: rgba(18, 119, 176, 0.10);
   display: grid;
@@ -693,9 +699,10 @@
 
 .compactStatValue {
   margin-top: 0.5rem;
-  font-family: 'Special Elite', cursive;
+  font-family: 'DM Sans', system-ui, sans-serif;
   font-size: 1.7rem;
   font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
 .compactStatSub {
@@ -719,7 +726,7 @@
 .metricBadge {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
+  min-height: 48px;
   padding: 0.44rem 0.78rem;
   border-radius: var(--radius-pill);
   font-size: 0.78rem;
@@ -769,12 +776,18 @@
     flex-basis: calc(50% - 0.35rem);
   }
 
+  .kpiGrid,
+  .healthStatsGrid,
   .centerGrid,
   .predictionGrid,
   .correlationGrid,
   .overviewGrid,
   .statisticsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .breakdownRow {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .healthHero {
@@ -919,6 +932,7 @@
   /* When expanded, reveal all KPI cards */
   .kpiRailExpanded > .kpiCard {
     display: flex;
+    flex-direction: column;
   }
 
   .kpiCard {

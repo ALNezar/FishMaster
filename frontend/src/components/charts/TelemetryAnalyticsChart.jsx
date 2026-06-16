@@ -283,14 +283,16 @@ export default function TelemetryAnalyticsChart({
         })}
       </div>
 
-      <div className={styles.chartCanvas} style={{ height: chartHeight }}>
-        <ReactECharts
-          option={option}
-          style={{ height: '100%', width: '100%' }}
-          opts={{ renderer: 'canvas' }}
-          notMerge
-          lazyUpdate={false}
-        />
+      <div className={styles.chartCanvasWrapper}>
+        <div className={styles.chartCanvas} style={{ height: chartHeight }}>
+          <ReactECharts
+            option={option}
+            style={{ height: '100%', width: '100%' }}
+            opts={{ renderer: 'canvas' }}
+            notMerge
+            lazyUpdate={false}
+          />
+        </div>
       </div>
     </div>
   );

@@ -1,72 +1,87 @@
-import { NavLink, useLocation } from 'react-router-dom';
-import { FaHome, FaFish, FaChartLine, FaBell, FaFlask, FaCompass } from 'react-icons/fa';
-import { MdSensors, MdHistory, MdNotifications, MdRule } from 'react-icons/md';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { FaFish, FaChartLine, FaUser, FaChartPie, FaPlus } from 'react-icons/fa';
 import styles from './QuickAccessNav.module.scss';
 import { haptics } from '../../../utils/haptics';
 
 const navItems = [
   {
     path: '/dashboard',
-    label: 'Dashboard',
-    icon: FaHome,
-    exact: true,
+    label: 'My Tanks',
+    icon: FaFish,
+    matchPaths: ['/dashboard', '/tanks'],
   },
   {
-    path: '/tanks',
-    label: 'Tanks',
-    icon: FaFish,
-    matchPaths: ['/tanks'],
+    path: '/analytics',
+    label: 'Analytics',
+    icon: FaChartPie,
+    matchPaths: ['/analytics'],
   },
   {
     path: '/advisor',
     label: 'Advisor',
-    icon: FaCompass,
-    matchPaths: ['/advisor', '/trends'],
-  },
-  {
-    path: '/data',
-    label: 'Analytics',
     icon: FaChartLine,
-    matchPaths: ['/data', '/history', '/analytics'],
+    matchPaths: ['/advisor', '/trends', '/history'],
   },
   {
-    path: '/alerts',
-    label: 'Alerts',
-    icon: FaBell,
-    matchPaths: ['/alerts', '/notifications'],
+    path: '/profile',
+    label: 'Profile',
+    icon: FaUser,
+    matchPaths: ['/profile'],
   },
 ];
 
 const QuickAccessNav = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isItemActive = (item) => {
     if (item.matchPaths) {
-      return item.matchPaths.some((p) => location.pathname.startsWith(p.split('?')[0]));
+      return item.matchPaths.some((p) => location.pathname.startsWith(p));
     }
     return location.pathname === item.path;
   };
 
-  return (
-    <nav className={styles.quickAccessNav} aria-label="Main navigation">
-      <div className={styles.mainTabs}>
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const active = isItemActive(item);
+  const renderNavItem = (item) => {
+    const Icon = item.icon;
+    const active = isItemActive(item);
 
-          return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.exact}
-              className={`${styles.tabButton} ${active ? styles.activeTab : ''}`}
-              onClick={() => haptics.tap()}
-            >
-              <Icon className={styles.tabIcon} />
-              <span className={styles.tabLabel}>{item.label}</span>
-            </NavLink>
-          );
-        })}
+    return (
+      <NavLink
+        key={item.path}
+        to={item.path}
+        className={`${styles.navItem} ${active ? styles.active : ''}`}
+        onClick={() => haptics.tap()}
+      >
+        <div className={styles.iconWrapper}>
+          {active && <div className={styles.activeIndicator} />}
+          <Icon className={styles.navIcon} />
+        </div>
+        <span className={styles.navLabel}>{item.label}</span>
+      </NavLink>
+    );
+  };
+
+  return (
+    <nav className={styles.bottomNav} aria-label="Main navigation">
+      <div className={styles.navBar}>
+        {navItems.slice(0, 2).map(renderNavItem)}
+
+        {/* Middle FAB for Species Management / Add Fish */}
+        <button 
+          className={styles.fabButtonWrapper} 
+          onClick={() => {
+            haptics.tap();
+            navigate('/fish-types');
+          }}
+          aria-label="Manage Species"
+        >
+          <div className={styles.fabButton}>
+            <FaPlus className={styles.fabPlusIcon} />
+            <FaFish className={styles.fabFishIcon} />
+          </div>
+        </button>
+
+        {navItems.slice(2).map(renderNavItem)}
       </div>
     </nav>
   );

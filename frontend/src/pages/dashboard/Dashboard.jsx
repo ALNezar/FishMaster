@@ -143,24 +143,26 @@ function Dashboard() {
         <div className={styles.mainContent}>
 
           {/* Summary Stats Row */}
-          <div className={styles.statsRow}>
+          <div className={styles.statsGrid}>
             <div className={styles.statCard} onClick={() => navigate('/tanks')}>
-              <div className={styles.statLabel}>Total Tanks</div>
+              <div className={styles.statLabel}>TOTAL TANKS</div>
               <div className={styles.statValue}>{loadingTanks ? '…' : tanks.length}</div>
             </div>
             <div className={styles.statCard} onClick={() => navigate('/tanks')}>
-              <div className={styles.statLabel}>Total Fish</div>
+              <div className={styles.statLabel}>TOTAL FISH</div>
               <div className={styles.statValue}>{totalFish}</div>
             </div>
             <div className={styles.statCard} onClick={() => navigate('/analytics')}>
-              <div className={styles.statLabel}>Health Score</div>
-              <div className={styles.statValue}>{healthPercent}%</div>
-              <div className={styles.statSubtext}>
-                {healthPercent >= 80 ? '😃 Optimal' : healthPercent >= 60 ? '😐 Fair' : '😟 Needs attention'}
+              <div className={styles.statLabel}>HEALTH SCORE</div>
+              <div className={styles.statValueWrapper}>
+                <span className={styles.statValue}>{healthPercent}%</span>
+                {healthPercent < 80 && (
+                  <span className={styles.warningBadge}>Needs attention</span>
+                )}
               </div>
             </div>
             <div className={styles.statCard}>
-              <div className={styles.statLabel}>Temperature</div>
+              <div className={styles.statLabel}>TEMPERATURE</div>
               <div className={styles.statValue}>
                 {readings?.temperature?.value?.toFixed(1) ?? '--'}°C
               </div>
@@ -168,20 +170,18 @@ function Dashboard() {
           </div>
 
           {/* Quick Actions (Mobile friendly) */}
-          <div className={styles.card} style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem', overflowX: 'auto' }}>
+          <div className={styles.actionButtons}>
             <button 
-              className={styles.addTankBtn} 
+              className={styles.actionBtnOutline} 
               onClick={() => navigate('/fish-types')} 
-              style={{ flex: 1, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#f5f1e3', color: '#3d3021', border: '2px solid #1277b0' }}
             >
-              <FaFlask /> Species Lab
+              <FaFlask className={styles.actionIcon} /> Species Lab
             </button>
             <button 
-              className={styles.addTankBtn} 
+              className={styles.actionBtnFilled} 
               onClick={() => navigate('/advisor')} 
-              style={{ flex: 1, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
             >
-              <FaChartLine /> Tank Advisor
+              <FaChartLine className={styles.actionIcon} /> Tank Advisor
             </button>
           </div>
 

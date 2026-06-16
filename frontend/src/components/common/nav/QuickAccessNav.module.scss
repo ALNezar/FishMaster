@@ -1,140 +1,179 @@
-$text-dark: #3d3021;
-$text-light: #666;
-$bg-cream: #f5f1e3;
-$primary: #1277b0;
-$active-yellow: #CCC20C;
+$blue: #007aff;
+$blue-light: rgba(0, 122, 255, 0.12);
+$text-dark: #1c1c1e;
+$text-muted: #8e8e93;
+$bar-bg: rgba(255, 255, 255, 0.82);
 
-@keyframes bubblePop {
-  0% { transform: scale(0); opacity: 0; }
-  50% { transform: scale(1.15); }
-  75% { transform: scale(0.95); }
-  100% { transform: scale(1); opacity: 1; }
+.bottomNav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  padding: 0 8px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+
+  @media (min-width: 769px) {
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 480px;
+    bottom: 12px;
+    padding: 0;
+  }
 }
 
-@keyframes slideDown {
-  0% { transform: translateY(-10px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
+.navBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: 82px;
+  background: $bar-bg;
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-radius: 24px 24px 0 0;
+  box-shadow:
+    0 -1px 0 rgba(0, 0, 0, 0.04),
+    0 -8px 32px rgba(0, 0, 0, 0.08),
+    0 -2px 12px rgba(0, 0, 0, 0.04);
+  padding: 0 4px;
+
+  @media (min-width: 769px) {
+    border-radius: 24px;
+    height: 72px;
+    box-shadow:
+      0 4px 32px rgba(0, 0, 0, 0.12),
+      0 2px 12px rgba(0, 0, 0, 0.06);
+  }
 }
 
-.quickAccessNav {
+.navItem {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  width: 100%;
-  max-width: 1240px;
-  margin: 0 auto 1rem;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  padding: 8px 4px 6px;
+  text-decoration: none;
+  color: $text-muted;
+  transition: color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  position: relative;
+  min-height: 54px;
+
+  &:active {
+    transform: scale(0.92);
+    transition: transform 0.1s ease;
+  }
+
+  &.active {
+    color: $blue;
+  }
 }
 
-.mainTabs {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr)); // Changed to 5 columns
-  gap: 0.5rem;
-  background: rgba($text-dark, 0.05);
-  padding: 0.5rem;
-  border-radius: 16px;
-  width: 100%;
-}
-
-.tabButton {
+.iconWrapper {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0.75rem 1.25rem;
-  background: transparent;
-  border: none;
-  border-radius: 12px;
-  font-family: 'Special Elite', cursive;
-  font-size: 0.95rem;
-  color: $text-light;
-  cursor: pointer;
-  text-decoration: none;
+  width: 32px;
+  height: 28px;
+}
+
+.activeIndicator {
+  position: absolute;
+  inset: -4px -10px;
+  background: $blue-light;
+  border-radius: 14px;
+  z-index: -1;
+  animation: tabPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes tabPop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.navIcon {
+  font-size: 22px;
+  transition: transform 0.2s ease;
+
+  .active & {
+    transform: scale(1.08);
+  }
+}
+
+.navLabel {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+  line-height: 1;
   white-space: nowrap;
-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  min-height: 48px;
-  
-  &:hover {
-    background: rgba(white, 0.6);
-    color: $text-dark;
-  }
-  
-  &.activeTab {
-    background: white;
-    color: $text-dark;
-    box-shadow: 0 2px 8px rgba($text-dark, 0.12);
-    
-    .tabIcon {
-      color: $active-yellow;
-      transform: scale(1.1);
-    }
-  }
-  
-  @media (max-width: 600px) {
-    padding: 0.6rem 0.5rem;
-    font-size: 0.85rem;
+
+  .active & {
+    font-weight: 600;
   }
 }
 
-.tabIcon {
-  font-size: clamp(1rem, 1.2vw, 1.1rem);
-  transition: all 0.2s;
+/* FAB Styles */
+.fabButtonWrapper {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 8px;
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transform: translateY(-24px); /* Make it float above the bar */
+  z-index: 10;
+  
+  &:active .fabButton {
+    transform: scale(0.92);
+  }
 }
 
-.tabLabel {
-  @media (max-width: 480px) {
-    display: none;
-  }
+.fabButton {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $blue 0%, darken($blue, 8%) 100%);
+  box-shadow: 
+    0 8px 24px rgba($blue, 0.35),
+    0 4px 8px rgba($blue, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  color: white;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-// Mobile bottom nav (for tablet/mobile)
-@media (max-width: 768px) {
-  .quickAccessNav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05); // Native top shadow
-    padding: 0;
-    margin: 0;
-    z-index: 100;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  
-  .mainTabs {
-    background: transparent;
-    border-radius: 0;
-    padding: 0.5rem 0.25rem;
-    gap: 0;
-  }
-  
-  .tabButton {
-    flex-direction: column;
-    gap: 0.25rem;
-    padding: 0.25rem 0;
-    font-size: 0.65rem;
-    border-radius: 0;
-    min-height: 50px;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 500;
-    
-    &.activeTab {
-      background: transparent;
-      box-shadow: none;
-      color: $primary;
-      
-      .tabIcon {
-        color: $primary;
-      }
-    }
-  }
-  
-  .tabIcon {
-    font-size: 1.4rem;
-  }
-  
-  .tabLabel {
-    display: block; // Always show label on mobile bottom nav
-  }
+.fabPlusIcon {
+  font-size: 20px;
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.fabFishIcon {
+  font-size: 16px;
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0.9;
 }

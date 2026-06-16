@@ -51,6 +51,7 @@ function App() {
         <Route path="/analytics" element={<DataPage />} />
         <Route path="/alerts" element={<AlertConfigPage />} />
         <Route path="/notifications" element={<Navigate to="/alerts?tab=history" replace />} />
+        <Route path="/lab" element={<Navigate to="/fish-types" replace />} />
         <Route path="/device" element={<DeviceControlPage />} />
       </Route>
 

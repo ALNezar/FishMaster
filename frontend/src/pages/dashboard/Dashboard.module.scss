@@ -1,39 +1,44 @@
-@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+// ─── Design Tokens ──────────────────────────────────────────
+$blue: #007aff;
+$blue-dark: #005bb5;
+$bg-cream: #faf8f0;
+$text-primary: #1c1c1e;
+$text-secondary: #6b7280;
+$text-tertiary: #9ca3af;
+$success: #22c55e;
+$warning: #f59e0b;
+$danger: #ef4444;
+$cyan: #5ac8fa;
+$purple: #8b5cf6;
+$card-bg: #ffffff;
+$card-border: rgba(0, 0, 0, 0.04);
+$card-shadow: 0 2px 16px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+$card-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06);
+$radius: 20px;
+$radius-sm: 14px;
+$font-system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+$font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
 
-// Colors
-$primary: #1277b0;
-$primary-dark: #0e5a85;
-$bg-cream: #f5f1e3;
-$text-dark: #3d3021;
-$text-light: #666;
-$success: #16a34a;
-$warning: #ca8a04;
-$danger: #dc2626;
-$cyan: #06b6d4;
-$purple: #9333ea;
-
+// ─── Dashboard Container ────────────────────────────────────
 .dashboardContainer {
-  font-family: 'DM Sans', sans-serif;
+  font-family: $font-system;
   width: 100%;
   max-width: 1240px;
   margin: 0 auto;
   
   h1, h2, h3, h4 {
-    font-family: 'Special Elite', cursive;
-    color: $text-dark;
+    font-family: $font-display;
+    color: $text-primary;
     margin: 0;
-  }
-
-  @media (max-width: 600px) {
-    padding: 0;
   }
 }
 
-// Main + Sidebar Layout
+// ─── Main + Sidebar Layout ──────────────────────────────────
 .layout {
   display: grid;
-  grid-template-columns: 1fr 260px;
-  gap: 1rem;
+  grid-template-columns: 1fr 280px;
+  gap: 16px;
+  margin-top: 16px;
   
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
@@ -43,18 +48,18 @@ $purple: #9333ea;
 .mainContent {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 16px;
 }
 
 .sidebar {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 16px;
   
   @media (max-width: 900px) {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.85rem;
+    gap: 12px;
   }
   
   @media (max-width: 500px) {
@@ -62,17 +67,177 @@ $purple: #9333ea;
   }
 }
 
-// Base Card
-.card {
-  background: white;
-  border-radius: 12px;
-  border: 1.5px solid rgba($text-dark, 0.15);
-  padding: clamp(0.8rem, 1.4vw, 1rem);
-  box-shadow: 0 2px 8px rgba($text-dark, 0.06);
-  transition: box-shadow 0.2s;
+// ─── Summary Stats (2x2 Grid) ───────────────────────────────
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.statCard {
+  background: $card-bg;
+  border-radius: $radius;
+  border: none;
+  padding: 18px 16px;
+  box-shadow: $card-shadow;
+  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, $blue, $cyan);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
 
   &:hover {
-    box-shadow: 0 4px 12px rgba($text-dark, 0.1);
+    box-shadow: $card-shadow-hover;
+    transform: translateY(-2px);
+
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  &:active {
+    transform: scale(0.97);
+    transition: transform 0.1s;
+  }
+}
+
+.statLabel {
+  font-family: $font-system;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: $text-tertiary;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.statValue {
+  font-family: $font-display;
+  font-size: 28px;
+  font-weight: 700;
+  color: $text-primary;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+.statValueWrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.warningBadge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: $warning;
+  background: rgba($warning, 0.12);
+  padding: 3px 8px;
+  border-radius: 8px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.statSubtext {
+  font-size: 12px;
+  color: $text-secondary;
+  margin-top: 4px;
+}
+
+// ─── Action Buttons ─────────────────────────────────────────
+.actionButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.actionBtnOutline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 20px;
+  background: $card-bg;
+  border: 1.5px solid rgba($blue, 0.3);
+  border-radius: 16px;
+  font-family: $font-system;
+  font-size: 15px;
+  font-weight: 600;
+  color: $blue;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover {
+    background: rgba($blue, 0.08);
+    border-color: rgba($blue, 0.5);
+    box-shadow: 0 4px 16px rgba($blue, 0.1);
+  }
+
+  &:active {
+    transform: scale(0.96);
+    transition: transform 0.1s;
+  }
+}
+
+.actionBtnFilled {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, $blue, $blue-dark);
+  border: none;
+  border-radius: 16px;
+  font-family: $font-system;
+  font-size: 15px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba($blue, 0.25);
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover {
+    box-shadow: 0 6px 24px rgba($blue, 0.35);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.96);
+    transition: transform 0.1s;
+  }
+}
+
+.actionIcon {
+  font-size: 18px;
+}
+
+// ─── Base Card ──────────────────────────────────────────────
+.card {
+  background: $card-bg;
+  border-radius: $radius;
+  border: none;
+  padding: 18px;
+  box-shadow: $card-shadow;
+  transition: box-shadow 0.25s ease;
+
+  &:hover {
+    box-shadow: $card-shadow-hover;
   }
 }
 
@@ -80,105 +245,71 @@ $purple: #9333ea;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.65rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba($text-dark, 0.08);
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 
   h3 {
-    font-size: 0.9rem;
+    font-family: $font-display;
+    font-size: 16px;
+    font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 6px;
-    color: $text-light;
+    gap: 8px;
+    color: $text-primary;
+
+    svg {
+      color: $blue;
+      font-size: 16px;
+    }
   }
 }
 
-// Summary Stats Row
-.statsRow {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.85rem;
-  
-  @media (max-width: 700px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.statCard {
-  background: white;
-  border-radius: 12px;
-  border: 1.5px solid rgba($text-dark, 0.15);
-  padding: clamp(0.8rem, 1.4vw, 1rem);
-  min-height: clamp(92px, 12vw, 120px);
-  text-align: center;
-  transition: all 0.2s;
-  cursor: pointer;
-
-  &:hover {
-    border-color: $primary;
-    box-shadow: 0 4px 12px rgba($primary, 0.15);
-  }
-}
-
-.statLabel {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: $text-light;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-
-.statValue {
-  font-family: 'Special Elite', cursive;
-  font-size: clamp(1.35rem, 2.5vw, 1.75rem);
-  color: $text-dark;
-  line-height: 1.2;
-}
-
-.statSubtext {
-  font-size: 0.7rem;
-  color: $text-light;
-  margin-top: 0.25rem;
-}
-
-// Tank List
+// ─── Tank List ──────────────────────────────────────────────
 .tankList {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 6px;
 }
 
 .tankRow {
-  display: grid;
-  grid-template-columns: 1fr auto auto auto auto;
-  gap: 0.75rem;
+  display: flex;
   align-items: center;
-  padding: 0.7rem 0.75rem;
-  background: rgba($bg-cream, 0.5);
-  border-radius: 8px;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba($bg-cream, 0.6);
+  border-radius: $radius-sm;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
 
   &:hover {
-    background: rgba($primary, 0.08);
+    background: rgba($blue, 0.06);
   }
-  
+
+  &:active {
+    transform: scale(0.98);
+  }
+
   @media (max-width: 600px) {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
+    flex-wrap: wrap;
   }
 }
 
 .tankName {
   font-weight: 600;
-  color: $text-dark;
-  font-size: 0.9rem;
+  color: $text-primary;
+  font-size: 15px;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tankSize {
-  font-size: 0.8rem;
-  color: $text-light;
+  font-size: 13px;
+  color: $text-secondary;
   
   @media (max-width: 600px) {
     display: none;
@@ -189,36 +320,39 @@ $purple: #9333ea;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 50px;
+  min-width: 44px;
 }
 
 .tankMetricValue {
-  font-family: 'Special Elite', cursive;
-  font-size: 1rem;
-  color: $primary;
+  font-family: $font-display;
+  font-size: 16px;
+  font-weight: 700;
+  color: $blue;
 }
 
 .tankMetricLabel {
-  font-size: 0.6rem;
+  font-size: 9px;
   text-transform: uppercase;
-  color: $text-light;
+  color: $text-tertiary;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .tankFish {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.85rem;
-  color: $text-light;
+  font-size: 14px;
+  color: $text-secondary;
   
-  svg { color: $primary; }
+  svg { color: $blue; }
 }
 
-// Live Readings
+// ─── Live Readings ──────────────────────────────────────────
 .readingsRow {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.65rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
   
   @media (max-width: 600px) {
     grid-template-columns: repeat(2, 1fr);
@@ -226,25 +360,31 @@ $purple: #9333ea;
 }
 
 .readingCard {
-  background: rgba($bg-cream, 0.4);
-  border-radius: 8px;
-  padding: clamp(0.65rem, 1.2vw, 0.85rem);
+  background: rgba($bg-cream, 0.5);
+  border-radius: $radius-sm;
+  padding: 14px;
   text-align: center;
-  border: 1px solid rgba($text-dark, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: rgba($blue, 0.15);
+  }
 }
 
 .readingHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 8px;
 }
 
 .readingLabel {
-  font-size: 0.65rem;
+  font-size: 10px;
   text-transform: uppercase;
-  color: $text-light;
+  color: $text-tertiary;
   font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .readingStatus {
@@ -252,150 +392,169 @@ $purple: #9333ea;
   height: 8px;
   border-radius: 50%;
   
-  &.optimal { background: $success; }
-  &.warning { background: $warning; }
-  &.critical { background: $danger; }
+  &.optimal { background: $success; box-shadow: 0 0 6px rgba($success, 0.4); }
+  &.warning { background: $warning; box-shadow: 0 0 6px rgba($warning, 0.4); }
+  &.critical { background: $danger; box-shadow: 0 0 6px rgba($danger, 0.4); }
 }
 
 .readingValue {
-  font-family: 'Special Elite', cursive;
-  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
-  color: $text-dark;
+  font-family: $font-display;
+  font-size: 24px;
+  font-weight: 700;
+  color: $text-primary;
+  letter-spacing: -0.5px;
 }
 
 .readingUnit {
-  font-size: clamp(0.7rem, 1.5vw, 0.75rem);
-  color: $text-light;
+  font-size: 12px;
+  color: $text-tertiary;
+  font-weight: 500;
 }
 
 .readingTrend {
-  font-size: 0.7rem;
-  margin-top: 0.25rem;
+  font-size: 11px;
+  margin-top: 4px;
+  font-weight: 500;
   
   &.rising { color: $danger; }
   &.falling { color: $success; }
-  &.stable { color: $text-light; }
+  &.stable { color: $text-tertiary; }
 }
 
-// Sidebar Navigation
+// ─── Sidebar Navigation ────────────────────────────────────
 .navList {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 4px;
 }
 
 .navItem {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.6rem 0.75rem;
-  border-radius: 8px;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: $radius-sm;
   cursor: pointer;
   transition: all 0.2s;
-  font-size: 0.85rem;
-  color: $text-dark;
+  font-size: 14px;
+  color: $text-primary;
+  font-weight: 500;
+  -webkit-tap-highlight-color: transparent;
   
   svg {
-    font-size: 1rem;
-    color: $text-light;
+    font-size: 16px;
+    color: $text-secondary;
   }
 
   &:hover {
-    background: rgba($primary, 0.08);
+    background: rgba($blue, 0.06);
+  }
+  
+  &:active {
+    transform: scale(0.97);
   }
   
   &.active {
-    background: rgba($primary, 0.12);
-    color: $primary;
+    border: 1px solid rgba($blue, 0.3);
+    color: $blue;
     font-weight: 600;
     
-    svg { color: $primary; }
+    svg { color: $blue; }
   }
 }
 
-// Recent Tanks (sidebar)
+// ─── Recent Tanks (sidebar) ─────────────────────────────────
 .recentTanks {
   display: flex;
-  gap: 0.45rem;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .recentTankCard {
   flex: 1;
   min-width: 100px;
-  background: linear-gradient(135deg, rgba($primary, 0.1), rgba($cyan, 0.1));
-  border-radius: 8px;
-  padding: 0.75rem;
+  background: linear-gradient(135deg, rgba($blue, 0.08), rgba($cyan, 0.08));
+  border-radius: $radius-sm;
+  padding: 14px;
   cursor: pointer;
   transition: all 0.2s;
   text-align: center;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba($primary, 0.15);
+    box-shadow: 0 4px 12px rgba($blue, 0.12);
+  }
+
+  &:active {
+    transform: scale(0.96);
   }
 }
 
 .recentTankName {
-  font-size: 0.75rem;
+  font-size: 13px;
   font-weight: 600;
-  color: $text-dark;
+  color: $text-primary;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .recentTankInfo {
-  font-size: 0.65rem;
-  color: $text-light;
-  margin-top: 0.25rem;
+  font-size: 11px;
+  color: $text-secondary;
+  margin-top: 4px;
 }
 
-// Alerts List (sidebar)
+// ─── Alerts List (sidebar) ──────────────────────────────────
 .alertsList {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
 .alertItem {
   display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  border-radius: 6px;
-  background: rgba($bg-cream, 0.5);
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: $radius-sm;
+  background: rgba($bg-cream, 0.6);
   cursor: pointer;
   transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
 
   &:hover {
-    background: rgba($danger, 0.08);
+    background: rgba($danger, 0.06);
+  }
+
+  &:active {
+    transform: scale(0.97);
   }
 }
 
 .alertIcon {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
+  font-size: 14px;
   flex-shrink: 0;
   
   &.danger {
-    background: rgba($danger, 0.15);
+    background: rgba($danger, 0.12);
     color: $danger;
   }
   
   &.warning {
-    background: rgba($warning, 0.15);
+    background: rgba($warning, 0.12);
     color: $warning;
   }
   
   &.info {
-    background: rgba($primary, 0.15);
-    color: $primary;
+    background: rgba($blue, 0.12);
+    color: $blue;
   }
 }
 
@@ -405,77 +564,89 @@ $purple: #9333ea;
 }
 
 .alertTitle {
-  font-size: 0.75rem;
+  font-size: 13px;
   font-weight: 600;
-  color: $text-dark;
+  color: $text-primary;
 }
 
 .alertDesc {
-  font-size: 0.65rem;
-  color: $text-light;
-  margin-top: 0.125rem;
+  font-size: 11px;
+  color: $text-secondary;
+  margin-top: 2px;
 }
 
-// Badges
+// ─── Badges ─────────────────────────────────────────────────
 .badge {
-  padding: 2px 6px;
-  border-radius: 10px;
-  font-size: 0.65rem;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 11px;
   font-weight: 600;
   
   &.success {
-    background: rgba($success, 0.15);
+    background: rgba($success, 0.12);
     color: $success;
   }
   
   &.warning {
-    background: rgba($warning, 0.15);
+    background: rgba($warning, 0.12);
     color: $warning;
   }
   
   &.danger {
-    background: rgba($danger, 0.15);
+    background: rgba($danger, 0.12);
     color: $danger;
   }
 }
 
-// Empty State
+// ─── Empty State ────────────────────────────────────────────
 .emptyState {
   text-align: center;
-  padding: 1.5rem;
-  color: $text-light;
-  font-size: 0.85rem;
+  padding: 24px;
+  color: $text-secondary;
+  font-size: 14px;
 }
 
-// Add Tank Button
+// ─── Add Tank Button ────────────────────────────────────────
 .addTankBtn {
   width: 100%;
-  padding: 0.6rem;
-  background: $primary;
+  padding: 12px;
+  background: linear-gradient(135deg, $blue, $blue-dark);
   color: white;
   border: none;
-  border-radius: 8px;
-  font-family: 'Special Elite', cursive;
-  font-size: 0.85rem;
+  border-radius: $radius-sm;
+  font-family: $font-system;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba($blue, 0.2);
 
   &:hover {
-    background: $primary-dark;
+    box-shadow: 0 6px 20px rgba($blue, 0.3);
+  }
+
+  &:active {
+    transform: scale(0.96);
   }
 }
 
-// Section title link
+// ─── Section Link ───────────────────────────────────────────
 .sectionLink {
-  font-size: 0.7rem;
-  color: $primary;
+  font-size: 13px;
+  color: $blue;
   cursor: pointer;
+  font-weight: 500;
+  -webkit-tap-highlight-color: transparent;
   
   &:hover {
-    text-decoration: underline;
+    opacity: 0.8;
+  }
+
+  &:active {
+    opacity: 0.6;
   }
 }

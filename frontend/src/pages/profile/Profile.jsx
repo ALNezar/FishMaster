@@ -1,24 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { getCurrentUser, updateProfile, deleteAccount, logout } from '../../api';
 import styles from './Profile.module.scss';
-import { FaUser, FaSave, FaTimes, FaTrash, FaPhone, FaEnvelope, FaBell } from 'react-icons/fa';
+import { FaUser, FaSave, FaTimes, FaTrash, FaChevronRight } from 'react-icons/fa';
 
 export default function Profile() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const context = useOutletContext();
+  const initialUser = context?.user;
+
+  const [user, setUser] = useState(initialUser);
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialUser);
   const [formData, setFormData] = useState({
-    name: '',
-    contactNumber: '',
-    emailNotifications: true,
-    smsNotifications: false
+    name: initialUser?.name || initialUser?.username || '',
+    contactNumber: initialUser?.contactNumber || '',
+    emailNotifications: initialUser?.emailNotifications ?? true,
+    smsNotifications: initialUser?.smsNotifications ?? false
   });
 
   useEffect(() => {
-    loadUser();
-  }, []);
+    if (!initialUser) {
+      loadUser();
+    }
+  }, [initialUser]);
 
   const loadUser = async () => {
     try {
@@ -27,7 +32,7 @@ export default function Profile() {
       setFormData({
         name: userData.name || userData.username || '',
         contactNumber: userData.contactNumber || '',
-        emailNotifications: typeof userData.emailNotifications === 'boolean' ? userData.emailNotifications : false,
+        emailNotifications: typeof userData.emailNotifications === 'boolean' ? userData.emailNotifications : true,
         smsNotifications: typeof userData.smsNotifications === 'boolean' ? userData.smsNotifications : false
       });
     } catch (err) {
@@ -70,136 +75,108 @@ export default function Profile() {
     }
   };
 
-  if (loading) return <div aria-live="polite">Loading...</div>;
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.loader}></div>
+      </div>
+    );
+  }
+
+  const displayName = user?.name || user?.username || 'Fishkeeper';
+  const displayEmail = user?.email || 'No email provided';
+
+  if (isEditing) {
+    return (
+      <div className={styles.profileContainer}>
+        <div className={styles.header}>
+          <h2>Edit Profile</h2>
+          <button className={styles.cancelBtn} onClick={() => setIsEditing(false)}>Cancel</button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className={styles.formContainer}>
+          <div className={styles.formSection}>
+            <div className={styles.inputGroup}>
+              <label htmlFor="name">Name</label>
+              <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required />
+            </div>
+            <div className={styles.inputGroup}>
+              <label htmlFor="contactNumber">Contact Number</label>
+              <input type="tel" id="contactNumber" name="contactNumber" value={formData.contactNumber} onChange={handleChange} placeholder="+1 234 567 8900" />
+            </div>
+          </div>
+
+          <div className={styles.formSectionTitle}>Notifications</div>
+          <div className={styles.formSection}>
+            <div className={styles.toggleRow}>
+              <label htmlFor="emailNotifications">Email Notifications</label>
+              <div className={styles.toggleWrapper}>
+                <input type="checkbox" id="emailNotifications" name="emailNotifications" checked={formData.emailNotifications} onChange={handleChange} />
+                <div className={styles.toggleSwitch}></div>
+              </div>
+            </div>
+            <div className={styles.toggleRow}>
+              <label htmlFor="smsNotifications">SMS Notifications</label>
+              <div className={styles.toggleWrapper}>
+                <input type="checkbox" id="smsNotifications" name="smsNotifications" checked={formData.smsNotifications} onChange={handleChange} />
+                <div className={styles.toggleSwitch}></div>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" className={styles.primaryBtn}>
+            Save Changes
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.profileContainer}>
-      <header className={styles.header}>
-        <h2><FaUser aria-hidden="true" /> My Profile</h2>
-      </header>
-      <section className={styles.profileCard} aria-labelledby="profile-heading">
-        {!isEditing ? (
-          <>
-            <div className={styles.section}>
-              <div className={styles.actions}>
-                <button
-                  className={`${styles.btn} ${styles.primary}`}
-                  onClick={() => setIsEditing(true)}
-                  aria-label="Edit Profile"
-                >
-                  Edit Profile
-                </button>
-              </div>
-              <dl className={styles.infoGrid}>
-                <div className={styles.infoItem}>
-                  <dt>Name</dt>
-                  <dd>{user?.name || user?.username}</dd>
-                </div>
-                <div className={styles.infoItem}>
-                  <dt>Email</dt>
-                  <dd>{user?.email}</dd>
-                </div>
-                <div className={styles.infoItem}>
-                  <dt>Contact Number</dt>
-                  <dd>{user?.contactNumber || 'Not set'}</dd>
-                </div>
-              </dl>
-            </div>
-            <div className={styles.section}>
-              <h3 id="notifications-heading"><FaBell aria-hidden="true" /> Notification Preferences</h3>
-              <dl className={styles.infoGrid} aria-labelledby="notifications-heading">
-                <div className={styles.infoItem}>
-                  <dt>Email Notifications</dt>
-                  <dd>{user?.emailNotifications ? 'Enabled' : 'Disabled'}</dd>
-                </div>
-                <div className={styles.infoItem}>
-                  <dt>SMS Notifications</dt>
-                  <dd>{user?.smsNotifications ? 'Enabled' : 'Disabled'}</dd>
-                </div>
-              </dl>
-            </div>
-            <div className={styles.deleteZone}>
-              <h3>Danger Zone</h3>
-              <p>Once you delete your account, there is no going back. Please be certain.</p>
-              <div className={styles.actions}>
-                <button
-                  className={`${styles.btn} ${styles.danger}`}
-                  onClick={handleDelete}
-                  aria-label="Delete Account"
-                >
-                  <FaTrash aria-hidden="true" /> Delete Account
-                </button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <form onSubmit={handleSubmit} aria-labelledby="edit-profile-heading">
-            <div className={styles.section}>
-              <h3 id="edit-profile-heading">Edit Profile</h3>
-              <div className={styles.formGroup}>
-                <label htmlFor="name">Name</label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  aria-required="true"
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label htmlFor="contactNumber">Contact Number</label>
-                <input
-                  type="tel"
-                  id="contactNumber"
-                  name="contactNumber"
-                  value={formData.contactNumber}
-                  onChange={handleChange}
-                  placeholder="+1 234 567 8900"
-                  pattern="^\+?[1-9]\d{1,14}$"
-                />
-              </div>
-              <div className={styles.section}>
-                <h3>Notifications</h3>
-                <div className={styles.checkboxGroup}>
-                  <input
-                    type="checkbox"
-                    id="emailNotifications"
-                    name="emailNotifications"
-                    checked={formData.emailNotifications}
-                    onChange={handleChange}
-                  />
-                  <label htmlFor="emailNotifications">Email Notifications</label>
-                </div>
-                <div className={styles.checkboxGroup}>
-                  <input
-                    type="checkbox"
-                    id="smsNotifications"
-                    name="smsNotifications"
-                    checked={formData.smsNotifications}
-                    onChange={handleChange}
-                  />
-                  <label htmlFor="smsNotifications">SMS Notifications</label>
-                </div>
-              </div>
-              <div className={styles.actions}>
-                <button
-                  type="button"
-                  className={`${styles.btn} ${styles.secondary}`}
-                  onClick={() => setIsEditing(false)}
-                  aria-label="Cancel Edit"
-                >
-                  <FaTimes aria-hidden="true" /> Cancel
-                </button>
-                <button type="submit" className={`${styles.btn} ${styles.primary}`}>
-                  <FaSave aria-hidden="true" /> Save Changes
-                </button>
-              </div>
-            </div>
-          </form>
-        )}
-      </section>
+      <div className={styles.avatarSection}>
+        <div className={styles.avatarCircle}>
+          {displayName.charAt(0).toUpperCase()}
+        </div>
+        <h2 className={styles.userName}>{displayName}</h2>
+        <p className={styles.userEmail}>{displayEmail}</p>
+        <button className={styles.editPill} onClick={() => setIsEditing(true)}>
+          Edit Profile
+        </button>
+      </div>
+
+      <div className={styles.listSection}>
+        <div className={styles.listItem}>
+          <div className={styles.listLabel}>Contact Number</div>
+          <div className={styles.listValue}>{user?.contactNumber || 'Not set'}</div>
+        </div>
+        <div className={styles.listItem}>
+          <div className={styles.listLabel}>Email Notifications</div>
+          <div className={styles.listValue}>{user?.emailNotifications ? 'On' : 'Off'}</div>
+        </div>
+        <div className={styles.listItem}>
+          <div className={styles.listLabel}>SMS Notifications</div>
+          <div className={styles.listValue}>{user?.smsNotifications ? 'On' : 'Off'}</div>
+        </div>
+      </div>
+
+      <div className={styles.listSection}>
+        <button className={styles.listItemAction} onClick={handleLogout}>
+          <div className={styles.listLabelAction}>Log Out</div>
+          <FaChevronRight className={styles.chevron} />
+        </button>
+      </div>
+
+      <div className={styles.listSection}>
+        <button className={styles.listItemActionDanger} onClick={handleDelete}>
+          <div className={styles.listLabelDanger}>Delete Account</div>
+        </button>
+      </div>
     </div>
   );
 }

@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import Wave from 'react-wavify';
 
 import QuickAccessNav from '../common/nav/QuickAccessNav';
 import PwaInstallPrompt from '../common/nav/PwaInstallPrompt';
-import ProfileAvatar from '../common/profile/ProfileAvatar';
 import { ToastProvider } from '../common/toast/ToastProvider';
 import { AlertProvider } from '../common/AlertProvider';
 import { isAuthenticated, getCurrentUser, logout } from '../../api';
@@ -99,26 +97,6 @@ export default function DashboardLayout() {
 
   return (
     <div className={styles.layout}>
-      {/* Header */}
-      <header className={styles.topHeader}>
-        <h1 className={styles.logo}>FishMaster</h1>
-        <div className={styles.headerRight}>
-          <ProfileAvatar user={user} />
-        </div>
-      </header>
-
-      {/* Quick Access Navigation */}
-      <nav className={styles.navContainer}>
-        <QuickAccessNav />
-      </nav>
-
-      {/* Decorative Wave Background */}
-      <div className={styles.waveBackground} aria-hidden>
-        <Wave fill="#1277b0dd" options={{ height: 20, amplitude: 30, speed: 0.15, points: 5 }} />
-        <Wave fill="#0e5a85bb" options={{ height: 10, amplitude: 40, speed: 0.2, points: 4 }} />
-        <Wave fill="#04315888" options={{ height: 5, amplitude: 25, speed: 0.25, points: 6 }} />
-      </div>
-
       {/* Page Content */}
       <main className={styles.content}>
         <ToastProvider>
@@ -127,6 +105,9 @@ export default function DashboardLayout() {
           </AlertProvider>
         </ToastProvider>
       </main>
+
+      {/* Premium floating bottom navigation */}
+      <QuickAccessNav />
 
       <PwaInstallPrompt deferredPrompt={deferredPrompt} setDeferredPrompt={setDeferredPrompt} />
     </div>

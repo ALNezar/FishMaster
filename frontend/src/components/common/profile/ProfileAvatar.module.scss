@@ -144,48 +144,52 @@ $spacing-md: 16px;
   }
 }
 
-.dropdown {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  background: $white;
-  border-radius: 16px;
-  border: 2px solid $text-dark;
-  box-shadow: $shadow-brutal;
-  min-width: 220px;
-  padding: $spacing-sm 0;
-  z-index: 1000;
-  animation: dropdownSlide 0.3s $ease-smooth forwards;
-  transform-origin: top right;
-  
-  // Arrow pointer
-  &::before {
-    content: '';
-    position: absolute;
-    top: -9px;
-    right: $spacing-md;
-    width: 16px;
-    height: 16px;
-    background: $white;
-    border-left: 2px solid $text-dark;
-    border-top: 2px solid $text-dark;
-    transform: rotate(45deg);
-    z-index: -1;
-  }
-  
-  // Subtle inner glow
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 14px;
-    background: linear-gradient(
-      180deg,
-      rgba($primary, 0.02) 0%,
-      transparent 50%
-    );
-    pointer-events: none;
-  }
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.bottomSheet {
+  background: $bg-cream;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 24px 24px 0 0;
+  padding: $spacing-md $spacing-md calc($spacing-md + env(safe-area-inset-bottom, 20px));
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.3s $ease-bounce forwards;
+  display: flex;
+  flex-direction: column;
+}
+
+.sheetHandle {
+  width: 40px;
+  height: 5px;
+  background: rgba($text-dark, 0.2);
+  border-radius: 4px;
+  margin: 0 auto $spacing-md;
+}
+
+.menuItemsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .userInfo {
@@ -326,9 +330,8 @@ $spacing-md: 16px;
 // Responsive Adjustments
 // ============================================
 @media (max-width: 768px) {
-  .dropdown {
-    min-width: 200px;
-    right: -8px;
+  .bottomSheet {
+    border-radius: 20px 20px 0 0;
   }
   
   .avatar {

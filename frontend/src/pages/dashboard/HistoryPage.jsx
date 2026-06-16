@@ -7,7 +7,7 @@ import { FaHistory, FaThermometerHalf, FaExclamationTriangle, FaTools, FaFish, F
 /**
  * History Page - Shows historical events and logs for tanks
  */
-function HistoryPage() {
+function HistoryPage({ isTab }) {
   const [tanks, setTanks] = useState([]);
   const [selectedTank, setSelectedTank] = useState(null);
   const [historyData, setHistoryData] = useState([]);
@@ -141,12 +141,14 @@ function HistoryPage() {
 
   return (
     <div className={styles.historyPage}>
-      <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <h1><FaHistory /> History Log</h1>
-          <p>View real feeding, telemetry, and system history for each tank</p>
-        </div>
-      </header>
+      {!isTab && (
+        <header className={styles.header}>
+          <div className={styles.headerContent}>
+            <h1><FaHistory /> History Log</h1>
+            <p>View real feeding, telemetry, and system history for each tank</p>
+          </div>
+        </header>
+      )}
 
       {error ? <div className={styles.errorBanner}>{error}</div> : null}
 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { getTanks, getSensorData, useTemperatureStream, usePhStream } from '../../api';
+import { getTanks, getSensorData, useTemperatureStream, usePhStream, useTurbidityStream } from '../../api';
 import styles from './Dashboard.module.scss';
-import { FaFish, FaThermometerHalf, FaBell, FaChartLine, FaTint, FaPlus, FaHome, FaWater, FaUtensils, FaWrench, FaCircle } from 'react-icons/fa';
+import { FaFish, FaThermometerHalf, FaBell, FaChartLine, FaTint, FaPlus, FaHome, FaWater, FaUtensils, FaWrench, FaCircle, FaFlask } from 'react-icons/fa';
 import Header from "./header.jsx";
 
 /**
@@ -21,6 +21,9 @@ function Dashboard() {
   
   // Live pH via SSE
   const { lastReading: livePh, connected: phConnected } = usePhStream();
+
+  // Live turbidity via SSE
+  const { lastReading: liveTurbidity, connected: turbidityConnected } = useTurbidityStream();
 
   useEffect(() => {
     getTanks()
@@ -86,6 +89,31 @@ function Dashboard() {
     });
   }, [livePh]);
 
+  // Merge live SSE turbidity into readings whenever a new event arrives
+  useEffect(() => {
+    if (!liveTurbidity) return;
+    const value = Number(liveTurbidity.ntu);
+    setSensorData(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        currentReadings: {
+          ...prev.currentReadings,
+          turbidity: {
+            value,
+            unit: 'NTU',
+            status: value > 5 ? 'warning' : 'optimal',
+            trend: prev.currentReadings?.turbidity?.value != null
+              ? value > prev.currentReadings.turbidity.value ? 'rising'
+                : value < prev.currentReadings.turbidity.value ? 'falling'
+                : 'stable'
+              : 'stable',
+          },
+        },
+      };
+    });
+  }, [liveTurbidity]);
+
   const totalFish = tanks.reduce((sum, tank) => sum + (tank.fish?.length || 0), 0);
   const readings = sensorData?.currentReadings;
 
@@ -139,6 +167,24 @@ function Dashboard() {
             </div>
           </div>
 
+          {/* Quick Actions (Mobile friendly) */}
+          <div className={styles.card} style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem', overflowX: 'auto' }}>
+            <button 
+              className={styles.addTankBtn} 
+              onClick={() => navigate('/fish-types')} 
+              style={{ flex: 1, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#f5f1e3', color: '#3d3021', border: '2px solid #1277b0' }}
+            >
+              <FaFlask /> Species Lab
+            </button>
+            <button 
+              className={styles.addTankBtn} 
+              onClick={() => navigate('/advisor')} 
+              style={{ flex: 1, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+            >
+              <FaChartLine /> Tank Advisor
+            </button>
+          </div>
+
           {/* Tank List */}
           <div className={styles.card}>
             <div className={styles.cardHeader}>
@@ -189,10 +235,11 @@ function Dashboard() {
           <div className={styles.card}>
             <div className={styles.cardHeader}>
               <h3><FaThermometerHalf /> Live Readings</h3>
-              {/* SSE connection badge (temperature + pH) */}
+              {/* SSE connection badge (temperature + pH + turbidity) */}
               {(() => {
-                const both = sseConnected && phConnected;
-                const partial = sseConnected || phConnected;
+                const connectedCount = [sseConnected, phConnected, turbidityConnected].filter(Boolean).length;
+                const both = connectedCount === 3;
+                const partial = connectedCount > 0 && connectedCount < 3;
                 const cls = both ? styles.success : partial ? styles.warning : styles.danger;
                 const title = both ? 'All live data connected' : partial ? 'Partial live data' : 'Reconnecting…';
                 const label = both ? 'Live' : partial ? 'Partial' : 'Reconnecting…';
@@ -268,6 +315,9 @@ function Dashboard() {
               </div>
               <div className={styles.navItem} onClick={() => navigate('/tanks')}>
                 <FaFish /> My Tanks
+              </div>
+              <div className={styles.navItem} onClick={() => navigate('/fish-types')}>
+                <FaFlask /> Species Lab
               </div>
               <div className={styles.navItem} onClick={() => navigate('/analytics')}>
                 <FaChartLine /> Analytics

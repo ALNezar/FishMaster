@@ -51,6 +51,15 @@ export default defineConfig(({ command, mode }) => {
           target: proxyTarget,
           changeOrigin: true,
           secure: false,
+          ws: true,
+          configure: (proxy, options) => {
+            proxy.on('proxyReq', (proxyReq, req, res) => {
+              // Ensure SSE headers are preserved
+              if (req.headers.accept && req.headers.accept.includes('text/event-stream')) {
+                proxyReq.setHeader('Accept', 'text/event-stream');
+              }
+            });
+          },
         },
         '/auth': createSpaAwareProxy(proxyTarget),
         '/device': createSpaAwareProxy(proxyTarget),

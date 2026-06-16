@@ -1,10 +1,21 @@
+/* ═══════════════════════════════════════════════════════════
+   Tank Advisor – Redesigned Visual Hierarchy
+   Status Colors:
+     🟢 Healthy  → #16a34a / #dcfce7
+     🔵 Info     → #2563eb / #dbeafe
+     🟡 Warning  → #d97706 / #fef3c7
+     🔴 Critical → #dc2626 / #fee2e2
+   ═══════════════════════════════════════════════════════════ */
+
 .page {
   max-width: 520px;
   margin: 0 auto;
   padding: 0.5rem 0.75rem 5rem;
   font-family: 'DM Sans', sans-serif;
-  color: #3d3021;
+  color: #2d2015;
 }
+
+/* ── Header ──────────────────────────────────────────────── */
 
 .headerRow {
   display: flex;
@@ -34,10 +45,21 @@
   margin-bottom: 0.85rem;
   padding: 0.75rem 1rem;
   border-radius: 14px;
-  border: 1px solid rgba(61, 48, 33, 0.14);
+  border: 1.5px solid rgba(61, 48, 33, 0.14);
   background: #fff;
   font-size: 0.95rem;
+  font-weight: 600;
+  color: #2d2015;
+  box-shadow: 0 2px 8px rgba(61, 48, 33, 0.06);
+  transition: border-color 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: #1277b0;
+  }
 }
+
+/* ── World Header (Mood Banner) ──────────────────────────── */
 
 .worldHeader {
   position: relative;
@@ -94,45 +116,273 @@
   font-size: 0.88rem;
   background: rgba(255, 255, 255, 0.92);
   border: 2px solid rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(6px);
 }
 
 .moodHappy { color: #15803d; }
-.moodOkay { color: #a16207; }
+.moodOkay  { color: #a16207; }
 .moodStressed { color: #b91c1c; }
 
-.healthSection {
+
+/* ══════════════════════════════════════════════════════════
+   HERO HEALTH CARD
+   ══════════════════════════════════════════════════════════ */
+
+.heroCard {
+  border-radius: 22px;
+  padding: 1.25rem 1.35rem;
+  margin-bottom: 1rem;
   display: flex;
-  justify-content: center;
-  margin-bottom: 1.1rem;
-}
-
-.ringWrap {
+  flex-direction: column;
+  gap: 0.25rem;
+  animation: heroSlideIn 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   position: relative;
-  width: 160px;
-  height: 160px;
+  overflow: hidden;
 }
 
-.ringLabel {
+.heroCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  opacity: 0.06;
+  background: repeating-linear-gradient(
+    135deg,
+    transparent,
+    transparent 12px,
+    rgba(255,255,255,0.5) 12px,
+    rgba(255,255,255,0.5) 14px
+  );
+  pointer-events: none;
+}
+
+@keyframes heroSlideIn {
+  from { transform: translateY(12px) scale(0.97); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* Tier variants */
+.hero_healthy {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: #fff;
+}
+
+.hero_okay {
+  background: linear-gradient(135deg, #eab308, #ca8a04);
+  color: #fff;
+}
+
+.hero_warning {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+}
+
+.hero_critical {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  color: #fff;
+  animation: heroSlideIn 0.45s cubic-bezier(0.23, 1, 0.32, 1), heroPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes heroPulse {
+  0%, 100% { box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3); }
+  50%      { box-shadow: 0 8px 40px rgba(239, 68, 68, 0.55); }
+}
+
+.heroTop {
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+}
+
+.heroRing {
+  position: relative;
+  width: 108px;
+  height: 108px;
+  flex-shrink: 0;
+}
+
+.heroRingProgress {
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.heroPercent {
   position: absolute;
   inset: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
-}
-
-.ringPercent {
   font-family: 'Special Elite', cursive;
-  font-size: 2.2rem;
-  line-height: 1;
+  font-size: 2rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
-.ringSub {
-  font-size: 0.78rem;
-  color: #7b6b5b;
-  margin-top: 0.2rem;
+.heroInfo {
+  flex: 1;
+  min-width: 0;
 }
+
+.heroStatus {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.9;
+  margin-bottom: 0.3rem;
+}
+
+.heroStatusIcon {
+  font-size: 0.9rem;
+}
+
+.heroHeadline {
+  margin: 0;
+  font-family: 'Special Elite', cursive;
+  font-size: 1.35rem;
+  line-height: 1.2;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.heroSub {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  opacity: 0.85;
+  line-height: 1.3;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   GROUPED ALERT CARDS
+   ══════════════════════════════════════════════════════════ */
+
+.alertGroup {
+  border-radius: 18px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 0.75rem;
+  border-left: 5px solid;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  animation: popIn 0.35s ease;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.96); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.alertGroupDanger {
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border-left-color: #ef4444;
+}
+
+.alertGroupWarning {
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border-left-color: #f59e0b;
+}
+
+.alertGroupHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.alertGroupIcon {
+  font-size: 1.1rem;
+}
+
+.alertGroupDanger .alertGroupIcon { color: #dc2626; }
+.alertGroupWarning .alertGroupIcon { color: #d97706; }
+
+.alertGroupTitle {
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.alertGroupDanger .alertGroupTitle { color: #991b1b; }
+.alertGroupWarning .alertGroupTitle { color: #92400e; }
+
+.alertGroupList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.alertGroupItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.45rem 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #2d2015;
+
+  & + & {
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+  }
+}
+
+.alertItemIcon {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  font-size: 0.95rem;
+  opacity: 0.7;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   ALL CLEAR
+   ══════════════════════════════════════════════════════════ */
+
+.allClear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  text-align: center;
+  padding: 1rem;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  border: 2px solid #86efac;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  color: #15803d;
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.1);
+}
+
+.allClearIcon {
+  font-size: 1.2rem;
+  color: #16a34a;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   SECTION HEADERS
+   ══════════════════════════════════════════════════════════ */
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.55rem;
+}
+
+.sectionHeaderIcon {
+  font-size: 0.9rem;
+  color: #1277b0;
+}
+
+.iconAmber { color: #d97706; }
+.iconBlue  { color: #2563eb; }
+.iconGold  { color: #ca8a04; }
+.iconGreen { color: #16a34a; }
+.iconRed   { color: #dc2626; }
 
 .sectionTitle {
   font-size: 0.78rem;
@@ -140,51 +390,19 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #7b6b5b;
-  margin: 0 0 0.5rem;
-}
-
-.alertCard {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  padding: 0.95rem 1rem;
-  border-radius: 18px;
-  margin-bottom: 0.55rem;
-  border: 2px solid transparent;
-  animation: popIn 0.35s ease;
-}
-
-@keyframes popIn {
-  from { transform: scale(0.96); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-.alertWarning { background: linear-gradient(135deg, #fef3c7, #fde68a); border-color: #fbbf24; }
-.alertDanger { background: linear-gradient(135deg, #fee2e2, #fecaca); border-color: #f87171; }
-
-.alertIcon {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
-  font-size: 1.4rem;
-  background: rgba(255, 255, 255, 0.65);
-  flex-shrink: 0;
-}
-
-.alertText {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 1.35;
 }
+
+
+/* ══════════════════════════════════════════════════════════
+   TODAY'S QUESTS
+   ══════════════════════════════════════════════════════════ */
 
 .questList {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.1rem;
 }
 
 .questRow {
@@ -199,7 +417,13 @@
   width: 100%;
   text-align: left;
   cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.15s ease;
+  box-shadow: 0 2px 10px rgba(61, 48, 33, 0.06);
+  transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.questRow:hover:not(:disabled) {
+  border-color: rgba(18, 119, 176, 0.3);
+  box-shadow: 0 4px 16px rgba(18, 119, 176, 0.1);
 }
 
 .questRow:active:not(:disabled) {
@@ -209,7 +433,7 @@
 .questDone {
   opacity: 0.72;
   border-color: #86efac;
-  background: rgba(134, 239, 172, 0.15);
+  background: linear-gradient(135deg, rgba(134, 239, 172, 0.12), rgba(187, 247, 208, 0.15));
 }
 
 .questIcon {
@@ -222,12 +446,19 @@
   background: rgba(18, 119, 176, 0.12);
   color: #1277b0;
   flex-shrink: 0;
+  transition: background 0.2s, color 0.2s;
+}
+
+.questIconDone {
+  background: rgba(22, 163, 74, 0.12);
+  color: #16a34a;
 }
 
 .questTitle {
   flex: 1;
   font-weight: 700;
   font-size: 0.95rem;
+  color: #2d2015;
 }
 
 .questCheck {
@@ -235,21 +466,103 @@
   color: #16a34a;
 }
 
+
+/* ══════════════════════════════════════════════════════════
+   CARDS – Base + Variants
+   ══════════════════════════════════════════════════════════ */
+
 .card {
   background: #fff;
   border-radius: 18px;
-  border: 1px solid rgba(61, 48, 33, 0.1);
-  padding: 1rem;
+  border: 1.5px solid rgba(61, 48, 33, 0.08);
+  padding: 1rem 1.1rem;
   margin-bottom: 0.85rem;
-  box-shadow: 0 4px 14px rgba(61, 48, 33, 0.06);
+  box-shadow: 0 4px 18px rgba(61, 48, 33, 0.08);
+  transition: box-shadow 0.2s;
 }
 
-.card ul {
-  margin: 0;
-  padding-left: 1.1rem;
-  line-height: 1.55;
+/* Species check card – amber accent */
+.cardSpecies {
+  border-left: 5px solid #f59e0b;
+  background: linear-gradient(135deg, #fffdf5, #fff);
+}
+
+/* Info card – blue accent */
+.cardInfo {
+  border-left: 5px solid #3b82f6;
+  background: linear-gradient(135deg, #f8faff, #fff);
+}
+
+/* Recommendations card – gold accent */
+.cardRecommend {
+  border-left: 5px solid #eab308;
+  background: linear-gradient(135deg, #fffef5, #fff);
+}
+
+
+/* ── Species Items ────────────────────────────────────────── */
+
+.speciesItem {
+  padding: 0.6rem 0;
+
+  & + & {
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+  }
+}
+
+.speciesItemHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.25rem;
+}
+
+.speciesWarnIcon {
+  color: #d97706;
+  font-size: 0.9rem;
+}
+
+.speciesMsg {
+  margin: 0.2rem 0 0.35rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
   color: #3d3021;
 }
+
+.speciesFish {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  color: #7b6b5b;
+  margin: 0;
+}
+
+.speciesFishIcon {
+  font-size: 0.75rem;
+  color: #1277b0;
+}
+
+
+/* ── Weekly List ──────────────────────────────────────────── */
+
+.weeklyList {
+  margin: 0;
+  padding-left: 1.1rem;
+  line-height: 1.65;
+  color: #3d3021;
+
+  li {
+    padding: 0.15rem 0;
+  }
+
+  li::marker {
+    color: #3b82f6;
+  }
+}
+
+
+/* ── Recommendations List ─────────────────────────────────── */
 
 .actionsList {
   margin: 0;
@@ -260,40 +573,85 @@
 
 .actionsList li {
   counter-increment: action;
-  padding: 0.55rem 0 0.55rem 2rem;
+  padding: 0.55rem 0 0.55rem 2.2rem;
   position: relative;
   font-weight: 600;
+  line-height: 1.45;
+  color: #2d2015;
+
+  & + & {
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
+  }
 }
 
 .actionsList li::before {
   content: counter(action);
   position: absolute;
   left: 0;
-  width: 1.5rem;
-  height: 1.5rem;
+  top: 0.55rem;
+  width: 1.6rem;
+  height: 1.6rem;
   border-radius: 50%;
-  background: #1277b0;
+  background: linear-gradient(135deg, #eab308, #ca8a04);
   color: #fff;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 800;
   display: grid;
   place-items: center;
+  box-shadow: 0 2px 6px rgba(202, 138, 4, 0.25);
 }
+
+
+/* ── Link Row ─────────────────────────────────────────────── */
 
 .linkRow {
   text-align: center;
   margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .linkRow a {
   color: #1277b0;
   font-weight: 700;
   text-decoration: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 12px;
+  background: rgba(18, 119, 176, 0.08);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(18, 119, 176, 0.15);
+  }
 }
+
+
+/* ── Loading / Empty ──────────────────────────────────────── */
 
 .loading, .empty {
   text-align: center;
   padding: 3rem 1rem;
   color: #7b6b5b;
+}
+
+.emptyIcon {
+  font-size: 2.5rem;
+  color: #1277b0;
+  opacity: 0.4;
+  margin-bottom: 0.75rem;
+}
+
+.emptyLink {
+  display: inline-block;
+  margin-top: 0.75rem;
+  color: #1277b0;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 12px;
+  background: rgba(18, 119, 176, 0.1);
 }
 
 .spinner {
@@ -308,15 +666,4 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
-.allClear {
-  text-align: center;
-  padding: 1rem;
-  border-radius: 18px;
-  background: rgba(134, 239, 172, 0.2);
-  border: 2px dashed #86efac;
-  margin-bottom: 1rem;
-  font-weight: 700;
-  color: #15803d;
 }

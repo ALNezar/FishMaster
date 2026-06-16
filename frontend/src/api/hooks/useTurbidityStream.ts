@@ -1,30 +1,29 @@
-// React hook for pH streaming
+// React hook for turbidity streaming
 
 import { useEffect, useRef, useState } from 'react';
 import { API_BASE_URL } from '../config';
-import { PhReading } from '../types';
+import { TurbidityReading } from '../types';
 import { isAuthenticated } from '../utils/token';
 
-export interface UsePhStreamResult {
-  lastReading: PhReading | null;
+export interface UseTurbidityStreamResult {
+  lastReading: TurbidityReading | null;
   connected: boolean;
 }
 
 /**
- * React hook to subscribe to live pH from backend SSE stream.
- * Usage: const { lastReading, connected } = usePhStream();
+ * React hook to subscribe to live turbidity from backend SSE stream.
+ * Usage: const { lastReading, connected } = useTurbidityStream();
  */
-export function usePhStream(): UsePhStreamResult {
-  const [lastReading, setLastReading] = useState<PhReading | null>(null);
+export function useTurbidityStream(): UseTurbidityStreamResult {
+  const [lastReading, setLastReading] = useState<TurbidityReading | null>(null);
   const [connected, setConnected] = useState(false);
   const esRef = useRef<EventSource | null>(null);
 
-  const normalizePhReading = (payload: unknown): PhReading | null => {
+  const normalizeTurbidityReading = (payload: unknown): TurbidityReading | null => {
     const readField = (obj: unknown, key: string): unknown => {
       if (obj && typeof obj === 'object') {
         return (obj as Record<string, unknown>)[key];
       }
-
       return undefined;
     };
 
@@ -36,7 +35,8 @@ export function usePhStream(): UsePhStreamResult {
         ? {
             id: 0,
             tankId: 'tank1',
-            ph: value,
+            ntu: value,
+            rawAdc: 0,
             serverTimestamp: new Date().toISOString(),
           }
         : null;
@@ -46,13 +46,9 @@ export function usePhStream(): UsePhStreamResult {
 
     const reading = readField(payload, 'reading');
     const candidate =
-      readField(payload, 'phValue') ??
-      readField(payload, 'ph') ??
-      readField(payload, 'ph_value') ??
+      readField(payload, 'ntu') ??
       readField(payload, 'value') ??
-      readField(reading, 'phValue') ??
-      readField(reading, 'ph') ??
-      readField(reading, 'ph_value') ??
+      readField(reading, 'ntu') ??
       readField(reading, 'value');
 
     const value = Number(candidate);
@@ -63,7 +59,8 @@ export function usePhStream(): UsePhStreamResult {
       tankId: typeof readField(payload, 'tankId') === 'string'
         ? (readField(payload, 'tankId') as string)
         : 'tank1',
-      ph: value,
+      ntu: value,
+      rawAdc: typeof readField(payload, 'rawAdc') === 'number' ? (readField(payload, 'rawAdc') as number) : 0,
       deviceTimestamp: typeof readField(payload, 'deviceTimestamp') === 'string'
         ? (readField(payload, 'deviceTimestamp') as string)
         : null,
@@ -79,39 +76,39 @@ export function usePhStream(): UsePhStreamResult {
       return () => {};
     }
 
-    const url = `${API_BASE_URL}/api/telemetry/ph/stream`;
+    const url = `${API_BASE_URL}/api/telemetry/turbidity/stream`;
     const es = new EventSource(url, { withCredentials: false });
     esRef.current = es;
 
     es.onopen = () => {
-      console.debug('[SSE][ph] open', url);
+      console.debug('[SSE][turbidity] open', url);
       setConnected(true);
     };
 
     es.onerror = (err) => {
-      console.debug('[SSE][ph] error', err);
+      console.debug('[SSE][turbidity] error', err);
       setConnected(false);
     };
 
     const handleEvent = (evt: MessageEvent) => {
       try {
         const data = typeof evt.data === 'string' ? JSON.parse(evt.data) : evt.data;
-        const reading = normalizePhReading(data);
+        const reading = normalizeTurbidityReading(data);
         if (reading) {
           setLastReading(reading);
         }
       } catch (e) {
-        console.warn('[SSE][ph] Bad payload', e, evt.data);
+        console.warn('[SSE][turbidity] Bad payload', e, evt.data);
       }
     };
 
-    // Listen for named 'ph' events and fallback to generic messages
-    const onPh = (evt: Event) => handleEvent(evt as MessageEvent);
-    es.addEventListener('ph', onPh);
+    // Listen for named 'turbidity' events and fallback to generic messages
+    const onTurbidity = (evt: Event) => handleEvent(evt as MessageEvent);
+    es.addEventListener('turbidity', onTurbidity);
     es.onmessage = (evt) => handleEvent(evt as MessageEvent);
 
     return () => {
-      es.removeEventListener('ph', onPh);
+      es.removeEventListener('turbidity', onTurbidity);
       es.onmessage = null;
       es.onerror = null;
       es.onopen = null;

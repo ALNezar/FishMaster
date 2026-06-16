@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import Wave from 'react-wavify';
 
 import QuickAccessNav from '../common/nav/QuickAccessNav';
+import PwaInstallPrompt from '../common/nav/PwaInstallPrompt';
 import ProfileAvatar from '../common/profile/ProfileAvatar';
 import { ToastProvider } from '../common/toast/ToastProvider';
 import { AlertProvider } from '../common/AlertProvider';
@@ -102,26 +103,6 @@ export default function DashboardLayout() {
       <header className={styles.topHeader}>
         <h1 className={styles.logo}>FishMaster</h1>
         <div className={styles.headerRight}>
-          {deferredPrompt && (
-            <button
-              className={styles.installButton}
-              onClick={async () => {
-                try {
-                  haptics.tap();
-                  // @ts-ignore deferredPrompt typing
-                  await deferredPrompt.prompt();
-                  // @ts-ignore
-                  const choice = await deferredPrompt.userChoice;
-                  setDeferredPrompt(null);
-                  console.log('A2HS choice', choice);
-                } catch (err) {
-                  console.warn('Install prompt failed', err);
-                }
-              }}
-            >
-              Install
-            </button>
-          )}
           <ProfileAvatar user={user} />
         </div>
       </header>
@@ -146,6 +127,8 @@ export default function DashboardLayout() {
           </AlertProvider>
         </ToastProvider>
       </main>
+
+      <PwaInstallPrompt deferredPrompt={deferredPrompt} setDeferredPrompt={setDeferredPrompt} />
     </div>
   );
 }

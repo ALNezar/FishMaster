@@ -44,7 +44,7 @@ function App() {
         <Route path="/tanks" element={<MyTanksPage />} />
         <Route path="/fish-types" element={<FishTypesPage />} />
         <Route path="/tanks/:id" element={<TankDetailsPage />} />
-        <Route path="/history" element={<HistoryPage />} />
+        <Route path="/history" element={<DataPage />} />
         <Route path="/data" element={<DataPage />} />
         <Route path="/advisor" element={<TankAdvisorPage />} />
         <Route path="/trends" element={<Navigate to="/advisor" replace />} />

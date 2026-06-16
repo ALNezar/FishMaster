@@ -1,0 +1,46 @@
+$text-dark: #3d3021;
+$text-light: #666;
+$primary: #1277b0;
+
+.segmentedControl {
+  display: flex;
+  background: rgba($text-dark, 0.05);
+  padding: 4px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.segment {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: $text-light;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    color: $text-dark;
+  }
+  
+  &.active {
+    background: white;
+    color: $primary;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.icon {
+  display: flex;
+  font-size: 1.1rem;
+}

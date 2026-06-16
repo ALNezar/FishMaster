@@ -27,13 +27,16 @@ $primary-dark: #0e5a85;
   position: sticky;
   top: env(safe-area-inset-top);
   z-index: 100;
-  box-shadow: 0 4px 8px rgba($text-dark, 0.08);
+  box-shadow: 0 2px 12px rgba($text-dark, 0.04);
+  background: transparent;
 
   @media (max-width: 600px) {
-    padding-top: calc(0.75rem + env(safe-area-inset-top));
+    padding-top: calc(0.5rem + env(safe-area-inset-top));
+    padding-bottom: 0.5rem;
     padding-right: 1rem;
-    padding-bottom: 0.75rem;
     padding-left: 1rem;
+    box-shadow: none;
+    justify-content: center; // Center on mobile
   }
 }
 
@@ -44,13 +47,13 @@ $primary-dark: #0e5a85;
 
 .logo {
   font-family: 'Special Elite', cursive;
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   color: $text-dark;
   margin: 0;
   font-weight: normal;
 
   @media (max-width: 600px) {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
   }
 }
 
@@ -58,6 +61,11 @@ $primary-dark: #0e5a85;
   display: flex;
   align-items: center;
   gap: 1rem;
+  
+  @media (max-width: 600px) {
+    position: absolute;
+    right: 1rem;
+  }
 }
 
 // Navigation Container

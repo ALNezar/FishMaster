@@ -21,7 +21,7 @@ import {
   FaWrench,
   FaChartLine,
 } from 'react-icons/fa';
-import { getSensorData, getTankHistoryTimeline, getTanks, usePhStream, useTemperatureStream } from '../../api';
+import { getSensorData, getTankHistoryTimeline, getTanks, usePhStream, useTemperatureStream, useTurbidityStream } from '../../api';
 import TelemetryAnalyticsChart from '../../components/charts/TelemetryAnalyticsChart.jsx';
 import styles from './Analytics.module.scss';
 
@@ -518,6 +518,7 @@ export default function Analytics() {
 
   const { lastReading: liveTemp, connected: tempConnected } = useTemperatureStream();
   const { lastReading: livePh, connected: phConnected } = usePhStream();
+  const { lastReading: liveTurbidity, connected: turbidityConnected } = useTurbidityStream();
 
   const fetchSensorData = useCallback(async (tankId, range, options = {}) => {
     const { silent = false } = options;
@@ -655,6 +656,25 @@ export default function Analytics() {
       };
     });
   }, [livePh]);
+
+  // Merge live turbidity
+  useEffect(() => {
+    if (!liveTurbidity) return;
+    const value = Number(liveTurbidity.ntu);
+    setSensorData(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        currentReadings: {
+          ...prev.currentReadings,
+          turbidity: {
+            value,
+            unit: 'NTU',
+          },
+        },
+      };
+    });
+  }, [liveTurbidity]);
 
   const displaySeries = useMemo(() => buildSeries(sensorData, timeRange, customHours), [customHours, sensorData, timeRange]);
 
@@ -826,6 +846,7 @@ export default function Analytics() {
         <div className={styles.connectionPills}>
           <span className={`${styles.connectionPill} ${tempConnected ? styles.connectionOnline : styles.connectionLimited}`}>Temperature</span>
           <span className={`${styles.connectionPill} ${phConnected ? styles.connectionOnline : styles.connectionLimited}`}>pH</span>
+          <span className={`${styles.connectionPill} ${turbidityConnected ? styles.connectionOnline : styles.connectionLimited}`}>Turbidity</span>
         </div>
       </section>
 

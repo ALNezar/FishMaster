@@ -51,6 +51,8 @@ export * from './push.api';
 // Hooks
 export { useTemperatureStream } from './hooks/useTemperatureStream';
 export type { UseTemperatureStreamResult } from './hooks/useTemperatureStream';
+export { useTurbidityStream } from './hooks/useTurbidityStream';
+export type { UseTurbidityStreamResult } from './hooks/useTurbidityStream';
 export { usePhStream } from './hooks/usePhStream';
 export type { UsePhStreamResult } from './hooks/usePhStream';
 
@@ -92,6 +94,7 @@ import * as alertApi from './alert.api';
 import * as pushApi from './push.api';
 import { useSseEvent } from './hooks/useSseEvent';
 import { useTemperatureStream } from './hooks/useTemperatureStream';
+import { useTurbidityStream } from './hooks/useTurbidityStream';
 import { usePhStream } from './hooks/usePhStream';
 import { apiRequest } from './client';
 import { setToken, removeToken, isAuthenticated } from './utils/token';
@@ -112,6 +115,7 @@ export default {
   ...pushApi,
   useSseEvent,
   useTemperatureStream,
+  useTurbidityStream,
   usePhStream,
   apiRequest,
   setToken,

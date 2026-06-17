@@ -14,11 +14,9 @@ import {
 
 type RawHistoryEvent = Partial<HistoryEvent> & Record<string, any>;
 
-const historyEndpointCandidates = [
-  (tankId: number | string, limit: number) => `/history?tankId=${encodeURIComponent(String(tankId))}&limit=${limit}`,
-  (tankId: number | string, limit: number) => `/history/${encodeURIComponent(String(tankId))}?limit=${limit}`,
-  (tankId: number | string, limit: number) => `/tanks/${encodeURIComponent(String(tankId))}/history?limit=${limit}`,
-  (tankId: number | string, limit: number) => `/device/history?tankId=${encodeURIComponent(String(tankId))}&limit=${limit}`,
+const historyEndpointCandidates: Array<(tankId: number | string, limit: number) => string> = [
+  // Removed exploratory endpoints because they 404/403 on Railway and cause console spam.
+  // The app will gracefully fall back to combined local history.
 ];
 
 const resolveHistoryTimestamp = (value: any): string => {

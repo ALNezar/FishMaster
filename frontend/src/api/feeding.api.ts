@@ -47,11 +47,7 @@ export const getFeedingHistory = async (
   limit: number = 10,
   tankId?: number | string
 ): Promise<FeedingHistoryEntry[]> => {
-  const query = new URLSearchParams({ limit: String(limit) });
-
-  if (tankId !== undefined && tankId !== null && String(tankId).trim() !== '') {
-    query.set('tankId', String(tankId));
-  }
-
-  return apiRequest(`/device/history?${query.toString()}`);
+  // Backend endpoint /device/history does not exist yet. 
+  // Returning an empty array to prevent 403/404 console spam.
+  return Promise.resolve([]);
 };

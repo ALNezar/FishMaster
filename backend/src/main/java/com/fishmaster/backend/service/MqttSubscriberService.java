@@ -148,25 +148,29 @@ public class MqttSubscriberService implements MqttCallbackExtended {
         try {
             String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
             log.debug("[MQTT] Received on {}: {} (qos={}, retained={})", topic, payload, message.getQos(), message.isRetained());
-            String t = topic == null ? "" : topic;
-            if (t.endsWith("/Temperature") || t.equals("FishMaster/Temperature")) {
-                telemetryService.handleTemperaturePayload(payload);
-            } else if (t.endsWith("/Turbidity") || t.equals("FishMaster/Turbidity")) {
-                // Source client id is this subscriber's client id; device id is expected via DeviceInfo retained msg
-                String sourceClientId = mqttProps.getClientId();
-                telemetryService.handleTurbidityPayload(payload, sourceClientId);
-            } else if (t.endsWith("/Ph") || t.equals("FishMaster/Ph") || t.equalsIgnoreCase("FishMaster/pH")
-                    // Support hardware publishing pH to 'aquarium/telemetry' (or any '<prefix>/telemetry')
-                    || t.equalsIgnoreCase("aquarium/telemetry") || t.toLowerCase().endsWith("/telemetry")) {
-                telemetryService.handlePhPayload(payload);
-            } else if (t.endsWith("/DeviceInfo") || t.equals("FishMaster/DeviceInfo")) {
-                telemetryService.handleDeviceInfoPayload(payload);
-            } else {
-                // Fallback: try parsing as temperature to not lose data in case of misconfig
-                telemetryService.handleTemperaturePayload(payload);
-            }
+            routeMqttMessage(topic, payload);
         } catch (Exception e) {
             log.error("[MQTT] Failed processing message from {}: {}", topic, e.getMessage(), e);
+        }
+    }
+
+    public void routeMqttMessage(String topic, String payload) {
+        String t = topic == null ? "" : topic;
+        switch (t) {
+            case "FishMaster/Temperature":
+                telemetryService.handleTemperaturePayload(payload);
+                break;
+            case "FishMaster/Turbidity":
+                telemetryService.handleTurbidityPayload(payload, "mqtt");
+                break;
+            case "aquarium/telemetry":
+                telemetryService.handlePhPayload(payload);
+                break;
+            case "FishMaster/DeviceInfo":
+                telemetryService.handleDeviceInfoPayload(payload);
+                break;
+            default:
+                log.warn("Unknown topic: " + t);
         }
     }
 

@@ -118,7 +118,7 @@ export default defineConfig(({ command, mode }) => {
         },
 
         workbox: {
-          importScripts: ['/sw.js'],
+          importScripts: ['/custom-sw.js'],
           runtimeCaching: [
             {
               urlPattern: /^http:\/\/localhost:8080\/.*$/,

@@ -1,19 +1,20 @@
-// ─── Design Tokens ──────────────────────────────────────────
-$blue: #007aff;
-$blue-dark: #005bb5;
+// ─── Official Brand Tokens ───────────────────────────────────
+$brand-red: #D80E45;
+$brand-yellow: #F6CA35;
+$brand-blue: #4BA5EE;
+$brand-black: #111111;
 $bg-cream: #faf8f0;
-$text-primary: #1c1c1e;
+
+$blue: $brand-blue;
+$blue-dark: darken($brand-blue, 15%);
+$text-primary: $brand-black;
 $text-secondary: #6b7280;
 $text-tertiary: #9ca3af;
-$success: #22c55e;
-$warning: #f59e0b;
-$danger: #ef4444;
-$cyan: #5ac8fa;
-$purple: #8b5cf6;
+$success: #10b981; // Keep a specific green for success
+$warning: $brand-yellow;
+$danger: $brand-red;
+$cyan: lighten($brand-blue, 10%);
 $card-bg: #ffffff;
-$card-border: rgba(0, 0, 0, 0.04);
-$card-shadow: 0 2px 16px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
-$card-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06);
 $radius: 20px;
 $radius-sm: 14px;
 $font-system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
@@ -23,8 +24,9 @@ $font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", 
 .dashboardContainer {
   font-family: $font-system;
   width: 100%;
-  max-width: 1240px;
+  max-width: 800px; /* narrowed for focused mobile/tablet view */
   margin: 0 auto;
+  padding: 1rem 0.5rem 6rem;
   
   h1, h2, h3, h4 {
     font-family: $font-display;
@@ -33,620 +35,297 @@ $font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", 
   }
 }
 
-// ─── Main + Sidebar Layout ──────────────────────────────────
-.layout {
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 16px;
-  margin-top: 16px;
-  
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.mainContent {
+.homeContent {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1.2rem;
+  margin-top: 1rem;
 }
 
-.sidebar {
+// ─── 1. Actionable Alerts ────────────────────────────────────
+.alertsSection {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  
-  @media (max-width: 900px) {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-  
-  @media (max-width: 500px) {
-    grid-template-columns: 1fr;
-  }
+  gap: 0.75rem;
 }
 
-// ─── Summary Stats (2x2 Grid) ───────────────────────────────
-.statsGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.statCard {
+.alertCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 1rem;
+  border-radius: 16px;
   background: $card-bg;
-  border-radius: $radius;
-  border: none;
-  padding: 18px 16px;
-  box-shadow: $card-shadow;
-  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, $blue, $cyan);
-    opacity: 0;
-    transition: opacity 0.25s;
-  }
-
-  &:hover {
-    box-shadow: $card-shadow-hover;
-    transform: translateY(-2px);
-
-    &::before {
-      opacity: 1;
-    }
-  }
-
-  &:active {
-    transform: scale(0.97);
-    transition: transform 0.1s;
-  }
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border-left: 5px solid transparent;
 }
 
-.statLabel {
-  font-family: $font-system;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: $text-tertiary;
-  font-weight: 600;
-  margin-bottom: 8px;
+.alertCritical {
+  border-left-color: $danger;
+  background: rgba($danger, 0.04);
 }
 
-.statValue {
-  font-family: $font-display;
-  font-size: 28px;
-  font-weight: 700;
+.alertWarning {
+  border-left-color: $warning;
+  background: rgba($warning, 0.04);
+}
+
+.alertIconWrapper {
+  font-size: 1.4rem;
+  margin-top: -2px;
+}
+
+.alertText {
+  font-size: 0.95rem;
+  line-height: 1.4;
   color: $text-primary;
-  line-height: 1.1;
-  letter-spacing: -0.5px;
-}
 
-.statValueWrapper {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.warningBadge {
-  display: inline-flex;
-  align-items: center;
-  font-size: 10px;
-  font-weight: 600;
-  color: $warning;
-  background: rgba($warning, 0.12);
-  padding: 3px 8px;
-  border-radius: 8px;
-  letter-spacing: 0.2px;
-  white-space: nowrap;
-}
-
-.statSubtext {
-  font-size: 12px;
-  color: $text-secondary;
-  margin-top: 4px;
-}
-
-// ─── Action Buttons ─────────────────────────────────────────
-.actionButtons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.actionBtnOutline {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 16px 20px;
-  background: $card-bg;
-  border: 1.5px solid rgba($blue, 0.3);
-  border-radius: 16px;
-  font-family: $font-system;
-  font-size: 15px;
-  font-weight: 600;
-  color: $blue;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  -webkit-tap-highlight-color: transparent;
-
-  &:hover {
-    background: rgba($blue, 0.08);
-    border-color: rgba($blue, 0.5);
-    box-shadow: 0 4px 16px rgba($blue, 0.1);
-  }
-
-  &:active {
-    transform: scale(0.96);
-    transition: transform 0.1s;
+  strong {
+    font-weight: 800;
+    margin-right: 4px;
   }
 }
 
-.actionBtnFilled {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 16px 20px;
-  background: linear-gradient(135deg, $blue, $blue-dark);
-  border: none;
-  border-radius: 16px;
-  font-family: $font-system;
-  font-size: 15px;
-  font-weight: 600;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 16px rgba($blue, 0.25);
-  -webkit-tap-highlight-color: transparent;
-
-  &:hover {
-    box-shadow: 0 6px 24px rgba($blue, 0.35);
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: scale(0.96);
-    transition: transform 0.1s;
-  }
-}
-
-.actionIcon {
-  font-size: 18px;
-}
-
-// ─── Base Card ──────────────────────────────────────────────
-.card {
+// ─── Section Shared Styles ──────────────────────────────────
+.sectionCard {
   background: $card-bg;
   border-radius: $radius;
-  border: none;
-  padding: 18px;
-  box-shadow: $card-shadow;
-  transition: box-shadow 0.25s ease;
-
-  &:hover {
-    box-shadow: $card-shadow-hover;
-  }
+  padding: 1.25rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.02);
 }
 
-.cardHeader {
+.sectionHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  margin-bottom: 1rem;
 
   h3 {
-    font-family: $font-display;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 1.15rem;
+    font-weight: 800;
     display: flex;
     align-items: center;
     gap: 8px;
-    color: $text-primary;
+    letter-spacing: -0.01em;
 
     svg {
-      color: $blue;
-      font-size: 16px;
+      color: $text-tertiary;
+      font-size: 1rem;
     }
   }
 }
 
-// ─── Tank List ──────────────────────────────────────────────
-.tankList {
+.emptyState {
+  padding: 2rem;
+  text-align: center;
+  color: $text-tertiary;
+  font-size: 0.9rem;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: $radius-sm;
 }
 
-.tankRow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  background: rgba($bg-cream, 0.6);
-  border-radius: $radius-sm;
+.textBtn {
+  background: transparent;
+  border: none;
+  color: $blue;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 4px 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  -webkit-tap-highlight-color: transparent;
+}
+
+// ─── 2. Live Sensor Readings ──────────────────────────────────
+.connectionBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  svg { font-size: 6px; }
+}
+
+.connLive {
+  background: rgba($success, 0.12);
+  color: darken($success, 10%);
+}
+
+.connPartial {
+  background: rgba($warning, 0.12);
+  color: darken($warning, 10%);
+}
+
+.readingsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.readingsHeaderRow {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr;
+  padding: 0 0.5rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $text-tertiary;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  margin-bottom: 0.25rem;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1.2fr 1fr 1fr;
+    span:last-child { display: none; } /* Hide trend column on small screens */
+  }
+}
+
+.readingRow {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr;
+  align-items: center;
+  padding: 0.75rem 0.5rem;
+  border-radius: 12px;
+  transition: background 0.2s;
 
   &:hover {
-    background: rgba($blue, 0.06);
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1.2fr 1fr 1fr;
+  }
+}
+
+.paramLabel {
+  font-size: 0.95rem;
+  color: $text-primary;
+}
+
+.paramValue {
+  font-family: $font-display;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: $text-primary;
+}
+
+.paramStatus {
+  display: flex;
+  align-items: center;
+}
+
+.statusPill {
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.optimal { background: rgba($success, 0.1); color: darken($success, 10%); }
+.warning { background: rgba($warning, 0.1); color: darken($warning, 15%); }
+.danger, .critical { background: rgba($danger, 0.1); color: darken($danger, 10%); }
+
+.paramTrend {
+  font-size: 0.85rem;
+  color: $text-secondary;
+  font-weight: 500;
+
+  @media (max-width: 480px) {
+    display: none;
+  }
+}
+
+// ─── 3. My Tanks Overview ──────────────────────────────────
+.tankOverviewCard {
+  background: linear-gradient(145deg, #ffffff, #f9f9fa);
+  border: 1px solid rgba($blue, 0.15);
+  border-radius: 16px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba($blue, 0.05);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba($blue, 0.1);
+    border-color: rgba($blue, 0.3);
   }
 
   &:active {
     transform: scale(0.98);
   }
-
-  @media (max-width: 600px) {
-    flex-wrap: wrap;
-  }
 }
 
-.tankName {
-  font-weight: 600;
-  color: $text-primary;
-  font-size: 15px;
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.tankSize {
-  font-size: 13px;
-  color: $text-secondary;
-  
-  @media (max-width: 600px) {
-    display: none;
-  }
-}
-
-.tankMetric {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 44px;
-}
-
-.tankMetricValue {
-  font-family: $font-display;
-  font-size: 16px;
-  font-weight: 700;
-  color: $blue;
-}
-
-.tankMetricLabel {
-  font-size: 9px;
-  text-transform: uppercase;
-  color: $text-tertiary;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-
-.tankFish {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  color: $text-secondary;
-  
-  svg { color: $blue; }
-}
-
-// ─── Live Readings ──────────────────────────────────────────
-.readingsRow {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  
-  @media (max-width: 600px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.readingCard {
-  background: rgba($bg-cream, 0.5);
-  border-radius: $radius-sm;
-  padding: 14px;
-  text-align: center;
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  transition: all 0.2s;
-
-  &:hover {
-    border-color: rgba($blue, 0.15);
-  }
-}
-
-.readingHeader {
+.tankOverviewHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 1rem;
+
+  h4 {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: $blue-dark;
+  }
 }
 
-.readingLabel {
-  font-size: 10px;
-  text-transform: uppercase;
-  color: $text-tertiary;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+.tankOverviewIcon {
+  font-size: 1.5rem;
+  color: $blue;
+  opacity: 0.8;
 }
 
-.readingStatus {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  
-  &.optimal { background: $success; box-shadow: 0 0 6px rgba($success, 0.4); }
-  &.warning { background: $warning; box-shadow: 0 0 6px rgba($warning, 0.4); }
-  &.critical { background: $danger; box-shadow: 0 0 6px rgba($danger, 0.4); }
-}
-
-.readingValue {
-  font-family: $font-display;
-  font-size: 24px;
-  font-weight: 700;
-  color: $text-primary;
-  letter-spacing: -0.5px;
-}
-
-.readingUnit {
-  font-size: 12px;
-  color: $text-tertiary;
-  font-weight: 500;
-}
-
-.readingTrend {
-  font-size: 11px;
-  margin-top: 4px;
-  font-weight: 500;
-  
-  &.rising { color: $danger; }
-  &.falling { color: $success; }
-  &.stable { color: $text-tertiary; }
-}
-
-// ─── Sidebar Navigation ────────────────────────────────────
-.navList {
+.tankOverviewStats {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
+  gap: 0.5rem;
 
-.navItem {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: $radius-sm;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 14px;
-  color: $text-primary;
-  font-weight: 500;
-  -webkit-tap-highlight-color: transparent;
-  
-  svg {
-    font-size: 16px;
+  li {
+    font-size: 0.95rem;
     color: $text-secondary;
-  }
 
-  &:hover {
-    background: rgba($blue, 0.06);
-  }
-  
-  &:active {
-    transform: scale(0.97);
-  }
-  
-  &.active {
-    border: 1px solid rgba($blue, 0.3);
-    color: $blue;
-    font-weight: 600;
-    
-    svg { color: $blue; }
+    strong {
+      color: $text-primary;
+      font-weight: 600;
+      min-width: 100px;
+      display: inline-block;
+    }
   }
 }
 
-// ─── Recent Tanks (sidebar) ─────────────────────────────────
-.recentTanks {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.recentTankCard {
-  flex: 1;
-  min-width: 100px;
-  background: linear-gradient(135deg, rgba($blue, 0.08), rgba($cyan, 0.08));
-  border-radius: $radius-sm;
-  padding: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: center;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba($blue, 0.12);
-  }
-
-  &:active {
-    transform: scale(0.96);
-  }
-}
-
-.recentTankName {
-  font-size: 13px;
+.tankOverviewFooter {
+  margin-top: 1.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  font-size: 0.85rem;
   font-weight: 600;
-  color: $text-primary;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.recentTankInfo {
-  font-size: 11px;
-  color: $text-secondary;
-  margin-top: 4px;
-}
-
-// ─── Alerts List (sidebar) ──────────────────────────────────
-.alertsList {
+  color: $blue;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  justify-content: flex-end;
 }
 
-.alertItem {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: $radius-sm;
-  background: rgba($bg-cream, 0.6);
-  cursor: pointer;
-  transition: all 0.2s;
-  -webkit-tap-highlight-color: transparent;
-
-  &:hover {
-    background: rgba($danger, 0.06);
-  }
-
-  &:active {
-    transform: scale(0.97);
-  }
-}
-
-.alertIcon {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  flex-shrink: 0;
-  
-  &.danger {
-    background: rgba($danger, 0.12);
-    color: $danger;
-  }
-  
-  &.warning {
-    background: rgba($warning, 0.12);
-    color: $warning;
-  }
-  
-  &.info {
-    background: rgba($blue, 0.12);
-    color: $blue;
-  }
-}
-
-.alertContent {
-  flex: 1;
-  min-width: 0;
-}
-
-.alertTitle {
-  font-size: 13px;
-  font-weight: 600;
-  color: $text-primary;
-}
-
-.alertDesc {
-  font-size: 11px;
-  color: $text-secondary;
-  margin-top: 2px;
-}
-
-// ─── Badges ─────────────────────────────────────────────────
-.badge {
-  padding: 3px 8px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 600;
-  
-  &.success {
-    background: rgba($success, 0.12);
-    color: $success;
-  }
-  
-  &.warning {
-    background: rgba($warning, 0.12);
-    color: $warning;
-  }
-  
-  &.danger {
-    background: rgba($danger, 0.12);
-    color: $danger;
-  }
-}
-
-// ─── Empty State ────────────────────────────────────────────
-.emptyState {
-  text-align: center;
-  padding: 24px;
-  color: $text-secondary;
-  font-size: 14px;
-}
-
-// ─── Add Tank Button ────────────────────────────────────────
 .addTankBtn {
-  width: 100%;
-  padding: 12px;
-  background: linear-gradient(135deg, $blue, $blue-dark);
+  margin-top: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: $blue;
   color: white;
   border: none;
-  border-radius: $radius-sm;
-  font-family: $font-system;
-  font-size: 14px;
+  padding: 10px 16px;
+  border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow: 0 4px 12px rgba($blue, 0.2);
-
-  &:hover {
-    box-shadow: 0 6px 20px rgba($blue, 0.3);
-  }
-
-  &:active {
-    transform: scale(0.96);
-  }
-}
-
-// ─── Section Link ───────────────────────────────────────────
-.sectionLink {
-  font-size: 13px;
-  color: $blue;
-  cursor: pointer;
-  font-weight: 500;
-  -webkit-tap-highlight-color: transparent;
-  
-  &:hover {
-    opacity: 0.8;
-  }
-
-  &:active {
-    opacity: 0.6;
-  }
 }

@@ -1,8 +1,14 @@
-$text-dark: #1c1c1e;
-$text-secondary: #6b7280;
+// ─── Official Brand Tokens ───────────────────────────────────
+$brand-red: #D80E45;
+$brand-yellow: #F6CA35;
+$brand-blue: #4BA5EE;
+$brand-black: #111111;
 $bg-cream: #faf8f0;
-$blue: #007aff;
-$blue-light: rgba(0, 122, 255, 0.1);
+
+$text-dark: $brand-black;
+$text-secondary: #6b7280;
+$blue: $brand-blue;
+$blue-light: rgba($brand-blue, 0.1);
 
 .header {
   position: sticky;
@@ -29,8 +35,7 @@ $blue-light: rgba(0, 122, 255, 0.1);
 }
 
 .logo {
-  height: 32px;
-  width: auto;
+  height: 40px;
   object-fit: contain;
   transition: transform 0.2s ease;
 
@@ -44,29 +49,20 @@ $blue-light: rgba(0, 122, 255, 0.1);
   align-items: center;
 }
 
-.speciesBtn {
+.healthBadge {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: white;
-  border: 1px solid rgba($blue, 0.2);
-  border-radius: 20px;
-  padding: 6px 12px;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 12px;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   font-size: 13px;
-  font-weight: 600;
-  color: $blue;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-  transition: all 0.2s ease;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
 
-  &:hover {
-    background: $blue-light;
-    border-color: rgba($blue, 0.4);
-  }
-
-  &:active {
-    transform: scale(0.95);
+  svg {
+    font-size: 16px;
   }
 }
 

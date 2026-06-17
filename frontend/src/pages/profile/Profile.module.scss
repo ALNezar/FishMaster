@@ -1,9 +1,15 @@
-// ─── Design Tokens ──────────────────────────────────────────
-$blue: #007aff;
+// ─── Official Brand Tokens ───────────────────────────────────
+$brand-red: #D80E45;
+$brand-yellow: #F6CA35;
+$brand-blue: #4BA5EE;
+$brand-black: #111111;
 $bg-cream: #faf8f0;
-$text-dark: #1c1c1e;
+
+$blue: $brand-blue;
+$bg-cream: $bg-cream;
+$text-dark: $brand-black;
 $text-secondary: #6b7280;
-$danger: #ff3b30;
+$danger: $brand-red;
 $border-light: rgba(0, 0, 0, 0.06);
 $card-bg: #ffffff;
 

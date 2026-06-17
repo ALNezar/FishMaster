@@ -2,19 +2,25 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap');
 
 .analyticsPage {
-  --bg: #f5f1e3;
+  /* ─── Official Brand Tokens ─── */
+  --brand-red: #D80E45;
+  --brand-yellow: #F6CA35;
+  --brand-blue: #4BA5EE;
+  --brand-black: #111111;
+
+  --bg: #faf8f0;
   --panel: rgba(255, 255, 255, 0.94);
   --panel-soft: rgba(248, 244, 233, 0.92);
-  --text: #1A1A1A;
+  --text: var(--brand-black);
   --muted: #4b4b4b;
-  --border: rgba(61, 48, 33, 0.14);
-  --shadow: 0 14px 34px rgba(61, 48, 33, 0.08);
-  --shadow-soft: 0 8px 20px rgba(61, 48, 33, 0.06);
-  --primary: #1277b0;
-  --primary-dark: #0e5a85;
+  --border: rgba(0, 0, 0, 0.08);
+  --shadow: 0 14px 34px rgba(0, 0, 0, 0.08);
+  --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.06);
+  --primary: var(--brand-blue);
+  --primary-dark: #3280c2;
   --success: #16a34a;
-  --warning: #ca8a04;
-  --danger: #dc2626;
+  --warning: var(--brand-yellow);
+  --danger: var(--brand-red);
   --radius-lg: 22px;
   --radius-md: 16px;
   --radius-pill: 999px;
@@ -22,6 +28,7 @@
   max-width: 1240px;
   margin: 0 auto;
   padding: 0.75rem;
+  padding-bottom: calc(82px + env(safe-area-inset-bottom, 20px));
   color: var(--text);
   font-family: 'DM Sans', sans-serif;
   background:
@@ -89,12 +96,17 @@
 
 .heroBadges,
 .connectionPills,
-.rangeGroup,
 .predictionChips,
 .filterRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.75rem;
+}
+
+.rangeGroup {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .heroBadge,
@@ -139,9 +151,9 @@
 .toolbar {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.85rem;
-  padding: 0.9rem;
-  margin-bottom: 0.9rem;
+  gap: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
 }
 
 .control {
@@ -240,10 +252,10 @@
 
 .kpiRail {
   display: flex;
-  gap: 0.75rem;
+  gap: 1rem;
   overflow-x: auto;
   padding-bottom: 0.2rem;
-  margin-bottom: 0.9rem;
+  margin-bottom: 1rem;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 }
@@ -251,8 +263,8 @@
 .kpiCard {
   scroll-snap-align: start;
   flex: 0 0 84%;
-  min-width: 260px;
-  padding: 0.95rem;
+  min-width: 0;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
 }
@@ -290,9 +302,12 @@
 
 .kpiCurrent {
   margin-top: 0.7rem;
-  font-size: clamp(2rem, 9vw, 2.9rem);
+  font-size: clamp(1.7rem, 7vw, 2.9rem);
   line-height: 1;
   letter-spacing: -0.06em;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  max-width: 100%;
 }
 
 .kpiCurrent span {
@@ -310,12 +325,12 @@
 .predictionGrid,
 .statisticsGrid {
   display: grid;
-  gap: 0.7rem;
+  gap: 1rem;
 }
 
 .kpiGrid {
   margin: 0.9rem 0 0;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .kpiGrid div,
@@ -380,15 +395,15 @@
 
 .centerGrid {
   display: grid;
-  gap: 0.9rem;
-  margin-bottom: 0.9rem;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .healthCard,
 .insightsCard,
 .workspaceSection,
 .statisticsSection {
-  padding: 0.95rem;
+  padding: 1rem;
 }
 
 .healthHero {
@@ -418,7 +433,7 @@
 }
 
 .healthStatsGrid {
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .healthStatsGrid div,
@@ -433,7 +448,7 @@
 }
 
 .breakdownRow {
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-top: 0.95rem;
 }
 
@@ -511,7 +526,7 @@
 .overviewCard,
 .correlationCard,
 .predictionCard {
-  padding: 0.95rem;
+  padding: 1rem;
 }
 
 .overviewCard p,
@@ -919,8 +934,22 @@
     gap: 0.35rem;
   }
 
+  /* Time range filters: horizontal scroll on mobile, no wrapping */
+  .rangeGroup {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  .rangeGroup::-webkit-scrollbar {
+    display: none;
+  }
+
   .kpiRail {
-    gap: 0.5rem;
+    gap: 0.75rem;
     padding-bottom: 0.2rem;
   }
 
@@ -938,7 +967,7 @@
   .kpiCard {
     min-width: 92%;
     flex-basis: 92%;
-    padding: 0.8rem;
+    padding: 1rem;
   }
 
   .predictionGrid,
@@ -948,7 +977,7 @@
   }
 
   .toolbar {
-    padding: 0.6rem;
+    padding: 0.75rem;
   }
 
   .heroCopy {
@@ -961,6 +990,8 @@
     min-height: 40px;
     padding: 0.45rem 0.75rem;
     font-size: 0.82rem;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   /* Ensure the Show More button aligns nicely */

@@ -1,14 +1,15 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { FaFish, FaChartLine, FaUser, FaChartPie, FaPlus } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { FaFish, FaChartPie, FaChartLine, FaBell, FaBars, FaTimes, FaUser, FaMicrochip, FaFlask } from 'react-icons/fa';
 import styles from './QuickAccessNav.module.scss';
 import { haptics } from '../../../utils/haptics';
 
 const navItems = [
   {
     path: '/dashboard',
-    label: 'My Tanks',
+    label: 'Home',
     icon: FaFish,
-    matchPaths: ['/dashboard', '/tanks'],
+    matchPaths: ['/dashboard'],
   },
   {
     path: '/analytics',
@@ -23,16 +24,22 @@ const navItems = [
     matchPaths: ['/advisor', '/trends', '/history'],
   },
   {
-    path: '/profile',
-    label: 'Profile',
-    icon: FaUser,
-    matchPaths: ['/profile'],
-  },
+    path: '/alerts',
+    label: 'Alerts',
+    icon: FaBell,
+    matchPaths: ['/alerts'],
+  }
 ];
 
 const QuickAccessNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Close menu on route change
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
 
   const isItemActive = (item) => {
     if (item.matchPaths) {
@@ -62,28 +69,71 @@ const QuickAccessNav = () => {
   };
 
   return (
-    <nav className={styles.bottomNav} aria-label="Main navigation">
-      <div className={styles.navBar}>
-        {navItems.slice(0, 2).map(renderNavItem)}
+    <>
+      <nav className={styles.bottomNav} aria-label="Main navigation">
+        <div className={styles.navBar}>
+          {navItems.map(renderNavItem)}
 
-        {/* Middle FAB for Species Management / Add Fish */}
-        <button 
-          className={styles.fabButtonWrapper} 
-          onClick={() => {
-            haptics.tap();
-            navigate('/fish-types');
-          }}
-          aria-label="Manage Species"
-        >
-          <div className={styles.fabButton}>
-            <FaPlus className={styles.fabPlusIcon} />
-            <FaFish className={styles.fabFishIcon} />
+          {/* Menu Tab */}
+          <button 
+            className={`${styles.navItem} ${menuOpen ? styles.active : ''}`}
+            onClick={() => {
+              haptics.tap();
+              setMenuOpen(!menuOpen);
+            }}
+            aria-label="More Menu"
+          >
+            <div className={styles.iconWrapper}>
+              {menuOpen && <div className={styles.activeIndicator} />}
+              <FaBars className={styles.navIcon} />
+            </div>
+            <span className={styles.navLabel}>Menu</span>
+          </button>
+        </div>
+      </nav>
+
+      {/* iOS-Style Bottom Sheet Menu */}
+      <div className={`${styles.menuOverlay} ${menuOpen ? styles.menuOpen : ''}`} onClick={() => setMenuOpen(false)}>
+        <div className={styles.menuSheet} onClick={e => e.stopPropagation()}>
+          <div className={styles.menuHeader}>
+            <h3>More Options</h3>
+            <button className={styles.closeMenuBtn} onClick={() => setMenuOpen(false)}>
+              <FaTimes />
+            </button>
           </div>
-        </button>
+          
+          <div className={styles.menuGrid}>
+            <NavLink to="/fish-types" className={styles.menuBtn} onClick={() => haptics.tap()}>
+              <div className={`${styles.menuIconBox} ${styles.iconSpecies}`}>
+                <FaFlask />
+              </div>
+              <span>Species Lab</span>
+            </NavLink>
+            
+            <NavLink to="/device" className={styles.menuBtn} onClick={() => haptics.tap()}>
+              <div className={`${styles.menuIconBox} ${styles.iconDevice}`}>
+                <FaMicrochip />
+              </div>
+              <span>Devices</span>
+            </NavLink>
 
-        {navItems.slice(2).map(renderNavItem)}
+            <NavLink to="/tanks" className={styles.menuBtn} onClick={() => haptics.tap()}>
+              <div className={`${styles.menuIconBox} ${styles.iconTank}`}>
+                <FaFish />
+              </div>
+              <span>Tanks</span>
+            </NavLink>
+
+            <NavLink to="/profile" className={styles.menuBtn} onClick={() => haptics.tap()}>
+              <div className={`${styles.menuIconBox} ${styles.iconProfile}`}>
+                <FaUser />
+              </div>
+              <span>Profile</span>
+            </NavLink>
+          </div>
+        </div>
       </div>
-    </nav>
+    </>
   );
 };
 

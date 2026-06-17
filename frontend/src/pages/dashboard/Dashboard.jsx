@@ -134,250 +134,152 @@ function Dashboard() {
   const trendLabel = (trend) =>
     trend === 'rising' ? '↑ Rising' : trend === 'falling' ? '↓ Falling' : '→ Stable';
 
+  const generateAlerts = () => {
+    const alerts = [];
+    if (!readings) return alerts;
+    
+    if (readings.ph?.value > 7.5) {
+      alerts.push({ type: 'critical', text: `pH level is severely high (${readings.ph.value}). Immediate water change recommended.` });
+    } else if (readings.ph?.value < 6.5) {
+      alerts.push({ type: 'critical', text: `pH level is severely low (${readings.ph.value}). Immediate water change recommended.` });
+    }
+
+    if (readings.temperature?.value > 28) {
+      alerts.push({ type: 'critical', text: `Temperature is dangerously high (${readings.temperature.value}°C). Check cooling systems.` });
+    } else if (readings.temperature?.value < 22) {
+      alerts.push({ type: 'critical', text: `Temperature is dangerously low (${readings.temperature.value}°C). Check heaters.` });
+    }
+    
+    if (readings.turbidity?.value > 5) {
+      alerts.push({ type: 'warning', text: `Turbidity is high (${readings.turbidity.value} NTU). Consider cleaning the filter.` });
+    }
+    
+    return alerts;
+  };
+
+  const actionableAlerts = generateAlerts();
+  const activeTank = tanks.length > 0 ? tanks[0] : null;
+
   return (
     <div className={styles.dashboardContainer}>
-      <Header user={user} />
+      <Header user={user} healthPercent={healthPercent} />
 
-      <div className={styles.layout}>
-        {/* Main Content */}
-        <div className={styles.mainContent}>
+      <div className={styles.homeContent}>
+        {/* 1. Actionable Alerts (The "Why") */}
+        {actionableAlerts.length > 0 && (
+          <div className={styles.alertsSection}>
+            {actionableAlerts.map((alert, idx) => (
+              <div key={idx} className={`${styles.alertCard} ${alert.type === 'critical' ? styles.alertCritical : styles.alertWarning}`}>
+                <div className={styles.alertIconWrapper}>
+                  {alert.type === 'critical' ? '⚠️' : '🔧'}
+                </div>
+                <div className={styles.alertText}>
+                  <strong>{alert.type === 'critical' ? 'CRITICAL' : 'Maintenance'}:</strong> {alert.text}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
-          {/* Summary Stats Row */}
-          <div className={styles.statsGrid}>
-            <div className={styles.statCard} onClick={() => navigate('/tanks')}>
-              <div className={styles.statLabel}>TOTAL TANKS</div>
-              <div className={styles.statValue}>{loadingTanks ? '…' : tanks.length}</div>
-            </div>
-            <div className={styles.statCard} onClick={() => navigate('/tanks')}>
-              <div className={styles.statLabel}>TOTAL FISH</div>
-              <div className={styles.statValue}>{totalFish}</div>
-            </div>
-            <div className={styles.statCard} onClick={() => navigate('/analytics')}>
-              <div className={styles.statLabel}>HEALTH SCORE</div>
-              <div className={styles.statValueWrapper}>
-                <span className={styles.statValue}>{healthPercent}%</span>
-                {healthPercent < 80 && (
-                  <span className={styles.warningBadge}>Needs attention</span>
-                )}
-              </div>
-            </div>
-            <div className={styles.statCard}>
-              <div className={styles.statLabel}>TEMPERATURE</div>
-              <div className={styles.statValue}>
-                {readings?.temperature?.value?.toFixed(1) ?? '--'}°C
-              </div>
-            </div>
+        {/* 2. Live Sensor Readings (The "What") */}
+        <div className={styles.sectionCard}>
+          <div className={styles.sectionHeader}>
+            <h3><FaThermometerHalf /> Live Sensor Readings</h3>
+            {/* Connection badge */}
+            {(() => {
+              const connectedCount = [sseConnected, phConnected, turbidityConnected].filter(Boolean).length;
+              const isFull = connectedCount === 3;
+              return (
+                <span className={`${styles.connectionBadge} ${isFull ? styles.connLive : styles.connPartial}`}>
+                  <FaCircle /> {isFull ? 'Live' : 'Partial'}
+                </span>
+              );
+            })()}
           </div>
 
-          {/* Quick Actions (Mobile friendly) */}
-          <div className={styles.actionButtons}>
-            <button 
-              className={styles.actionBtnOutline} 
-              onClick={() => navigate('/fish-types')} 
-            >
-              <FaFlask className={styles.actionIcon} /> Species Lab
-            </button>
-            <button 
-              className={styles.actionBtnFilled} 
-              onClick={() => navigate('/advisor')} 
-            >
-              <FaChartLine className={styles.actionIcon} /> Tank Advisor
-            </button>
-          </div>
-
-          {/* Tank List */}
-          <div className={styles.card}>
-            <div className={styles.cardHeader}>
-              <h3><FaFish /> My Tanks</h3>
-              <span className={styles.sectionLink} onClick={() => navigate('/tanks')}>View All →</span>
+          <div className={styles.readingsGrid}>
+            {/* Header Row */}
+            <div className={styles.readingsHeaderRow}>
+              <span>Parameter</span>
+              <span>Current</span>
+              <span>Status</span>
+              <span>Trend</span>
             </div>
-            {loadingTanks ? (
-              <div className={styles.emptyState}>Loading tanks…</div>
-            ) : tanks.length > 0 ? (
-              <div className={styles.tankList}>
-                {tanks.map(tank => (
-                  <div
-                    key={tank.id}
-                    className={styles.tankRow}
-                    onClick={() => navigate(`/tanks/${tank.id}`)}
-                  >
-                    <span className={styles.tankName}>{tank.name}</span>
-                    <span className={styles.tankSize}>{tank.sizeLiters}L</span>
-                    <div className={styles.tankMetric}>
-                      <span className={styles.tankMetricValue}>
-                        {tank.waterParameters?.targetPh?.toFixed(1) ?? '--'}
-                      </span>
-                      <span className={styles.tankMetricLabel}>pH</span>
-                    </div>
-                    <div className={styles.tankMetric}>
-                      <span className={styles.tankMetricValue}>
-                        {tank.waterParameters?.targetTemperature ?? '--'}°
-                      </span>
-                      <span className={styles.tankMetricLabel}>Temp</span>
-                    </div>
-                    <span className={styles.tankFish}>
-                      <FaFish /> {tank.fish?.length || 0}
+
+            {readings ? (
+              <>
+                <div className={styles.readingRow}>
+                  <div className={styles.paramLabel}><strong>Temperature</strong></div>
+                  <div className={styles.paramValue}>{readings.temperature?.value?.toFixed(1)} °C</div>
+                  <div className={styles.paramStatus}>
+                    <span className={`${styles.statusPill} ${styles[readings.temperature?.status || 'optimal']}`}>
+                      {readings.temperature?.status === 'optimal' ? '🟢 Stable' : '🔴 Critical'}
                     </span>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className={styles.emptyState}>
-                No tanks yet
-                <button className={styles.addTankBtn} onClick={() => navigate('/tanks')} style={{ marginTop: '0.75rem' }}>
-                  <FaPlus /> Add Your First Tank
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Live Readings — ammonia removed */}
-          <div className={styles.card}>
-            <div className={styles.cardHeader}>
-              <h3><FaThermometerHalf /> Live Readings</h3>
-              {/* SSE connection badge (temperature + pH + turbidity) */}
-              {(() => {
-                const connectedCount = [sseConnected, phConnected, turbidityConnected].filter(Boolean).length;
-                const both = connectedCount === 3;
-                const partial = connectedCount > 0 && connectedCount < 3;
-                const cls = both ? styles.success : partial ? styles.warning : styles.danger;
-                const title = both ? 'All live data connected' : partial ? 'Partial live data' : 'Reconnecting…';
-                const label = both ? 'Live' : partial ? 'Partial' : 'Reconnecting…';
-                return (
-                  <span
-                    className={`${styles.badge} ${cls}`}
-                    title={title}
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
-                  >
-                    <FaCircle style={{ fontSize: '0.5rem' }} />
-                    {label}
-                  </span>
-                );
-              })()}
-            </div>
-            {readings ? (
-              <div className={styles.readingsRow}>
-                {/* Temperature — real data via SSE */}
-                <div className={styles.readingCard}>
-                  <div className={styles.readingHeader}>
-                    <span className={styles.readingLabel}>Temperature</span>
-                    <span className={`${styles.readingStatus} ${styles[readings.temperature?.status || 'optimal']}`} />
-                  </div>
-                  <div className={styles.readingValue}>{readings.temperature?.value?.toFixed(1)}</div>
-                  <div className={styles.readingUnit}>°C</div>
-                  <div className={`${styles.readingTrend} ${styles[readings.temperature?.trend || 'stable']}`}>
-                    {trendLabel(readings.temperature?.trend)}
-                  </div>
+                  <div className={styles.paramTrend}>{trendLabel(readings.temperature?.trend)}</div>
                 </div>
 
-                {/* pH */}
-                <div className={styles.readingCard}>
-                  <div className={styles.readingHeader}>
-                    <span className={styles.readingLabel}>pH Level</span>
-                    <span className={`${styles.readingStatus} ${styles[readings.ph?.status || 'optimal']}`} />
+                <div className={styles.readingRow}>
+                  <div className={styles.paramLabel}><strong>pH Level</strong></div>
+                  <div className={styles.paramValue}>{readings.ph?.value?.toFixed(1)} pH</div>
+                  <div className={styles.paramStatus}>
+                    <span className={`${styles.statusPill} ${styles[readings.ph?.status || 'optimal']}`}>
+                      {readings.ph?.status === 'optimal' ? '🟢 Stable' : '🔴 Critical'}
+                    </span>
                   </div>
-                  <div className={styles.readingValue}>{readings.ph?.value?.toFixed(1)}</div>
-                  <div className={styles.readingUnit}>pH</div>
-                  <div className={`${styles.readingTrend} ${styles[readings.ph?.trend || 'stable']}`}>
-                    {trendLabel(readings.ph?.trend)}
-                  </div>
+                  <div className={styles.paramTrend}>{trendLabel(readings.ph?.trend)}</div>
                 </div>
 
-                {/* Turbidity */}
-                <div className={styles.readingCard}>
-                  <div className={styles.readingHeader}>
-                    <span className={styles.readingLabel}>Turbidity</span>
-                    <span className={`${styles.readingStatus} ${styles[readings.turbidity?.status || 'optimal']}`} />
+                <div className={styles.readingRow}>
+                  <div className={styles.paramLabel}><strong>Turbidity</strong></div>
+                  <div className={styles.paramValue}>{readings.turbidity?.value?.toFixed(1)} NTU</div>
+                  <div className={styles.paramStatus}>
+                    <span className={`${styles.statusPill} ${styles[readings.turbidity?.status || 'optimal']}`}>
+                      {readings.turbidity?.status === 'optimal' ? '🟢 Stable' : '🟡 Warning'}
+                    </span>
                   </div>
-                  <div className={styles.readingValue}>{readings.turbidity?.value?.toFixed(1)}</div>
-                  <div className={styles.readingUnit}>NTU</div>
-                  <div className={`${styles.readingTrend} ${styles[readings.turbidity?.trend || 'stable']}`}>
-                    {trendLabel(readings.turbidity?.trend)}
-                  </div>
+                  <div className={styles.paramTrend}>{trendLabel(readings.turbidity?.trend)}</div>
                 </div>
-              </div>
+              </>
             ) : (
               <div className={styles.emptyState}>No sensor data available</div>
             )}
           </div>
         </div>
 
-        {/* Sidebar */}
-        <div className={styles.sidebar}>
-          {/* Navigation */}
-          <div className={styles.card}>
-            <div className={styles.cardHeader}>
-              <h3>Navigation</h3>
-            </div>
-            <div className={styles.navList}>
-              <div className={`${styles.navItem} ${styles.active}`}>
-                <FaHome /> Dashboard
-              </div>
-              <div className={styles.navItem} onClick={() => navigate('/tanks')}>
-                <FaFish /> My Tanks
-              </div>
-              <div className={styles.navItem} onClick={() => navigate('/fish-types')}>
-                <FaFlask /> Species Lab
-              </div>
-              <div className={styles.navItem} onClick={() => navigate('/analytics')}>
-                <FaChartLine /> Analytics
-              </div>
-              <div className={styles.navItem} onClick={() => navigate('/alerts')}>
-                <FaBell /> Alerts
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Tanks */}
-          <div className={styles.card}>
-            <div className={styles.cardHeader}>
-              <h3>Recent Tanks</h3>
-            </div>
-            {tanks.length > 0 ? (
-              <div className={styles.recentTanks}>
-                {tanks.slice(0, 2).map(tank => (
-                  <div
-                    key={tank.id}
-                    className={styles.recentTankCard}
-                    onClick={() => navigate(`/tanks/${tank.id}`)}
-                  >
-                    <div className={styles.recentTankName}>{tank.name}</div>
-                    <div className={styles.recentTankInfo}>{tank.fish?.length || 0} fish</div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className={styles.emptyState}>No tanks</div>
+        {/* 3. My Tanks Overview */}
+        <div className={styles.sectionCard}>
+          <div className={styles.sectionHeader}>
+            <h3><FaWater /> My Tanks Overview</h3>
+            {tanks.length > 1 && (
+              <button className={styles.textBtn} onClick={() => navigate('/tanks')}>View All ({tanks.length})</button>
             )}
           </div>
 
-          {/* Alerts */}
-          <div className={styles.card}>
-            <div className={styles.cardHeader}>
-              <h3><FaBell /> Alerts</h3>
-              <span className={`${styles.badge} ${styles.warning}`}>2</span>
-            </div>
-            <div className={styles.alertsList}>
-              <div className={styles.alertItem} onClick={() => navigate('/alerts')}>
-                <div className={`${styles.alertIcon} ${styles.danger}`}>
-                  <FaUtensils />
-                </div>
-                <div className={styles.alertContent}>
-                  <div className={styles.alertTitle}>Feeding Reminder</div>
-                  <div className={styles.alertDesc}>Time to feed the Goldfish</div>
-                </div>
+          {loadingTanks ? (
+             <div className={styles.emptyState}>Loading tanks…</div>
+          ) : activeTank ? (
+            <div className={styles.tankOverviewCard} onClick={() => navigate(`/tanks/${activeTank.id}`)}>
+              <div className={styles.tankOverviewHeader}>
+                <h4>Tank: {activeTank.name} ({activeTank.sizeLiters}L)</h4>
+                <FaFish className={styles.tankOverviewIcon} />
               </div>
-              <div className={styles.alertItem} onClick={() => navigate('/alerts')}>
-                <div className={`${styles.alertIcon} ${styles.warning}`}>
-                  <FaWrench />
-                </div>
-                <div className={styles.alertContent}>
-                  <div className={styles.alertTitle}>Filter Maintenance</div>
-                  <div className={styles.alertDesc}>Due in 3 days</div>
-                </div>
+              <ul className={styles.tankOverviewStats}>
+                <li><strong>Inhabitants:</strong> {activeTank.fish?.length || 0} Fish</li>
+                <li><strong>Current State:</strong> {readings?.temperature?.value?.toFixed(1) || '--'}°C | {readings?.ph?.value?.toFixed(1) || '--'} pH</li>
+              </ul>
+              <div className={styles.tankOverviewFooter}>
+                Tap to view details & analytics →
               </div>
             </div>
-          </div>
+          ) : (
+            <div className={styles.emptyState}>
+              No tanks yet
+              <button className={styles.addTankBtn} onClick={() => navigate('/tanks')}>
+                <FaPlus /> Add Your First Tank
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

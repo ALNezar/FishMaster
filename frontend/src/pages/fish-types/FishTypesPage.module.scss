@@ -1,18 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap');
 
 .page {
-  --primary: #007aff;
-  --primary-bg: rgba(0, 122, 255, 0.1);
+  /* ─── Official Brand Tokens ─── */
+  --brand-red: #D80E45;
+  --brand-yellow: #F6CA35;
+  --brand-blue: #4BA5EE;
+  --brand-black: #111111;
+
+  --primary: var(--brand-blue);
+  --primary-bg: rgba(75, 165, 238, 0.1);
   --success: #34c759;
   --success-bg: rgba(52, 199, 89, 0.1);
-  --warning: #ff9500;
-  --warning-bg: rgba(255, 149, 0, 0.1);
-  --danger: #ff3b30;
-  --danger-bg: rgba(255, 59, 48, 0.1);
-  --text: #1c1c1e;
+  --warning: var(--brand-yellow);
+  --warning-bg: rgba(246, 202, 53, 0.15);
+  --danger: var(--brand-red);
+  --danger-bg: rgba(216, 14, 69, 0.1);
+  --text: var(--brand-black);
   --muted: #8e8e93;
   --border: #e5e5ea;
-  --bg: #f2f2f7;
+  --bg: #faf8f0;
   --card-bg: #ffffff;
   
   padding: 1.5rem;

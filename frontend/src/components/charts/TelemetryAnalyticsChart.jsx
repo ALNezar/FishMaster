@@ -42,12 +42,12 @@ function buildYAxes(visible, isMobile) {
       name: meta.unit,
       show: true,
       position: useSingleAxis ? 'left' : index === 0 ? 'left' : 'right',
-      offset: !useSingleAxis && index === 2 ? 48 : 0,
+      offset: !useSingleAxis && index === 2 ? 56 : 0,
       nameLocation: 'end',
       nameGap: 8,
-      nameTextStyle: { color: '#7b6b5b', fontSize: 11 },
+      nameTextStyle: { color, fontSize: 11, fontWeight: 600 },
       axisLine: { show: true, lineStyle: { color } },
-      axisLabel: { color: '#7b6b5b', fontSize: 10 },
+      axisLabel: { color, fontSize: 10 },
       splitLine: {
         show: index === 0,
         lineStyle: { color: 'rgba(61, 48, 33, 0.08)' },
@@ -134,8 +134,33 @@ export default function TelemetryAnalyticsChart({
     const series = buildSeries({ labels, temperature, ph, turbidity, visibleMetrics, chartMode });
     const hasRenderableData = series.some((item) => item.data?.some((v) => v != null));
     const yAxis = buildYAxes(visible, isMobile);
-    const gridRight = visible.length <= 1 ? 16 : visible.length === 2 ? 48 : 72;
-    const gridBottom = isMobile ? 36 : 52;
+    const gridRight = visible.length <= 1 ? 16 : visible.length === 2 ? 48 : 80;
+    const gridBottom = isMobile ? 36 : 44;
+
+    // Limit X-axis to ~6 evenly-spaced labels regardless of data density
+    const maxTicks = isMobile ? 5 : 7;
+    const tickInterval = labels.length > maxTicks ? Math.ceil(labels.length / maxTicks) - 1 : 0;
+
+    // Format time labels to clean '12:00 PM' style
+    const formatTimeLabel = (rawLabel) => {
+      if (!rawLabel || typeof rawLabel !== 'string') return rawLabel;
+      // Try to parse as date string, else try HH:MM pattern
+      const dateAttempt = new Date(`1970-01-01 ${rawLabel}`);
+      if (!Number.isNaN(dateAttempt.getTime())) {
+        return dateAttempt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      }
+      // If the label already contains AM/PM, just clean it up
+      const match = rawLabel.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+      if (match) {
+        const [, h, m, meridiem] = match;
+        if (meridiem) return `${parseInt(h, 10)}:${m} ${meridiem.toUpperCase()}`;
+        const hour = parseInt(h, 10);
+        const suffix = hour >= 12 ? 'PM' : 'AM';
+        const h12 = hour % 12 || 12;
+        return `${h12}:${m} ${suffix}`;
+      }
+      return rawLabel;
+    };
 
     return {
       backgroundColor: 'transparent',
@@ -217,9 +242,10 @@ export default function TelemetryAnalyticsChart({
         axisLabel: {
           color: '#7b6b5b',
           hideOverlap: true,
-          interval: isMobile ? 'auto' : 0,
+          interval: tickInterval,
           fontSize: 10,
-          rotate: isMobile ? 0 : 30,
+          rotate: 0,
+          formatter: formatTimeLabel,
         },
         axisLine: { lineStyle: { color: 'rgba(61, 48, 33, 0.2)' } },
       },

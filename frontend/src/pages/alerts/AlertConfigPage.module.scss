@@ -1,6 +1,12 @@
-$primary: #1277b0;
-$text-primary: #1f2937;
-$text-secondary: #4b5563;
+// ─── Official Brand Tokens ───
+$brand-red: #D80E45;
+$brand-yellow: #F6CA35;
+$brand-blue: #4BA5EE;
+$brand-black: #111111;
+
+$primary: $brand-blue;
+$text-primary: $brand-black;
+$text-secondary: #6b7280;
 
 .pageContainer {
   display: flex;

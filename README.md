@@ -267,23 +267,6 @@ The screen shows the current aquarium data without needing a computer or interne
 
 ---
 
-## Project Poster
-
-The following image shows the FishMaster project and its main parts.
-
-<p align="center">
-  <img
-    src="https://github.com/user-attachments/assets/88e4c59f-ff35-42b5-b0fb-7eab724f2cd7"
-    width="45%"
-    alt="FishMaster project poster"
-  />
-</p>
-
-<p align="center">
-  FishMaster project poster
-</p>
-
----
 
 ## Live Demo (Development)
 

@@ -47,9 +47,13 @@ The ESP32 uses sensors to check three things:
 
 The sensor data is shown on a local 2.8" touch screen.
 
+<img width="425" height="253" alt="image" src="https://github.com/user-attachments/assets/79ca5523-5cd5-484b-a268-24f15b550b1c" />
+
+---
 The ESP32 also controls a servo motor that is used as an automatic fish feeder.
 
-The ESP32 can work **without the internet**. This means the aquarium can still be monitored and controlled even when the Wi-Fi is not working.
+[although i haven't fully integrated the fish feeder into the system ¯\_(ツ)_/¯ just basic push feed mechanisms) 
+
 
 The web system lets users check the aquarium from a phone or computer.
 
@@ -73,7 +77,7 @@ If the internet connection is lost, the ESP32 can continue to monitor the aquari
 
 FishMaster can work in two ways.
 
-#### Local System
+#### Local Embedded System
 
 The ESP32 handles the aquarium directly.
 
@@ -84,7 +88,7 @@ It:
 - Controls the fish feeder
 - Checks water quality
 - Gives local alerts (buzzer)
-- Stores local historical data on the ESP32
+- Stores local historical data on the ESP32 Temporary 
 - Continues working when Wi-Fi is not available
 - Accepts input from a local 1×4 keypad and wireless remote controller
 
@@ -286,13 +290,15 @@ FishMaster TFT touchscreen display
 
 ---
 
-## Live Demo (Development)
+## Live Demo VIDEO 
+[ARABIC]
 
-This is the development version of FishMaster.
 
-It is mainly used to test the website, sensor data, and communication between the ESP32 and web system.
+https://github.com/user-attachments/assets/8928ea8f-89f3-4cf6-933f-94f792c3a692
 
-<div align="center">
+
+
+
 
 (❁´◡`❁)
 
